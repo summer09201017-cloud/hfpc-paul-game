@@ -1,0 +1,27 @@
+{
+  "name": "paul-journey-game",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "保羅宣教之旅 — 互動式聖經地圖關卡遊戲 (v1 雛形)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "gen:icons": "node scripts/gen-icons.mjs",
+    "gen:map": "node scripts/gen-map.mjs",
+    "validate": "node scripts/validate.mjs src/data/journey1.json",
+    "test:selfplay": "node scripts/selfplay.mjs",
+    "test:browser": "node scripts/browser-playtest.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "playwright": "^1.60.0",
+    "vite": "^6.0.7",
+    "vite-plugin-pwa": "^0.21.1"
+  }
+}
