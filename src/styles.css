@@ -225,7 +225,6 @@ body {
 .board__scene {
   position: absolute;
   inset: 0;
-  will-change: transform;
 }
 /* 縮放控制按鈕（固定在地圖右下角） */
 .board__zoom {
@@ -256,6 +255,16 @@ body {
 }
 .board__zoom button:not(:disabled):active {
   transform: translateY(1px);
+}
+.board__zoom-pct {
+  text-align: center;
+  font-size: clamp(0.6rem, 1.2vw, 0.78rem);
+  font-weight: 800;
+  color: var(--ink, #3a2f1c);
+  background: rgba(255, 253, 247, 0.92);
+  border-radius: 8px;
+  padding: 1px 0;
+  border: 2px solid var(--parchment-dark, #b9863f);
 }
 /* ---- 真實地理底圖 ---- */
 .board__map {

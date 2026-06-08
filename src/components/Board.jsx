@@ -103,11 +103,12 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
         })}
       </div>
 
-      {/* 縮放控制（固定在角落，不跟著縮放） */}
+      {/* 縮放控制（固定在角落，不跟著縮放）；顯示目前百分比 */}
       <div className="board__zoom">
         <button onClick={zp.zoomIn} disabled={!zp.canZoomIn} aria-label="放大" title="放大">＋</button>
+        <span className="board__zoom-pct" aria-label={`目前縮放 ${zp.percent}%`}>{zp.percent}%</span>
         <button onClick={zp.zoomOut} disabled={!zp.canZoomOut} aria-label="縮小" title="縮小">－</button>
-        <button onClick={zp.reset} disabled={zp.scale === 1} aria-label="重設" title="重設">⟳</button>
+        <button onClick={zp.reset} disabled={zp.scale === 1} aria-label="重設為 100%" title="重設為 100%">⟳</button>
       </div>
     </div>
   )

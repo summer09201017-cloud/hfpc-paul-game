@@ -2,61 +2,74 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 
-// 地圖縮放 / 平移。回傳要掛到「裁切容器」的 ref 與指標事件處理器，
-// 以及目前的 transform 數值與 +／－／重設 控制函式。
-// 座標系：transform-origin 設為左上角 (0 0)，translate 用 px、scale 用倍率；
-// 平移會被夾住，避免把地圖拖出畫面。支援：滑鼠拖曳、滾輪縮放（朝游標）、雙指 pinch。
-export function useZoomPan({ min = 1, max = 4, step = 0.5 } = {}) {
+// 用「百分比級距」來縮放，避免放太大（並降低極端縮放造成的算繪空白）。
+const LEVELS = [1, 1.5, 2, 2.5] // 100% / 150% / 200% / 250%
+const MIN = LEVELS[0]
+const MAX = LEVELS[LEVELS.length - 1]
+
+// 地圖縮放 / 平移。回傳要掛到「裁切容器」的 ref、指標事件處理器、目前 transform，
+// 以及 +／－／重設 與目前百分比。座標系：transform-origin 0 0；平移會被夾住。
+// 所有數值都會做有限值檢查與夾限，避免 NaN／越界導致整塊地圖跑出畫面而空白。
+export function useZoomPan() {
   const ref = useRef(null)
   const [tf, setTf] = useState({ s: 1, x: 0, y: 0 })
-  const drag = useRef(null) // { startX, startY, tx, ty }
-  const pinch = useRef(null) // { dist, s }
+  const drag = useRef(null)
+  const pinch = useRef(null)
   const pointers = useRef(new Map())
 
-  const clampXY = (s, x, y) => {
+  const dims = () => {
     const el = ref.current
-    if (!el) return { x, y }
-    const w = el.clientWidth
-    const h = el.clientHeight
-    return { x: clamp(x, -(s - 1) * w, 0), y: clamp(y, -(s - 1) * h, 0) }
+    return el ? { w: el.clientWidth, h: el.clientHeight } : { w: 0, h: 0 }
   }
 
-  // 以容器內座標 (px, py) 為定點縮放到 ns（該點在縮放前後位置不變）。
-  const zoomAt = useCallback(
-    (px, py, ns) => {
-      setTf((t) => {
-        const s = clamp(ns, min, max)
-        const k = s / t.s
-        const { x, y } = clampXY(s, px - (px - t.x) * k, py - (py - t.y) * k)
-        return { s, x, y }
-      })
-    },
-    [min, max],
-  )
+  // 正規化：scale 夾在 [MIN,MAX]、平移夾在可視範圍內，且全部保證是有限數。
+  const norm = (s, x, y) => {
+    s = clamp(Number.isFinite(s) ? s : 1, MIN, MAX)
+    const { w, h } = dims()
+    x = clamp(Number.isFinite(x) ? x : 0, -(s - 1) * w, 0)
+    y = clamp(Number.isFinite(y) ? y : 0, -(s - 1) * h, 0)
+    return { s: Math.round(s * 1000) / 1000, x: Math.round(x), y: Math.round(y) }
+  }
 
-  // 滾輪縮放（非被動監聽，才能 preventDefault 不讓整頁捲動）。
+  // 以容器內座標 (px,py) 為定點，縮放到 ns（該點縮放前後位置不變）。
+  const zoomAt = useCallback((px, py, ns) => {
+    setTf((t) => {
+      const s = clamp(Number.isFinite(ns) ? ns : t.s, MIN, MAX)
+      const k = s / t.s
+      return norm(s, px - (px - t.x) * k, py - (py - t.y) * k)
+    })
+  }, [])
+
+  // 跳到下一／上一個百分比級距（dir>0 放大）；可指定定點，否則以中心。
+  const step = useCallback((dir, px, py) => {
+    setTf((t) => {
+      const s =
+        dir > 0
+          ? LEVELS.find((l) => l > t.s + 0.001) ?? MAX
+          : [...LEVELS].reverse().find((l) => l < t.s - 0.001) ?? MIN
+      const { w, h } = dims()
+      const cx = px ?? w / 2
+      const cy = py ?? h / 2
+      const k = s / t.s
+      return norm(s, cx - (cx - t.x) * k, cy - (cy - t.y) * k)
+    })
+  }, [])
+
+  // 滾輪：一格跳一個級距，朝游標縮放（非被動才能 preventDefault）。
   useEffect(() => {
     const el = ref.current
     if (!el) return
     const onWheel = (e) => {
       e.preventDefault()
       const r = el.getBoundingClientRect()
-      setTf((t) => {
-        const s = clamp(t.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15), min, max)
-        const k = s / t.s
-        const px = e.clientX - r.left
-        const py = e.clientY - r.top
-        const { x, y } = clampXY(s, px - (px - t.x) * k, py - (py - t.y) * k)
-        return { s, x, y }
-      })
+      step(e.deltaY < 0 ? 1 : -1, e.clientX - r.left, e.clientY - r.top)
     }
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
-  }, [min, max])
+  }, [step])
 
   const onPointerDown = useCallback((e) => {
-    // 別把縮放控制按鈕的點擊吃掉：若點在控制鈕上，不啟動平移 / 不擷取指標，
-    // 否則 setPointerCapture 會把 click 事件導到 .board，按鈕的 onClick 就不會觸發。
+    // 點在縮放控制鈕上時，不啟動平移／不擷取指標（否則按鈕 onClick 會被吃掉）。
     if (e.target?.closest?.('.board__zoom')) return
     ref.current?.setPointerCapture?.(e.pointerId)
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
@@ -80,20 +93,19 @@ export function useZoomPan({ min = 1, max = 4, step = 0.5 } = {}) {
       if (!pointers.current.has(e.pointerId)) return
       pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
 
-      if (pointers.current.size >= 2 && pinch.current) {
+      if (pointers.current.size >= 2 && pinch.current && pinch.current.dist > 0) {
         const [a, b] = [...pointers.current.values()]
         const dist = Math.hypot(a.x - b.x, a.y - b.y)
-        const r = ref.current.getBoundingClientRect()
+        const el = ref.current
+        if (!el) return
+        const r = el.getBoundingClientRect()
         const cx = (a.x + b.x) / 2 - r.left
         const cy = (a.y + b.y) / 2 - r.top
         zoomAt(cx, cy, pinch.current.s * (dist / pinch.current.dist))
       } else if (drag.current) {
         const dx = e.clientX - drag.current.startX
         const dy = e.clientY - drag.current.startY
-        setTf((t) => {
-          const { x, y } = clampXY(t.s, drag.current.tx + dx, drag.current.ty + dy)
-          return { ...t, x, y }
-        })
+        setTf((t) => norm(t.s, drag.current.tx + dx, drag.current.ty + dy))
       }
     },
     [zoomAt],
@@ -105,22 +117,21 @@ export function useZoomPan({ min = 1, max = 4, step = 0.5 } = {}) {
     if (pointers.current.size === 0) drag.current = null
   }, [])
 
-  const zoomIn = useCallback(() => {
-    const el = ref.current
-    if (el) zoomAt(el.clientWidth / 2, el.clientHeight / 2, tf.s + step)
-  }, [zoomAt, tf.s, step])
-  const zoomOut = useCallback(() => {
-    const el = ref.current
-    if (el) zoomAt(el.clientWidth / 2, el.clientHeight / 2, tf.s - step)
-  }, [zoomAt, tf.s, step])
+  const zoomIn = useCallback(() => step(1), [step])
+  const zoomOut = useCallback(() => step(-1), [step])
   const reset = useCallback(() => setTf({ s: 1, x: 0, y: 0 }), [])
+
+  // transform 數值一律保證有限，避免 "translate(NaNpx…)" 整塊地圖消失。
+  const safe = Number.isFinite(tf.s) && Number.isFinite(tf.x) && Number.isFinite(tf.y)
+  const t = safe ? tf : { s: 1, x: 0, y: 0 }
 
   return {
     ref,
-    transform: `translate(${tf.x}px, ${tf.y}px) scale(${tf.s})`,
-    scale: tf.s,
-    canZoomOut: tf.s > min + 0.001,
-    canZoomIn: tf.s < max - 0.001,
+    transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`,
+    scale: t.s,
+    percent: Math.round(t.s * 100),
+    canZoomOut: t.s > MIN + 0.001,
+    canZoomIn: t.s < MAX - 0.001,
     handlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp },
     zoomIn,
     zoomOut,
