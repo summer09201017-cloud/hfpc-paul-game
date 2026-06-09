@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { createGame, roll, advance, resolve, endTurn, getGameStatus, getStation } from '../src/core/engine.js'
+import { createGame, roll, advance, resolve, endTurn, getGameStatus, getActiveQuiz } from '../src/core/engine.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const board = JSON.parse(readFileSync(join(__dirname, '../src/data/journey1.json'), 'utf-8'))
@@ -47,14 +47,14 @@ function playOneGame(numPlayers, seed) {
       const dice = 1 + Math.floor(rng() * 3) // 跑馬燈 1~3（與畫面一致）
       state = roll(state, dice)
     } else if (state.phase === 'rolled') {
-      state = advance(state)
+      state = advance(state, rng()) // 注入抽題隨機值（多題隨機抽；種子固定才可重現）
     } else if (state.phase === 'resolving') {
-      const station = getStation(state, state.pendingStationId)
+      // 與引擎一致：對「這一輪抽中的那一題」作答（不限 type，event/story/end 也可能掛題）。
+      const quiz = getActiveQuiz(state)
       let payload = {}
-      // 與引擎一致：只要這一格「有問答題」就作答（不限 type，event/story/end 也可能掛題）。
-      if (station.quiz) {
+      if (quiz) {
         // 隨機作答，刻意製造答對/答錯兩種情況
-        payload = { answerIndex: Math.floor(rng() * station.quiz.options.length) }
+        payload = { answerIndex: Math.floor(rng() * quiz.options.length) }
       }
       state = resolve(state, payload)
     } else if (state.phase === 'turnEnd') {

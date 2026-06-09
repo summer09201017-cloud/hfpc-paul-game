@@ -66,8 +66,9 @@ export function useGame() {
       }
       setDiceFace(value)
       sound.ding() // 跑馬燈停下
-      // 擲骰 → 移動（純引擎運算）
-      const moved = engine.advance(engine.roll(game, value))
+      // 擲骰 → 移動（純引擎運算）；抽題的隨機值在這裡注入，引擎本身保持純函式。
+      const quizRoll = Math.random()
+      const moved = engine.advance(engine.roll(game, value), quizRoll)
       setGame(moved)
       setPhase('moving')
       sound.move()
@@ -113,6 +114,8 @@ export function useGame() {
   const status = game ? engine.getGameStatus(game) : null
   const currentStation =
     game && game.pendingStationId ? engine.getStation(game, game.pendingStationId) : null
+  // 這一輪實際抽中、要顯示與計分的那一題（多題隨機抽；舊的單一 quiz 也走這裡）。
+  const currentQuiz = game ? engine.getActiveQuiz(game) : null
 
   return {
     journey,
@@ -121,6 +124,7 @@ export function useGame() {
     diceFace,
     status,
     currentStation,
+    currentQuiz,
     currentPlayer: game ? game.players[game.currentPlayerIndex] : null,
     startGame,
     rollAndMove,

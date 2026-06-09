@@ -28,7 +28,9 @@ const CONFIG = {
     rest: [],
     end: [],
     event: ['event.title', 'event.effect'],
-    quiz: ['quiz.question', 'quiz.options', 'quiz.answerIndex', 'quiz.explanation'],
+    // quiz 型格子的題目內容可放在單一 quiz，或 quizzes 陣列（多題隨機抽）——
+    // 下面 quiz-specific 深檢會逐題驗證，這裡不再硬性指定 quiz.*。
+    quiz: [],
   },
   // Allowed keys inside any `effect` (and the effect blocks nested in events),
   // with a type check. Unknown keys are reported as errors (likely typos).
@@ -104,26 +106,38 @@ const seen = new Map()
     if (v === undefined || v === null || v === '') err(`${label(it, i)} missing required "${path}".`)
   }
 
-  // quiz-specific deep checks — run for ANY item carrying a quiz block, not
-  // just type === 'quiz' (a quiz can ride on an event/story/end tile too).
-  if (it.quiz) {
-    const q = it.quiz
+  // quiz-specific deep checks — run for ANY item carrying a question, whether a
+  // single `quiz` object or a `quizzes` array (多題隨機抽). A quiz can ride on an
+  // event/story/end tile too, so this is not gated on type === 'quiz'.
+  if (it.quizzes !== undefined && !Array.isArray(it.quizzes))
+    err(`${label(it, i)} "quizzes" must be an array.`)
+  const pool = Array.isArray(it.quizzes) ? it.quizzes : it.quiz ? [it.quiz] : []
+  if (type === 'quiz' && pool.length === 0)
+    err(`${label(it, i)} type is "quiz" but has no quiz/quizzes.`)
+  pool.forEach((q, qi) => {
+    const where = pool.length > 1 ? `quiz[${qi}]` : 'quiz'
+    if (!q || typeof q !== 'object') {
+      err(`${label(it, i)} ${where} is not an object.`)
+      return
+    }
+    if (q.question === undefined || String(q.question).trim() === '')
+      err(`${label(it, i)} ${where} missing "question".`)
+    if (q.explanation === undefined || String(q.explanation).trim() === '')
+      err(`${label(it, i)} ${where} missing "explanation".`)
     if (Array.isArray(q.options)) {
-      if (q.options.length < 2) err(`${label(it, i)} quiz needs ≥2 options.`)
+      if (q.options.length < 2) err(`${label(it, i)} ${where} needs ≥2 options.`)
       if (typeof q.answerIndex === 'number') {
         if (q.answerIndex < 0 || q.answerIndex >= q.options.length)
-          err(`${label(it, i)} quiz answerIndex ${q.answerIndex} out of range [0, ${q.options.length - 1}].`)
-      } else if (q.answerIndex !== undefined) {
-        err(`${label(it, i)} quiz answerIndex must be a number.`)
+          err(`${label(it, i)} ${where} answerIndex ${q.answerIndex} out of range [0, ${q.options.length - 1}].`)
+      } else {
+        err(`${label(it, i)} ${where} answerIndex must be a number.`)
       }
       const uniq = new Set(q.options.map((o) => String(o).trim()))
-      if (uniq.size < q.options.length) warn(`${label(it, i)} quiz has duplicate options.`)
-    } else if (q.options !== undefined) {
-      err(`${label(it, i)} quiz.options must be an array.`)
+      if (uniq.size < q.options.length) warn(`${label(it, i)} ${where} has duplicate options.`)
+    } else {
+      err(`${label(it, i)} ${where}.options must be an array.`)
     }
-    if (q.explanation !== undefined && String(q.explanation).trim() === '')
-      warn(`${label(it, i)} quiz.explanation is empty.`)
-  }
+  })
 
   // effect vocabulary (item.effect and event.effect)
   const effects = [it.effect, it.event?.effect].filter((e) => e && typeof e === 'object')

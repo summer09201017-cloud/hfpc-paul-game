@@ -11,6 +11,7 @@ const TYPE_LABEL = {
 
 export default function StationModal({
   station,
+  quiz,
   phase,
   result,
   scoreLabel,
@@ -20,8 +21,8 @@ export default function StationModal({
 }) {
   const [selected, setSelected] = useState(null)
   const isResult = phase === 'result'
-  // 每座城市都可能附一題問答（不再只有 quiz 類型的格子）。
-  const hasQuiz = !!station.quiz
+  // 每座城市都可能附問答（不再只有 quiz 類型的格子）；quiz 是這一輪從題庫抽中的那一題。
+  const hasQuiz = !!quiz
 
   const pickAnswer = (i) => {
     if (isResult) return
@@ -65,12 +66,12 @@ export default function StationModal({
 
           {hasQuiz && (
             <div className="quiz">
-              <p className="quiz__q">{station.quiz.question}</p>
+              <p className="quiz__q">{quiz.question}</p>
               <div className="quiz__options">
-                {station.quiz.options.map((opt, i) => {
+                {quiz.options.map((opt, i) => {
                   let cls = 'quiz__opt'
                   if (isResult) {
-                    if (i === station.quiz.answerIndex) cls += ' quiz__opt--correct'
+                    if (i === quiz.answerIndex) cls += ' quiz__opt--correct'
                     else if (i === selected) cls += ' quiz__opt--wrong'
                     else cls += ' quiz__opt--dim'
                   }

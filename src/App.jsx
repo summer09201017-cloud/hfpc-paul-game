@@ -65,6 +65,7 @@ export default function App() {
       {(g.phase === 'station' || g.phase === 'result') && g.currentStation && (
         <StationModal
           station={g.currentStation}
+          quiz={g.currentQuiz}
           phase={g.phase}
           result={g.game.lastResult}
           scoreLabel={g.journey.scoreLabel}

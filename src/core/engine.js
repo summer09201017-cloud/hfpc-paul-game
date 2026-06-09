@@ -47,6 +47,7 @@ export function createGame(playerConfigs, board) {
     turnCount: 0,
     lastMoverId: null,
     pendingStationId: null, // 剛停留、待結算的格子
+    pendingQuizIndex: null, // 這一輪從該格題庫抽中的題目索引（外部注入隨機值，見 advance）
     lastResult: null, // 上一次結算的結果（給畫面顯示用）
     phase: 'idle', // idle | rolled | resolving | turnEnd | gameover
     log: [],
@@ -64,10 +65,29 @@ export function roll(state, value) {
 }
 
 /**
- * 依骰子點數把目前玩家往前移動。
- * 終點會「卡住」（不會超過最後一格），停在最後一格即視為抵達。
+ * 取得某站的「問答題庫」：優先用 quizzes 陣列（多題隨機抽），
+ * 否則退回單一 quiz（向後相容舊資料），都沒有就回空陣列。
  */
-export function advance(state) {
+export function getQuizPool(station) {
+  if (station && Array.isArray(station.quizzes) && station.quizzes.length > 0) return station.quizzes
+  if (station && station.quiz) return [station.quiz]
+  return []
+}
+
+/** 從題庫長度與注入的隨機值 [0,1) 算出要抽第幾題（夾在合法範圍內）。 */
+function pickQuizIndex(poolLength, quizRoll) {
+  if (poolLength <= 0) return null
+  const r = Number.isFinite(quizRoll) ? quizRoll : 0
+  return Math.min(poolLength - 1, Math.max(0, Math.floor(r * poolLength)))
+}
+
+/**
+ * 依骰子點數把目前玩家往前移動，並從停留格的題庫抽出這一輪要答的題。
+ * 終點會「卡住」（不會超過最後一格），停在最後一格即視為抵達。
+ * @param {object} state
+ * @param {number} quizRoll 抽題用的隨機值 [0,1)，由外部注入（保持引擎純函式、可重現）。
+ */
+export function advance(state, quizRoll = 0) {
   if (state.phase !== 'rolled' || state.diceValue == null) return state
 
   const lastIndex = state.board.stations.length - 1
@@ -78,14 +98,28 @@ export function advance(state) {
   player.position = target
   const station = state.board.stations[target]
 
+  // 這一輪從該格題庫抽中哪一題（隨機值外部注入，沒有題目則為 null）。
+  const pendingQuizIndex = pickQuizIndex(getQuizPool(station).length, quizRoll)
+
   return {
     ...state,
     players,
     pendingStationId: station.id,
+    pendingQuizIndex,
     lastMoverId: player.id,
     phase: 'resolving',
     log: pushLog(state.log, `${player.name} 擲出 ${state.diceValue}，前進到「${station.name}」。`),
   }
+}
+
+/** 取得目前待結算格子「這一輪抽中」的那一題（沒有題目則 null）。畫面與結算都用這一個。 */
+export function getActiveQuiz(state) {
+  if (!state || !state.pendingStationId) return null
+  const station = getStation(state, state.pendingStationId)
+  const pool = getQuizPool(station)
+  if (!pool.length) return null
+  const i = state.pendingQuizIndex == null ? 0 : state.pendingQuizIndex
+  return pool[Math.min(pool.length - 1, Math.max(0, i))] || null
 }
 
 /**
@@ -119,8 +153,9 @@ export function resolve(state, payload = {}) {
   }
 
   // 2) 不論格子類型，只要這一格有問答題就計分（每座城市都能靠答題賺點數）。
-  if (station.quiz) {
-    const q = station.quiz
+  //    用 getActiveQuiz 取「這一輪抽中的那一題」——和畫面顯示的必定是同一題。
+  const q = getActiveQuiz(state)
+  if (q) {
     const correct = payload.answerIndex === q.answerIndex
     const reward = q.reward || 1
     result.quiz = true
@@ -205,7 +240,7 @@ export function endTurn(state) {
 
   const status = getGameStatus(state)
   if (status.over) {
-    return { ...state, phase: 'gameover', diceValue: null, pendingStationId: null }
+    return { ...state, phase: 'gameover', diceValue: null, pendingStationId: null, pendingQuizIndex: null }
   }
 
   const players = clonefPlayers(state.players)
@@ -213,7 +248,7 @@ export function endTurn(state) {
 
   // 沒有人能再行動（全部完成或全部卡住）→ 結束
   if (nextIndex === -1) {
-    return { ...state, players, phase: 'gameover', diceValue: null, pendingStationId: null }
+    return { ...state, players, phase: 'gameover', diceValue: null, pendingStationId: null, pendingQuizIndex: null }
   }
 
   return {
@@ -222,6 +257,7 @@ export function endTurn(state) {
     currentPlayerIndex: nextIndex,
     diceValue: null,
     pendingStationId: null,
+    pendingQuizIndex: null,
     lastResult: null,
     turnCount: state.turnCount + 1,
     phase: 'idle',
