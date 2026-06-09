@@ -6,28 +6,168 @@
   "turnCap": 200,
   "decks": {
     "chance": [
-      { "title": "放膽傳道", "kind": "good", "text": "你倚靠聖靈放膽講道，許多人聽了就信。福音點數 +2。", "effect": { "gospelPoints": 2 } },
-      { "title": "會堂的講台", "kind": "good", "text": "安息日你被請上台讀經、勸勉眾人。福音點數 +2。", "effect": { "gospelPoints": 2 } },
-      { "title": "主行神蹟", "kind": "good", "text": "主藉你的手行了神蹟奇事，眾人歸榮耀給神。福音點數 +3。", "effect": { "gospelPoints": 3 } },
-      { "title": "外邦人渴慕真道", "kind": "good", "text": "城裡的人懇求你下個安息日再講這道。福音點數 +2。", "effect": { "gospelPoints": 2 } },
-      { "title": "書信的勉勵", "kind": "good", "text": "你寫信堅固遠方的教會，他們大得安慰。福音點數 +1。", "effect": { "gospelPoints": 1 } },
-      { "title": "新的同工", "kind": "good", "text": "一位當地門徒願意與你同行傳道。", "effect": { "addCompanion": "當地門徒" } },
-      { "title": "慷慨的接待", "kind": "good", "text": "有信徒開門接待你們，供應所需、彼此代禱。福音點數 +1。", "effect": { "gospelPoints": 1 } },
-      { "title": "禁食禱告", "kind": "good", "text": "教會為你們禁食禱告，差遣的確據更堅定。福音點數 +2。", "effect": { "gospelPoints": 2 } },
-      { "title": "逼迫中站立", "kind": "good", "text": "面對反對你仍不退縮，信徒大得激勵。福音點數 +2。", "effect": { "gospelPoints": 2 } },
-      { "title": "道傳開了", "kind": "good", "text": "主的道傳遍那一帶地方。福音點數 +3。", "effect": { "gospelPoints": 3 } }
+      {
+        "title": "放膽傳道",
+        "kind": "good",
+        "text": "你倚靠聖靈放膽講道，許多人聽了就信。福音點數 +2。",
+        "effect": {
+          "gospelPoints": 2
+        }
+      },
+      {
+        "title": "會堂的講台",
+        "kind": "good",
+        "text": "安息日你被請上台讀經、勸勉眾人。福音點數 +2。",
+        "effect": {
+          "gospelPoints": 2
+        }
+      },
+      {
+        "title": "主行神蹟",
+        "kind": "good",
+        "text": "主藉你的手行了神蹟奇事，眾人歸榮耀給神。福音點數 +3。",
+        "effect": {
+          "gospelPoints": 3
+        }
+      },
+      {
+        "title": "外邦人渴慕真道",
+        "kind": "good",
+        "text": "城裡的人懇求你下個安息日再講這道。福音點數 +2。",
+        "effect": {
+          "gospelPoints": 2
+        }
+      },
+      {
+        "title": "書信的勉勵",
+        "kind": "good",
+        "text": "你寫信堅固遠方的教會，他們大得安慰。福音點數 +1。",
+        "effect": {
+          "gospelPoints": 1
+        }
+      },
+      {
+        "title": "新的同工",
+        "kind": "good",
+        "text": "一位當地門徒願意與你同行傳道。",
+        "effect": {
+          "addCompanion": "當地門徒"
+        }
+      },
+      {
+        "title": "慷慨的接待",
+        "kind": "good",
+        "text": "有信徒開門接待你們，供應所需、彼此代禱。福音點數 +1。",
+        "effect": {
+          "gospelPoints": 1
+        }
+      },
+      {
+        "title": "禁食禱告",
+        "kind": "good",
+        "text": "教會為你們禁食禱告，差遣的確據更堅定。福音點數 +2。",
+        "effect": {
+          "gospelPoints": 2
+        }
+      },
+      {
+        "title": "逼迫中站立",
+        "kind": "good",
+        "text": "面對反對你仍不退縮，信徒大得激勵。福音點數 +2。",
+        "effect": {
+          "gospelPoints": 2
+        }
+      },
+      {
+        "title": "道傳開了",
+        "kind": "good",
+        "text": "主的道傳遍那一帶地方。福音點數 +3。",
+        "effect": {
+          "gospelPoints": 3
+        }
+      }
     ],
     "fate": [
-      { "title": "旅途疲乏", "kind": "bad", "text": "長途跋涉，身體需要休息——暫停一回合。", "effect": { "skipNext": true } },
-      { "title": "海上逆風", "kind": "bad", "text": "船遇逆風，行程耽延了。福音點數 -1。", "effect": { "gospelPoints": -1 } },
-      { "title": "同伴離隊", "kind": "bad", "text": "有同工因軟弱半途返回（若有「當地門徒」則離隊）。", "effect": { "removeCompanion": "當地門徒" } },
-      { "title": "被趕出境", "kind": "bad", "text": "反對的人把你們趕出境外，你們跺下腳上的塵土往前走。福音點數 -1。", "effect": { "gospelPoints": -1 } },
-      { "title": "遭受毀謗", "kind": "bad", "text": "有人嫉妒，毀謗你所傳的道。福音點數 -1。", "effect": { "gospelPoints": -1 } },
-      { "title": "身體軟弱", "kind": "bad", "text": "你病倒了，需要休養——暫停一回合。", "effect": { "skipNext": true } },
-      { "title": "意外的供應", "kind": "good", "text": "路上遇見弟兄供應所需，精神大振。福音點數 +1。", "effect": { "gospelPoints": 1 } },
-      { "title": "平安的日子", "kind": "good", "text": "教會得平安，門徒人數增多。福音點數 +2。", "effect": { "gospelPoints": 2 } },
-      { "title": "母會問安", "kind": "good", "text": "收到差派你出去的教會的問安與代禱。福音點數 +1。", "effect": { "gospelPoints": 1 } },
-      { "title": "風浪中蒙保守", "kind": "good", "text": "雖遇危險，神保守你們平安度過。福音點數 +2。", "effect": { "gospelPoints": 2 } }
+      {
+        "title": "旅途疲乏",
+        "kind": "bad",
+        "text": "長途跋涉，身體需要休息——暫停一回合。",
+        "effect": {
+          "skipNext": true
+        }
+      },
+      {
+        "title": "海上逆風",
+        "kind": "bad",
+        "text": "船遇逆風，行程耽延了。福音點數 -1。",
+        "effect": {
+          "gospelPoints": -1
+        }
+      },
+      {
+        "title": "同伴離隊",
+        "kind": "bad",
+        "text": "有同工因軟弱半途返回（若有「當地門徒」則離隊）。",
+        "effect": {
+          "removeCompanion": "當地門徒"
+        }
+      },
+      {
+        "title": "被趕出境",
+        "kind": "bad",
+        "text": "反對的人把你們趕出境外，你們跺下腳上的塵土往前走。福音點數 -1。",
+        "effect": {
+          "gospelPoints": -1
+        }
+      },
+      {
+        "title": "遭受毀謗",
+        "kind": "bad",
+        "text": "有人嫉妒，毀謗你所傳的道。福音點數 -1。",
+        "effect": {
+          "gospelPoints": -1
+        }
+      },
+      {
+        "title": "身體軟弱",
+        "kind": "bad",
+        "text": "你病倒了，需要休養——暫停一回合。",
+        "effect": {
+          "skipNext": true
+        }
+      },
+      {
+        "title": "意外的供應",
+        "kind": "good",
+        "text": "路上遇見弟兄供應所需，精神大振。福音點數 +1。",
+        "effect": {
+          "gospelPoints": 1
+        }
+      },
+      {
+        "title": "平安的日子",
+        "kind": "good",
+        "text": "教會得平安，門徒人數增多。福音點數 +2。",
+        "effect": {
+          "gospelPoints": 2
+        }
+      },
+      {
+        "title": "母會問安",
+        "kind": "good",
+        "text": "收到差派你出去的教會的問安與代禱。福音點數 +1。",
+        "effect": {
+          "gospelPoints": 1
+        }
+      },
+      {
+        "title": "風浪中蒙保守",
+        "kind": "good",
+        "text": "雖遇危險，神保守你們平安度過。福音點數 +2。",
+        "effect": {
+          "gospelPoints": 2
+        }
+      }
     ]
   },
   "stations": [
@@ -60,7 +200,6 @@
       "y": 55,
       "scripture": "使徒行傳 13:4",
       "text": "他們既被聖靈差遣，就下到西流基，從那裡坐船往居比路（賽普勒斯）去。揚帆出海，宣教正式啟航！",
-      "effect": { "drawCard": "chance" },
       "lat": 36.12,
       "lon": 35.93,
       "history": {
@@ -83,6 +222,17 @@
       }
     },
     {
+      "id": "seacard_1",
+      "name": "啟航海上",
+      "type": "chance",
+      "arriveBy": "sea",
+      "text": "船行在地中海上，前方是巴拿巴的家鄉居比路（賽普勒斯）。旅途中會遇見什麼呢？翻一張機會卡吧！",
+      "x": 64.3,
+      "y": 63.4,
+      "lat": 35.65,
+      "lon": 34.92
+    },
+    {
       "id": "salamis",
       "name": "撒拉米",
       "type": "quiz",
@@ -90,7 +240,6 @@
       "y": 71.8,
       "scripture": "使徒行傳 13:5",
       "text": "到了撒拉米，就在猶太人的各會堂裡傳講神的道。",
-      "effect": { "drawCard": "chance" },
       "quizzes": [
         {
           "question": "保羅和巴拿巴是從哪一個城市，被聖靈差派出去開始第一次宣教旅程？",
@@ -163,6 +312,17 @@
       }
     },
     {
+      "id": "seacard_2",
+      "name": "渡海風浪",
+      "type": "fate",
+      "arriveBy": "sea",
+      "text": "離開居比路，渡海前往旁非利亞的別加。海上旅程，福禍難料——翻一張命運卡。",
+      "x": 28.6,
+      "y": 59.5,
+      "lat": 35.87,
+      "lon": 31.63
+    },
+    {
       "id": "perga",
       "name": "別加",
       "type": "event",
@@ -208,7 +368,6 @@
       "y": 15.9,
       "scripture": "使徒行傳 13:14-52",
       "text": "在安息日，保羅進了會堂講道，傳講耶穌與復活。許多人歸信，但有些人嫉妒、逼迫他們。",
-      "effect": { "drawCard": "fate" },
       "quizzes": [
         {
           "question": "保羅一行人到了一座城，通常會先到哪裡開始傳講福音？",
@@ -243,6 +402,16 @@
         "willMeet": "保羅在會堂講了一篇精彩的道，許多人信了主；卻也被嫉妒的人逼迫、趕出城外。",
         "notYetWritten": "這一帶屬於「加拉太」地區。日後保羅會寫一封《加拉太書》寄給這裡的教會——但現在還沒寫喔！此時新約一卷都還沒成書。"
       }
+    },
+    {
+      "id": "landcard_1",
+      "name": "翻山越嶺",
+      "type": "chance",
+      "text": "在加拉太的高原上趕路，往下一座城去。路上會遇見什麼？翻一張機會卡吧！",
+      "x": 30.9,
+      "y": 19.8,
+      "lat": 38.09,
+      "lon": 31.84
     },
     {
       "id": "iconium",
@@ -317,6 +486,16 @@
       }
     },
     {
+      "id": "landcard_2",
+      "name": "曠野路途",
+      "type": "fate",
+      "text": "離開路司得，走在呂高尼的曠野往特庇去。前路未知——翻一張命運卡。",
+      "x": 42.1,
+      "y": 30.9,
+      "lat": 37.47,
+      "lon": 32.87
+    },
+    {
       "id": "derbe",
       "name": "特庇",
       "type": "quiz",
@@ -324,7 +503,6 @@
       "y": 33,
       "scripture": "使徒行傳 14:20-21",
       "text": "第二天，保羅同巴拿巴往特庇去。在那裡傳了福音，使許多人作門徒。",
-      "effect": { "drawCard": "chance" },
       "quiz": {
         "question": "在路司得，保羅奉主的名醫好了一個怎樣的人？",
         "options": [
@@ -354,7 +532,6 @@
       "y": 26.8,
       "scripture": "使徒行傳 14:21-23",
       "text": "他們回到路司得、以哥念、彼西底的安提阿，堅固門徒的心，勸他們恆守所信的道，又說：「我們進入神的國，必須經歷許多艱難。」並在各教會選立長老。",
-      "effect": { "drawCard": "fate" },
       "lat": 37.7,
       "lon": 31.95,
       "history": {
@@ -377,6 +554,16 @@
       }
     },
     {
+      "id": "landcard_3",
+      "name": "踏上歸途",
+      "type": "chance",
+      "text": "從加拉太諸城踏上歸途，一路堅固門徒、選立長老。翻一張機會卡吧！",
+      "x": 25.3,
+      "y": 34.1,
+      "lat": 37.29,
+      "lon": 31.33
+    },
+    {
       "id": "attalia",
       "name": "亞大利",
       "type": "story",
@@ -384,7 +571,6 @@
       "y": 41.4,
       "scripture": "使徒行傳 14:24-26",
       "text": "他們經過彼西底，來到旁非利亞，在別加講了道，又下到亞大利，從那裡坐船，要回到差派他們的安提阿。歸途在望！",
-      "effect": { "drawCard": "fate" },
       "lat": 36.88,
       "lon": 30.7,
       "history": {
@@ -405,6 +591,17 @@
         "explanation": "他們從亞大利坐船，回到當初差派他們出發的安提阿（徒 14:25-26）。",
         "reward": 3
       }
+    },
+    {
+      "id": "seacard_3",
+      "name": "揚帆歸航",
+      "type": "fate",
+      "arriveBy": "sea",
+      "text": "從亞大利揚帆，越過大海，歸向差派他們出發的安提阿。翻一張命運卡。",
+      "x": 49.5,
+      "y": 45.5,
+      "lat": 36.65,
+      "lon": 33.55
     },
     {
       "id": "antioch_end",

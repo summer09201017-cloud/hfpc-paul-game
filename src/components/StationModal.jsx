@@ -23,15 +23,23 @@ export default function StationModal({
   onFinish,
 }) {
   const [selected, setSelected] = useState(null)
+  const [picked, setPicked] = useState(null) // 玩家點了第幾張牌（機會／命運翻牌）
   const isResult = phase === 'result'
-  // 每座城市都可能附問答（不再只有 quiz 類型的格子）；quiz 是這一輪從題庫抽中的那一題。
   const hasQuiz = !!quiz
-  const hasCard = !!card // 這一輪是否抽到機會／命運卡（內容在結算後才翻開）
+  const hasCard = !!card // 這一格是否要抽機會／命運卡（內容在點牌翻開後才揭曉）
+  const FACE_DOWN = 3 // 攤開幾張背面牌供點選
 
   const pickAnswer = (i) => {
     if (isResult) return
     setSelected(i)
     onResolve({ answerIndex: i })
+  }
+
+  // 點一張背面朝上的牌 → 翻開。抽到哪張其實已由程式決定，點牌只是把它翻過來。
+  const pickCard = (i) => {
+    if (isResult || picked != null) return
+    setPicked(i)
+    onResolve({})
   }
 
   return (
@@ -95,13 +103,43 @@ export default function StationModal({
             </div>
           )}
 
-          {isResult && hasCard && (
-            <div className={`gamecard gamecard--${card.kind === 'bad' ? 'bad' : 'good'}`}>
-              <span className="gamecard__deck">
-                {card.deck === 'fate' ? '🃏 命運卡' : '🎲 機會卡'}
-              </span>
-              <span className="gamecard__title">{card.title}</span>
-              <p className="gamecard__text">{card.text}</p>
+          {hasCard && (
+            <div className="carddraw">
+              <p className="carddraw__hint">
+                {isResult
+                  ? '你抽到了：'
+                  : `點一張牌，翻開你的${card.deck === 'fate' ? '命運' : '機會'}！`}
+              </p>
+              <div className="carddraw__deck">
+                {Array.from({ length: FACE_DOWN }, (_, i) => {
+                  const showFront = isResult && i === picked
+                  const dim = isResult && i !== picked
+                  return (
+                    <button
+                      key={i}
+                      className={`pcard ${showFront ? 'pcard--flipped' : ''} ${dim ? 'pcard--dim' : ''}`}
+                      disabled={isResult}
+                      onClick={() => pickCard(i)}
+                      aria-label={showFront ? card.title : '翻開一張牌'}
+                    >
+                      <span className="pcard__inner">
+                        <span className="pcard__face pcard__back">
+                          {card.deck === 'fate' ? '🃏' : '🎲'}
+                        </span>
+                        <span
+                          className={`pcard__face pcard__front pcard__front--${card.kind === 'bad' ? 'bad' : 'good'}`}
+                        >
+                          <span className="pcard__deck">
+                            {card.deck === 'fate' ? '命運' : '機會'}
+                          </span>
+                          <span className="pcard__title">{card.title}</span>
+                          <span className="pcard__text">{card.text}</span>
+                        </span>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           )}
 
@@ -120,12 +158,13 @@ export default function StationModal({
         </div>
 
         <div className="modal__foot">
-          {!isResult && !hasQuiz && (
+          {!isResult && !hasQuiz && !hasCard && (
             <button className="btn btn--primary" onClick={() => onResolve({})}>
-              {hasCard ? '翻開卡片 →' : station.type === 'event' ? '翻開事件卡 →' : '繼續 →'}
+              {station.type === 'event' ? '翻開事件卡 →' : '繼續 →'}
             </button>
           )}
           {!isResult && hasQuiz && <span className="modal__tip">選一個答案來賺取點數</span>}
+          {!isResult && hasCard && <span className="modal__tip">👆 點一張牌翻開</span>}
           {isResult && (
             <button className="btn btn--primary" onClick={onFinish}>
               結束回合 →

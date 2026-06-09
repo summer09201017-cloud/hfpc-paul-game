@@ -85,9 +85,13 @@ export function useGame() {
       const next = engine.resolve(game, payload)
       setGame(next)
       setPhase('result')
-      // 有問答題才播答對 / 答錯音效。
-      if (next.lastResult && next.lastResult.quiz) {
-        next.lastResult.correct ? sound.correct() : sound.wrong()
+      // 問答播答對/答錯音效；機會/命運卡翻牌播一聲叮。
+      if (next.lastResult) {
+        if (next.lastResult.quiz) {
+          next.lastResult.correct ? sound.correct() : sound.wrong()
+        } else if (next.lastResult.card) {
+          sound.ding()
+        }
       }
     },
     [phase, game],
