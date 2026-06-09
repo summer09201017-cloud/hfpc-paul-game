@@ -49,9 +49,10 @@
       {
         "title": "新的同工",
         "kind": "good",
-        "text": "一位當地門徒願意與你同行傳道。",
+        "text": "一位當地門徒願意與你同行傳道。福音點數 +1。",
         "effect": {
-          "addCompanion": "當地門徒"
+          "addCompanion": "當地門徒",
+          "gospelPoints": 1
         }
       },
       {
@@ -91,9 +92,10 @@
       {
         "title": "旅途疲乏",
         "kind": "bad",
-        "text": "長途跋涉，身體需要休息——暫停一回合。",
+        "text": "長途跋涉，身體需要休息——暫停一回合。福音點數 -1。",
         "effect": {
-          "skipNext": true
+          "skipNext": true,
+          "gospelPoints": -1
         }
       },
       {
@@ -107,9 +109,10 @@
       {
         "title": "同伴離隊",
         "kind": "bad",
-        "text": "有同工因軟弱半途返回（若有「當地門徒」則離隊）。",
+        "text": "有同工因軟弱半途返回（若有「當地門徒」則離隊）。福音點數 -1。",
         "effect": {
-          "removeCompanion": "當地門徒"
+          "removeCompanion": "當地門徒",
+          "gospelPoints": -1
         }
       },
       {
@@ -131,9 +134,10 @@
       {
         "title": "身體軟弱",
         "kind": "bad",
-        "text": "你病倒了，需要休養——暫停一回合。",
+        "text": "你病倒了，需要休養——暫停一回合。福音點數 -1。",
         "effect": {
-          "skipNext": true
+          "skipNext": true,
+          "gospelPoints": -1
         }
       },
       {
@@ -359,6 +363,24 @@
         "explanation": "約翰‧馬可在別加離隊回耶路撒冷（徒 13:13）。後來他與保羅和好，還寫了《馬可福音》！",
         "reward": 3
       }
+    },
+    {
+      "id": "mountain_run",
+      "name": "翻山越嶺",
+      "type": "challenge",
+      "mustStop": true,
+      "text": "從別加往北，要翻越險峻的托羅斯山脈，才能到達高原上的彼西底安提阿。一路奔跑，跳過路上的障礙，平安抵達！",
+      "minigame": {
+        "level": 1,
+        "mode": "run",
+        "winPoints": 5,
+        "label": "🏃 翻山越嶺",
+        "how": "一路向前奔跑！用 空白鍵 / ↑ / 點畫面 跳過障礙，跑到終點就過關。"
+      },
+      "x": 22,
+      "y": 27.9,
+      "lat": 37.64,
+      "lon": 31.02
     },
     {
       "id": "pisidian_antioch",

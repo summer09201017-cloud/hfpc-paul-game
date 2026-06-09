@@ -3,7 +3,7 @@ import journey from '../data/journey1.json'
 import * as engine from '../core/engine'
 import { sound } from '../audio/sound'
 
-const ROLL_MS = 5000 // 跑馬燈轉動時間（至少 5 秒，營造期待感）
+const ROLL_MS = 3000 // 跑馬燈轉動時間（3 秒）
 const MOVE_MS = 850 // 棋子移動動畫時間
 
 // UI 階段：
@@ -50,12 +50,12 @@ export function useGame() {
 
   const rollAndMove = useCallback(() => {
     if (phase !== 'idle' || !game) return
-    const value = 1 + Math.floor(Math.random() * 3) // 跑馬燈 1~3 步（比骰子 1~6 更不易跳過城市）
+    const value = 1 + Math.floor(Math.random() * 4) // 跑馬燈 1~4 步
 
     setPhase('rolling')
-    // 跑馬燈轉動：每 80ms 換一個隨機數字（1~3），每跳一格響一聲滴答。
+    // 跑馬燈轉動：每 80ms 換一個隨機數字（1~4），每跳一格響一聲滴答。
     rollTimer.current = setInterval(() => {
-      setDiceFace(1 + Math.floor(Math.random() * 3))
+      setDiceFace(1 + Math.floor(Math.random() * 4))
       sound.tick()
     }, 80)
 

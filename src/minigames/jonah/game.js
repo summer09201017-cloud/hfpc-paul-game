@@ -303,6 +303,11 @@ export class Game {
 
     // 抵達終點 = 嘗試上船(要先湊夠船價)
     if (this.distance >= RUN.goalDistance) {
+      // 嵌入保羅大富翁時：抵達終點即過關，不卡船價（確保小遊戲一定會結束、不會卡在船邊）。
+      if (this.embed) {
+        this.win()
+        return
+      }
       const need = this.mode === 'walk' ? FARE.walk : FARE.run
       if (this.coinsCollected >= need) {
         this.collectingFare = false

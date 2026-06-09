@@ -203,6 +203,10 @@ if (data.decks !== undefined) {
           if (c.effect && typeof c.effect === 'object') checkEffect(c.effect, ctx)
           else err(`${ctx} "effect" must be an object.`)
         }
+        // 規則：每張機會／命運卡都必須加或減福音點數（effect.gospelPoints 為非 0 數字）。
+        const gp = c.effect && c.effect.gospelPoints
+        if (typeof gp !== 'number' || gp === 0)
+          err(`${ctx} 每張卡都必須加或減點數：effect.gospelPoints 需為非 0 的數字。`)
       })
     }
   }

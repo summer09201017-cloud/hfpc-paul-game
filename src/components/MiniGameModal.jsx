@@ -26,7 +26,11 @@ export default function MiniGameModal({ minigame, onComplete }) {
   const [started, setStarted] = useState(false)
 
   const level = minigame.level === 1 ? 1 : 2
-  const info = LEVELS[level]
+  // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡的預設）。
+  const info = {
+    title: minigame.label || LEVELS[level].title,
+    how: minigame.how || LEVELS[level].how,
+  }
 
   // 在使用者點「開始挑戰」的手勢中啟動：此時 canvas 已排版好（renderer 量得到尺寸），
   // 音訊也能在手勢中解鎖。
