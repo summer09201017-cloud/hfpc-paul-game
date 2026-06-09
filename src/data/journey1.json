@@ -593,6 +593,21 @@
       }
     },
     {
+      "id": "storm_challenge",
+      "name": "海上遇風暴",
+      "type": "challenge",
+      "arriveBy": "sea",
+      "text": "歸航的船在地中海上遇見大風浪！穩住這艘船，平安度過風暴。",
+      "minigame": {
+        "level": 2,
+        "winPoints": 5
+      },
+      "x": 34,
+      "y": 43.6,
+      "lat": 36.76,
+      "lon": 32.13
+    },
+    {
       "id": "seacard_3",
       "name": "揚帆歸航",
       "type": "fate",

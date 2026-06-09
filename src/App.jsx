@@ -6,6 +6,7 @@ import Board from './components/Board'
 import PlayerPanel from './components/PlayerPanel'
 import DicePanel from './components/DicePanel'
 import StationModal from './components/StationModal'
+import MiniGameModal from './components/MiniGameModal'
 import GameOverScreen from './components/GameOverScreen'
 
 export default function App() {
@@ -62,19 +63,29 @@ export default function App() {
         </aside>
       </main>
 
-      {(g.phase === 'station' || g.phase === 'result') && g.currentStation && (
-        <StationModal
-          station={g.currentStation}
-          quiz={g.currentQuiz}
-          card={g.currentCard}
-          phase={g.phase}
-          result={g.game.lastResult}
-          scoreLabel={g.journey.scoreLabel}
-          currentPlayer={g.currentPlayer}
-          onResolve={g.resolveStation}
-          onFinish={g.finishTurn}
+      {/* 闖關挑戰站：在「停留」階段先玩小遊戲，結束後把勝負送進結算。 */}
+      {g.phase === 'station' && g.currentStation?.minigame && (
+        <MiniGameModal
+          minigame={g.currentStation.minigame}
+          onComplete={(r) => g.resolveStation({ minigameWon: r.won, minigameScore: r.score })}
         />
       )}
+
+      {/* 其餘停留 / 結算（含挑戰站結算後的結果）走一般彈窗。 */}
+      {((g.phase === 'station' && !g.currentStation?.minigame) || g.phase === 'result') &&
+        g.currentStation && (
+          <StationModal
+            station={g.currentStation}
+            quiz={g.currentQuiz}
+            card={g.currentCard}
+            phase={g.phase}
+            result={g.game.lastResult}
+            scoreLabel={g.journey.scoreLabel}
+            currentPlayer={g.currentPlayer}
+            onResolve={g.resolveStation}
+            onFinish={g.finishTurn}
+          />
+        )}
 
       {g.phase === 'gameover' && (
         <GameOverScreen

@@ -74,6 +74,7 @@ const CITIES = {
   landcard_1:       { lat: 38.09, lon: 31.84 }, // 彼西底安提阿↔以哥念（陸路）
   landcard_2:       { lat: 37.47, lon: 32.87 }, // 路司得↔特庇（陸路）
   landcard_3:       { lat: 37.29, lon: 31.33 }, // 回程堅固門徒↔亞大利（陸路）
+  storm_challenge:  { lat: 36.76, lon: 32.13 }, // 亞大利↔回程海路上的「海上風暴」小遊戲挑戰站
   seacard_3:        { lat: 36.65, lon: 33.55 }, // 亞大利↔安提阿述職（海上）
 }
 

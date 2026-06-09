@@ -64,6 +64,10 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | end` (it d
 
 Copy `journey1.json` to e.g. `journey2.json` and edit content. Note: `useGame.js` currently **hardcodes** `import journey from '../data/journey1.json'`, so adding a selectable second journey requires a code change there (and likely in `SetupScreen`), not just a new data file. A new journey also needs its own real-geography coordinates: add the journey's cities to the `CITIES` map (and a matching map-frame/bounds) in `gen-map.mjs` so its `x`/`y` and the coastline can be generated.
 
+## Embedded mini-games (`src/minigames/`)
+
+A station can trigger a real-time 2D mini-game by carrying a `minigame: { level, mode?, winPoints }` field (decoupled from `type`, like quiz/card; the dedicated tile uses `type: "challenge"`). `src/minigames/jonah/` is a **copy of the `約拿闖關` (Jonah) arcade engine** (vanilla Canvas, zero deps) adapted for **embed mode**: `new Game(canvas, { ui, embed: true, level, mode, onComplete })` — `ui` is a no-op `NullUI` Proxy (the original drives DOM menus we don't want), `embed` skips the title screen + suppresses fullscreen/orientation takeover, and `win()`/`gameOver()` call `onComplete({ won, score, level })` instead of the Jonah overlay. `Game.destroy()` stops the loop, removes listeners (`Input.detach()`), and stops its audio. `MiniGameModal.jsx` mounts the canvas (boot is deferred to a "開始挑戰" click for the audio-unlock gesture) and on completion calls `resolveStation({ minigameWon, minigameScore })` — the engine scores it in `resolve` (pure, result injected like a quiz answer). To re-sync the Jonah copy after upstream changes, re-copy the files and re-apply the embed edits in `game.js`/`input.js`. The board has one spike station (`storm_challenge`, Jonah Level 2 storm) on the return sea leg; add more by giving a station a `minigame` field (+ a `gen-map` coordinate if it's a new tile).
+
 ## Conventions
 
 - Comments and identifiers in this codebase are written in Chinese; match that style when editing existing files.

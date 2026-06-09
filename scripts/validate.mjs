@@ -34,6 +34,8 @@ const CONFIG = {
     // 機會 / 命運專用格：內容來自 decks，本身不需額外欄位。
     chance: [],
     fate: [],
+    // 闖關挑戰格：內容由 station.minigame 指定（嵌入即時小遊戲）。
+    challenge: [],
   },
   // Allowed keys inside any `effect` (and the effect blocks nested in events),
   // with a type check. Unknown keys are reported as errors (likely typos).

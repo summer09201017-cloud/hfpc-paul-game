@@ -7,6 +7,7 @@ const TYPE_LABEL = {
   quiz: '聖經問答',
   chance: '機會',
   fate: '命運',
+  challenge: '闖關挑戰',
   rest: '休息',
   end: '終點',
 }

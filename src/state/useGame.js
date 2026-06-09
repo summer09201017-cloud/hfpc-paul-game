@@ -89,6 +89,8 @@ export function useGame() {
       if (next.lastResult) {
         if (next.lastResult.quiz) {
           next.lastResult.correct ? sound.correct() : sound.wrong()
+        } else if (next.lastResult.minigame) {
+          next.lastResult.minigameWon ? sound.correct() : sound.wrong()
         } else if (next.lastResult.card) {
           sound.ding()
         }

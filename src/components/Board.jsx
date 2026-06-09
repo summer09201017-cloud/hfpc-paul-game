@@ -9,6 +9,7 @@ const TYPE_ICON = {
   quiz: '❓',
   chance: '🎲',
   fate: '🃏',
+  challenge: '🌊',
   rest: '⛺',
   end: '🏁',
 }

@@ -200,6 +200,22 @@ export function resolve(state, payload = {}) {
     log = pushLog(log, `${player.name} 抽到${card.deck === 'fate' ? '命運' : '機會'}卡「${card.title}」。`)
   }
 
+  // 1.7) 小遊戲（闖關）：結果由外部注入 payload.minigameWon（過關加分）。
+  if (station.minigame) {
+    const mg = station.minigame
+    result.minigame = true
+    result.minigameWon = !!payload.minigameWon
+    if (payload.minigameWon) {
+      const pts = mg.winPoints || 3
+      player.gospelPoints += pts
+      result.lines.push(`闖關成功！${scoreLabel} +${pts}`)
+      log = pushLog(log, `${player.name} 闖關成功，${scoreLabel} +${pts}。`)
+    } else {
+      result.lines.push('闖關沒成功，沒關係，重要的是有嘗試！')
+      log = pushLog(log, `${player.name} 闖關未過關。`)
+    }
+  }
+
   // 2) 不論格子類型，只要這一格有問答題就計分（每座城市都能靠答題賺點數）。
   //    用 getActiveQuiz 取「這一輪抽中的那一題」——和畫面顯示的必定是同一題。
   const q = getActiveQuiz(state)

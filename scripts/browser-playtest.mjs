@@ -37,6 +37,14 @@ for (let step = 0; step < MAX_STEPS; step++) {
   // 遊戲結束？
   if ((await page.locator('.gameover').count()) > 0) break
 
+  // 闖關挑戰站：點「開始挑戰」，不操作 → 撐到時間到(過關)或翻船(失敗)自動結束，再等結算彈窗
+  if ((await page.locator('.minigame').count()) > 0) {
+    const startBtn = page.getByRole('button', { name: /開始挑戰/ })
+    if ((await startBtn.count()) > 0) await startBtn.click()
+    await page.locator('.result, .gameover').first().waitFor({ timeout: 40000 })
+    continue
+  }
+
   const modalOpen = (await page.locator('.modal').count()) > 0
 
   if (modalOpen) {
@@ -72,8 +80,8 @@ for (let step = 0; step < MAX_STEPS; step++) {
   if (await dice.isEnabled()) {
     await dice.click()
     rolls++
-    // 跑馬燈(5s)+移動(0.85s) 後應出現格子彈窗；給足 9 秒，沒出現就是卡死
-    await page.locator('.modal, .gameover').first().waitFor({ timeout: 9000 })
+    // 跑馬燈(5s)+移動(0.85s) 後應出現格子彈窗 / 小遊戲 / 結束畫面；給足 9 秒，沒出現就是卡死
+    await page.locator('.modal, .minigame, .gameover').first().waitFor({ timeout: 9000 })
   } else {
     await page.waitForTimeout(150)
   }
