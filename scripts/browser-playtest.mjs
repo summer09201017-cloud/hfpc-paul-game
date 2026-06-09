@@ -56,6 +56,10 @@ for (let step = 0; step < MAX_STEPS; step++) {
     } else if (hasQuiz) {
       await page.locator('.quiz__opt').first().click()
       await page.locator('.result').waitFor({ timeout: 5000 })
+    } else if ((await page.locator('.carddraw').count()) > 0) {
+      // 機會/命運卡站：點一張背面牌翻開（沒有「繼續」按鈕，牌本身就是互動）
+      await page.locator('.pcard').first().click()
+      await page.locator('.result').waitFor({ timeout: 5000 })
     } else {
       await page.locator('.modal__foot button').click()
       await page.locator('.result').waitFor({ timeout: 5000 })
