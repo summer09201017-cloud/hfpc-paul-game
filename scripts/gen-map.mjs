@@ -118,6 +118,12 @@ function buildRegion(cfg) {
     }),
   )
 
+  // 地名標籤：由真實經緯度投影成棋盤座標，所以「賽普勒斯」之類一定落在對的位置。
+  const labelMarks = (cfg.labels || []).map((l) => {
+    const [x, y] = project(l.lon, l.lat)
+    return { t: l.t, x: r1(x), y: r1(y), kind: l.kind }
+  })
+
   writeFileSync(
     join(DATA, mapFile),
     JSON.stringify(
@@ -127,6 +133,7 @@ function buildRegion(cfg) {
         aspect: Math.round(aspect * 1000) / 1000,
         lands,
         cities: cityMarks,
+        labels: labelMarks,
       },
       null,
       2,
@@ -164,6 +171,13 @@ buildRegion({
   iso: ['TUR', 'SYR', 'LBN', 'CYP', 'CYN'], // 含北賽普勒斯讓整座島完整
   journeyFile: 'journey1.json',
   mapFile: 'region-map.json',
+  labels: [
+    { t: '小亞細亞（今土耳其）', lat: 38.9, lon: 33.6, kind: 'region' },
+    { t: '敘利亞', lat: 35.4, lon: 37.7, kind: 'region' },
+    { t: '賽普勒斯', lat: 35.05, lon: 33.3, kind: 'island' },
+    { t: '居比路', lat: 34.6, lon: 33.3, kind: 'island-sub' },
+    { t: '地　中　海', lat: 34.0, lon: 33.9, kind: 'sea' },
+  ],
   cities: {
     antioch_start:    { lat: 36.20, lon: 36.16 },
     seleucia:         { lat: 36.12, lon: 35.93 },
@@ -198,6 +212,14 @@ buildRegion({
   iso: ['GRC', 'TUR', 'SYR', 'LBN', 'CYP', 'CYN', 'ISR', 'PSE', 'JOR', 'EGY', 'BGR', 'MKD', 'ALB'],
   journeyFile: 'journey2.json',
   mapFile: 'region-map2.json',
+  labels: [
+    { t: '馬其頓', lat: 41.0, lon: 23.2, kind: 'region' },
+    { t: '亞該亞（希臘）', lat: 38.1, lon: 22.6, kind: 'region' },
+    { t: '小亞細亞', lat: 38.9, lon: 30.5, kind: 'region' },
+    { t: '敘利亞', lat: 35.8, lon: 36.6, kind: 'region' },
+    { t: '愛　琴　海', lat: 38.6, lon: 25.1, kind: 'sea' },
+    { t: '地　中　海', lat: 33.6, lon: 28.5, kind: 'sea' },
+  ],
   cities: {
     antioch2_start: { lat: 36.20, lon: 36.16 }, // 敘利亞安提阿（出發）
     derbe2:         { lat: 37.35, lon: 33.28 }, // 特庇
