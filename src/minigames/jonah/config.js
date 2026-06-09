@@ -3,7 +3,7 @@
 // 邏輯解析度(實際畫面會等比縮放填滿視窗,並做黑邊置中)
 export const VIEW = { W: 960, H: 540 }
 
-// 地面基準線(約拿的腳底站在這裡)
+// 地面基準線(保羅的腳底站在這裡)
 export const GROUND_Y = VIEW.H - 96
 
 // 物理
@@ -48,9 +48,9 @@ export const STORM = {
   invertControl: false,
 }
 
-// 玩家(約拿)
+// 玩家(保羅)
 export const PLAYER = {
-  x: 190, // 約拿固定在畫面左側這個 x
+  x: 190, // 保羅固定在畫面左側這個 x
   w: 40, // 命中框寬
   h: 58, // 命中框高
   emoji: '🏃',

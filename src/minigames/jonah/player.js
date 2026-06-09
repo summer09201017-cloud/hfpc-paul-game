@@ -1,6 +1,6 @@
 import { GROUND_Y, PHYS, PLAYER } from './config.js'
 
-// 約拿:固定在畫面左側,只負責上下(跳躍與重力)。
+// 保羅:固定在畫面左側,只負責上下(跳躍與重力)。
 // 世界往左捲動,製造他向前奔跑的感覺。
 
 export class Player {

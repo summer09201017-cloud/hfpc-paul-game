@@ -44,7 +44,7 @@ function playOneGame(numPlayers, seed) {
     }
 
     if (state.phase === 'idle') {
-      const dice = 1 + Math.floor(rng() * 4) // 跑馬燈 1~4（與畫面一致）
+      const dice = 1 + Math.floor(rng() * 6) // 骰子 1~6（與畫面一致）
       state = roll(state, dice)
     } else if (state.phase === 'rolled') {
       state = advance(state, rng(), rng()) // 注入抽題、抽卡隨機值（種子固定才可重現）

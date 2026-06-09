@@ -50,12 +50,12 @@ export function useGame() {
 
   const rollAndMove = useCallback(() => {
     if (phase !== 'idle' || !game) return
-    const value = 1 + Math.floor(Math.random() * 4) // 跑馬燈 1~4 步
+    const value = 1 + Math.floor(Math.random() * 6) // 骰子 1~6 點
 
     setPhase('rolling')
-    // 跑馬燈轉動：每 80ms 換一個隨機數字（1~4），每跳一格響一聲滴答。
+    // 骰子轉動：每 80ms 換一個隨機點數（1~6），響一聲滴答。
     rollTimer.current = setInterval(() => {
-      setDiceFace(1 + Math.floor(Math.random() * 4))
+      setDiceFace(1 + Math.floor(Math.random() * 6))
       sound.tick()
     }, 80)
 

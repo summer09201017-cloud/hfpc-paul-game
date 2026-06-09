@@ -124,7 +124,7 @@ export class Renderer {
       this._emoji('⛵', shipX, GROUND_Y + 8, 120)
     }
 
-    // 約拿(向先知,向右奔跑;受擊無敵時閃爍)
+    // 保羅(向先知,向右奔跑;受擊無敵時閃爍)
     const p = game.player
     const blink = p.invuln > 0 && Math.floor(p.invuln * 12) % 2 === 0
     if (!blink) {
@@ -208,10 +208,10 @@ export class Renderer {
     ctx.quadraticCurveTo(74, -82, 8, -30)
     ctx.closePath()
     ctx.fill()
-    // 船員 + 約拿
+    // 船員 + 保羅
     this._emoji('🧎', -64, -6, 36)
     this._emoji('🙏', 66, -4, 34, 'alphabetic')
-    this._prophet(0, 2, t * 0.05, false) // 約拿站中間
+    this._prophet(0, 2, t * 0.05, false) // 保羅站中間
     ctx.restore()
 
     // 閃電白光
