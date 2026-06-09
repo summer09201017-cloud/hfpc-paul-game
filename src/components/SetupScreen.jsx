@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
-const MAX_PLAYERS = 4
-
-export default function SetupScreen({ journey, onStart }) {
+export default function SetupScreen({ journeys, onStart }) {
+  const [journeyKey, setJourneyKey] = useState(journeys[0].key)
   const [count, setCount] = useState(2)
   const [names, setNames] = useState(['', '', '', ''])
+
+  const sel = journeys.find((j) => j.key === journeyKey) || journeys[0]
 
   const setName = (i, v) => {
     setNames((prev) => {
@@ -16,14 +17,31 @@ export default function SetupScreen({ journey, onStart }) {
 
   const start = () => {
     const configs = Array.from({ length: count }, (_, i) => ({ name: names[i] }))
-    onStart(configs)
+    onStart(configs, journeyKey)
   }
 
   return (
     <div className="setup">
       <div className="setup__card">
-        <h1 className="setup__title">📖 {journey.title}</h1>
-        <p className="setup__subtitle">{journey.subtitle}</p>
+        <h1 className="setup__title">📖 {sel.title}</h1>
+        <p className="setup__subtitle">{sel.subtitle}</p>
+
+        {journeys.length > 1 && (
+          <div className="setup__section">
+            <label className="setup__label">選一條旅程</label>
+            <div className="setup__count">
+              {journeys.map((j) => (
+                <button
+                  key={j.key}
+                  className={`pill ${journeyKey === j.key ? 'pill--active' : ''}`}
+                  onClick={() => setJourneyKey(j.key)}
+                >
+                  {j.title}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="setup__section">
           <label className="setup__label">幾個人一起玩？</label>
@@ -59,8 +77,8 @@ export default function SetupScreen({ journey, onStart }) {
 
         <div className="setup__how">
           <strong>怎麼玩：</strong>
-          擲骰 → 沿著保羅的旅程前進 → 停在城市觸發「劇情 / 事件 / 聖經問答」→ 答對得「
-          {journey.scoreLabel}」。大家都走完旅程後，「{journey.scoreLabel}」最高的人獲勝（答對問答、把握事件才是關鍵，不是比誰先到）！
+          擲骰 → 沿著旅程前進 → 停在站點觸發「劇情 / 事件 / 聖經問答 / 闖關小遊戲」→ 答對、過關得「
+          {sel.scoreLabel}」。大家都走完旅程後，「{sel.scoreLabel}」最高的人獲勝（答對問答、把握事件才是關鍵，不是比誰先到）！
         </div>
 
         <button className="btn btn--primary setup__start" onClick={start}>

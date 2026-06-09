@@ -1,5 +1,4 @@
 import MapBackground from './MapBackground'
-import map from '../data/region-map.json'
 import { useZoomPan } from './useZoomPan'
 
 const TYPE_ICON = {
@@ -25,7 +24,7 @@ function tokenOffset(indexAtStation) {
   return offsets[indexAtStation % offsets.length]
 }
 
-export default function Board({ stations, players, currentPlayerId, pendingStationId }) {
+export default function Board({ stations, players, currentPlayerId, pendingStationId, map }) {
   // 路線分段：每一段標記是陸路或海路（依「抵達站」的 arriveBy），分別上色。
   const legs = stations.slice(1).map((s, i) => ({
     from: stations[i],
@@ -42,7 +41,7 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
     <div
       className="board"
       ref={zp.ref}
-      style={{ aspectRatio: map.aspect, touchAction: 'none' }}
+      style={{ aspectRatio: (map && map.aspect) || 1.322, touchAction: 'none' }}
       {...zp.handlers}
     >
       {/* 可縮放 / 平移的整個地圖場景（地圖、路線、城市、棋子一起縮放）。 */}
@@ -50,7 +49,7 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
         className="board__scene"
         style={{ transform: zp.transform, transformOrigin: '0 0', cursor: zp.scale > 1 ? 'grab' : 'default' }}
       >
-        <MapBackground />
+        <MapBackground map={map} />
 
         <svg className="board__route" viewBox="0 0 100 100" preserveAspectRatio="none">
           {legs.map((leg, i) => (

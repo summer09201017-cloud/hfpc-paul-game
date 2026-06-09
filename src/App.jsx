@@ -20,7 +20,7 @@ export default function App() {
   }
 
   if (g.phase === 'setup') {
-    return <SetupScreen journey={g.journey} onStart={g.startGame} />
+    return <SetupScreen journeys={g.journeys} onStart={g.startGame} />
   }
 
   return (
@@ -45,6 +45,7 @@ export default function App() {
             players={g.game.players}
             currentPlayerId={g.currentPlayer?.id}
             pendingStationId={g.game.pendingStationId}
+            map={g.map}
           />
         </section>
 

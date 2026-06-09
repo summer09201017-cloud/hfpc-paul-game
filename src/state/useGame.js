@@ -1,7 +1,16 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import journey from '../data/journey1.json'
+import journey1 from '../data/journey1.json'
+import journeyJonah from '../data/journey-jonah.json'
+import regionMapPaul from '../data/region-map.json'
+import regionMapJonah from '../data/region-map-jonah.json'
 import * as engine from '../core/engine'
 import { sound } from '../audio/sound'
+
+// 可選旅程：roll-and-move 外框可掛多條旅程，各自帶內容(journey)＋底圖(map)。
+const JOURNEYS = [
+  { key: 'paul', journey: journey1, map: regionMapPaul },
+  { key: 'jonah', journey: journeyJonah, map: regionMapJonah },
+]
 
 const ROLL_MS = 3000 // 跑馬燈轉動時間（3 秒）
 const MOVE_MS = 850 // 棋子移動動畫時間
@@ -18,6 +27,8 @@ export function useGame() {
   const [game, setGame] = useState(null)
   const [phase, setPhase] = useState('setup')
   const [diceFace, setDiceFace] = useState(1)
+  const [activeKey, setActiveKey] = useState('paul') // 目前選的旅程
+  const active = JOURNEYS.find((j) => j.key === activeKey) || JOURNEYS[0]
 
   const timeouts = useRef([])
   const rollTimer = useRef(null)
@@ -40,11 +51,13 @@ export function useGame() {
     return id
   }, [])
 
-  const startGame = useCallback((playerConfigs) => {
+  const startGame = useCallback((playerConfigs, journeyKey = 'paul') => {
     clearAll()
+    const chosen = JOURNEYS.find((j) => j.key === journeyKey) || JOURNEYS[0]
+    setActiveKey(chosen.key)
     sound.unlock() // 由使用者點擊觸發，喚醒音訊
     sound.startBgm()
-    setGame(engine.createGame(playerConfigs, journey))
+    setGame(engine.createGame(playerConfigs, chosen.journey))
     setPhase('idle')
   }, [clearAll])
 
@@ -127,7 +140,14 @@ export function useGame() {
   const currentCard = game ? engine.getActiveCard(game) : null
 
   return {
-    journey,
+    journey: active.journey,
+    map: active.map,
+    journeys: JOURNEYS.map((j) => ({
+      key: j.key,
+      title: j.journey.title,
+      subtitle: j.journey.subtitle,
+      scoreLabel: j.journey.scoreLabel,
+    })),
     game,
     phase,
     diceFace,
