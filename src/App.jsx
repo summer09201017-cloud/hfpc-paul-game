@@ -66,6 +66,7 @@ export default function App() {
         <StationModal
           station={g.currentStation}
           quiz={g.currentQuiz}
+          card={g.currentCard}
           phase={g.phase}
           result={g.game.lastResult}
           scoreLabel={g.journey.scoreLabel}

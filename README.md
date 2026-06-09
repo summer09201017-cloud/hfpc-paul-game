@@ -59,7 +59,7 @@ npm run preview    # 本機預覽打包後的版本
 {
   "id": "salamis",            // 唯一代號（英文，不要重複）
   "name": "撒拉米",            // 顯示在地圖上的城市名
-  "type": "quiz",             // 格子類型：start / story / event / quiz / end
+  "type": "quiz",             // 格子類型：start / story / event / quiz / chance / fate / end
   "x": 53, "y": 72,           // ⚠️ 自動產生，請勿手改（見下方「地圖」）
   "arriveBy": "sea",          // 選填："sea"=這一段是搭船（地圖上畫成藍色航線）
   "scripture": "使徒行傳 13:5",
@@ -112,6 +112,31 @@ npm run preview    # 本機預覽打包後的版本
 | `addCompanion` | 加入一位同工 | `{ "addCompanion": "提摩太" }` |
 | `removeCompanion` | 某位同工離隊 | `{ "removeCompanion": "約翰‧馬可" }` |
 | `skipNext` | 下一回合暫停一次 | `{ "skipNext": true }` |
+| `drawCard` | 踩到這格就抽一張卡 | `{ "drawCard": "chance" }` / `{ "drawCard": "fate" }` |
+
+### 🎲 機會 / 命運卡（牌庫）
+
+頂層的 `decks` 放兩副牌（機會 `chance`、命運 `fate`），每副是一個卡片陣列。
+卡片的 `effect` 用法和上表完全一樣（加減福音點數、暫停、增減同工…）：
+
+```jsonc
+"decks": {
+  "chance": [
+    { "title": "放膽傳道", "kind": "good", "text": "翻牌後顯示的說明。", "effect": { "gospelPoints": 2 } }
+  ],
+  "fate": [
+    { "title": "旅途疲乏", "kind": "bad", "text": "……", "effect": { "skipNext": true } }
+  ]
+}
+```
+
+**怎麼讓玩家抽到卡？兩種方式（可並用）：**
+1. **任何城市掛抽卡**：在那一站的 `effect` 寫 `{ "drawCard": "chance" }`，停到就抽一張機會卡（命運用 `"fate"`）。
+   —— ⚠️ 因為本遊戲棋盤是**真實城市、真經緯度**，第一次旅程**建議用這種**，不破壞地圖與史實。
+2. **專用機會 / 命運格**：把某一站的 `type` 設成 `"chance"` 或 `"fate"`，整格就是抽卡。
+   —— 引擎、驗證、地圖圖示都支援，但這種「非城市格」較適合**未來的大富翁外框模式**或不綁地理的旅程。
+
+> 抽到第幾張卡由程式隨機決定（隨機值由畫面層注入，自我對戰用固定種子，確保可重現）。
 
 > 想新增整條旅程（第二次、第三次、到羅馬）？複製一份 `journey1.json` 改成 `journey2.json`，
 > 之後可以做成「選章節」。新旅程的城市座標一樣用下方「地圖」的方式產生。

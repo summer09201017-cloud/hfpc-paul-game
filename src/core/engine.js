@@ -48,6 +48,7 @@ export function createGame(playerConfigs, board) {
     lastMoverId: null,
     pendingStationId: null, // 剛停留、待結算的格子
     pendingQuizIndex: null, // 這一輪從該格題庫抽中的題目索引（外部注入隨機值，見 advance）
+    pendingCard: null, // 這一輪抽中的機會／命運卡 { deck, index }（外部注入隨機值，見 advance）
     lastResult: null, // 上一次結算的結果（給畫面顯示用）
     phase: 'idle', // idle | rolled | resolving | turnEnd | gameover
     log: [],
@@ -74,20 +75,42 @@ export function getQuizPool(station) {
   return []
 }
 
-/** 從題庫長度與注入的隨機值 [0,1) 算出要抽第幾題（夾在合法範圍內）。 */
-function pickQuizIndex(poolLength, quizRoll) {
-  if (poolLength <= 0) return null
-  const r = Number.isFinite(quizRoll) ? quizRoll : 0
-  return Math.min(poolLength - 1, Math.max(0, Math.floor(r * poolLength)))
+/** 從清單長度與注入的隨機值 [0,1) 算出要抽第幾個（夾在合法範圍內）；空清單回 null。 */
+function pickIndex(length, rollValue) {
+  if (length <= 0) return null
+  const r = Number.isFinite(rollValue) ? rollValue : 0
+  return Math.min(length - 1, Math.max(0, Math.floor(r * length)))
+}
+
+/** 取得某副牌（機會 chance / 命運 fate）。沒有就回空陣列。 */
+export function getDeck(board, name) {
+  if (board && board.decks && Array.isArray(board.decks[name])) return board.decks[name]
+  return []
 }
 
 /**
- * 依骰子點數把目前玩家往前移動，並從停留格的題庫抽出這一輪要答的題。
+ * 判斷停在某格時要抽哪一副牌：
+ *   - 專用格：type 為 'chance' / 'fate'。
+ *   - 任何格：effect 或 event.effect 帶 drawCard:"chance"|"fate"。
+ * 回傳牌名或 null。
+ */
+function deckToDrawFor(station) {
+  if (!station) return null
+  if (station.type === 'chance' || station.type === 'fate') return station.type
+  if (station.effect && station.effect.drawCard) return station.effect.drawCard
+  if (station.event && station.event.effect && station.event.effect.drawCard)
+    return station.event.effect.drawCard
+  return null
+}
+
+/**
+ * 依骰子點數把目前玩家往前移動，並從停留格抽出這一輪的題目與（若觸發）機會／命運卡。
  * 終點會「卡住」（不會超過最後一格），停在最後一格即視為抵達。
  * @param {object} state
- * @param {number} quizRoll 抽題用的隨機值 [0,1)，由外部注入（保持引擎純函式、可重現）。
+ * @param {number} quizRoll 抽題用的隨機值 [0,1)，外部注入（保持引擎純函式、可重現）。
+ * @param {number} cardRoll 抽卡用的隨機值 [0,1)，外部注入。
  */
-export function advance(state, quizRoll = 0) {
+export function advance(state, quizRoll = 0, cardRoll = 0) {
   if (state.phase !== 'rolled' || state.diceValue == null) return state
 
   const lastIndex = state.board.stations.length - 1
@@ -98,14 +121,21 @@ export function advance(state, quizRoll = 0) {
   player.position = target
   const station = state.board.stations[target]
 
-  // 這一輪從該格題庫抽中哪一題（隨機值外部注入，沒有題目則為 null）。
-  const pendingQuizIndex = pickQuizIndex(getQuizPool(station).length, quizRoll)
+  // 這一輪從該格題庫抽中哪一題（沒有題目則為 null）。
+  const pendingQuizIndex = pickIndex(getQuizPool(station).length, quizRoll)
+
+  // 這一格要不要抽卡（機會/命運），抽到第幾張同樣由外部注入的隨機值決定。
+  const deckName = deckToDrawFor(station)
+  const deck = deckName ? getDeck(state.board, deckName) : []
+  const cardIdx = pickIndex(deck.length, cardRoll)
+  const pendingCard = cardIdx == null ? null : { deck: deckName, index: cardIdx }
 
   return {
     ...state,
     players,
     pendingStationId: station.id,
     pendingQuizIndex,
+    pendingCard,
     lastMoverId: player.id,
     phase: 'resolving',
     log: pushLog(state.log, `${player.name} 擲出 ${state.diceValue}，前進到「${station.name}」。`),
@@ -120,6 +150,16 @@ export function getActiveQuiz(state) {
   if (!pool.length) return null
   const i = state.pendingQuizIndex == null ? 0 : state.pendingQuizIndex
   return pool[Math.min(pool.length - 1, Math.max(0, i))] || null
+}
+
+/** 取得這一輪抽中的機會／命運卡（含 deck 名稱）；沒有則 null。畫面與結算都用這一個。 */
+export function getActiveCard(state) {
+  if (!state || !state.pendingCard) return null
+  const { deck, index } = state.pendingCard
+  const cards = getDeck(state.board, deck)
+  if (!cards.length) return null
+  const card = cards[Math.min(cards.length - 1, Math.max(0, index))]
+  return card ? { ...card, deck } : null
 }
 
 /**
@@ -148,8 +188,16 @@ export function resolve(state, payload = {}) {
     if (ev.resultText) result.lines.unshift(ev.resultText)
     log = pushLog(log, `${player.name} 觸發事件「${ev.title}」。`)
   } else if (station.effect) {
-    // start / story / end ：直接套用 effect（若有）
+    // start / story / end ：直接套用 effect（若有）。drawCard 不是即時效果，applyEffect 會略過。
     applyEffect(player, station.effect, result, scoreLabel)
+  }
+
+  // 1.5) 若這一格抽了機會／命運卡：套用卡片效果，並把卡片資訊記進結果（給畫面翻牌用）。
+  const card = getActiveCard(state)
+  if (card) {
+    applyEffect(player, card.effect, result, scoreLabel)
+    result.card = { deck: card.deck, title: card.title, kind: card.kind, text: card.text }
+    log = pushLog(log, `${player.name} 抽到${card.deck === 'fate' ? '命運' : '機會'}卡「${card.title}」。`)
   }
 
   // 2) 不論格子類型，只要這一格有問答題就計分（每座城市都能靠答題賺點數）。
@@ -240,7 +288,7 @@ export function endTurn(state) {
 
   const status = getGameStatus(state)
   if (status.over) {
-    return { ...state, phase: 'gameover', diceValue: null, pendingStationId: null, pendingQuizIndex: null }
+    return { ...state, phase: 'gameover', diceValue: null, pendingStationId: null, pendingQuizIndex: null, pendingCard: null }
   }
 
   const players = clonefPlayers(state.players)
@@ -248,7 +296,7 @@ export function endTurn(state) {
 
   // 沒有人能再行動（全部完成或全部卡住）→ 結束
   if (nextIndex === -1) {
-    return { ...state, players, phase: 'gameover', diceValue: null, pendingStationId: null, pendingQuizIndex: null }
+    return { ...state, players, phase: 'gameover', diceValue: null, pendingStationId: null, pendingQuizIndex: null, pendingCard: null }
   }
 
   return {
@@ -258,6 +306,7 @@ export function endTurn(state) {
     diceValue: null,
     pendingStationId: null,
     pendingQuizIndex: null,
+    pendingCard: null,
     lastResult: null,
     turnCount: state.turnCount + 1,
     phase: 'idle',

@@ -47,7 +47,7 @@ function playOneGame(numPlayers, seed) {
       const dice = 1 + Math.floor(rng() * 3) // 跑馬燈 1~3（與畫面一致）
       state = roll(state, dice)
     } else if (state.phase === 'rolled') {
-      state = advance(state, rng()) // 注入抽題隨機值（多題隨機抽；種子固定才可重現）
+      state = advance(state, rng(), rng()) // 注入抽題、抽卡隨機值（種子固定才可重現）
     } else if (state.phase === 'resolving') {
       // 與引擎一致：對「這一輪抽中的那一題」作答（不限 type，event/story/end 也可能掛題）。
       const quiz = getActiveQuiz(state)

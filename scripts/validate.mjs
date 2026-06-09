@@ -31,6 +31,9 @@ const CONFIG = {
     // quiz 型格子的題目內容可放在單一 quiz，或 quizzes 陣列（多題隨機抽）——
     // 下面 quiz-specific 深檢會逐題驗證，這裡不再硬性指定 quiz.*。
     quiz: [],
+    // 機會 / 命運專用格：內容來自 decks，本身不需額外欄位。
+    chance: [],
+    fate: [],
   },
   // Allowed keys inside any `effect` (and the effect blocks nested in events),
   // with a type check. Unknown keys are reported as errors (likely typos).
@@ -43,6 +46,7 @@ const CONFIG = {
     addCompanion: 'string',
     removeCompanion: 'string',
     move: 'number',
+    drawCard: 'string', // 觸發抽卡，值是牌名（chance / fate），須對應到 decks。
   },
   // Optional numeric range checks: field -> [min, max]. Skipped if field absent.
   ranges: { x: [0, 100], y: [0, 100] },
@@ -80,6 +84,26 @@ for (const k of CONFIG.topLevelRequired) {
 
 const get = (obj, path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), obj)
 const label = (it, i) => `item #${i + 1} (${it?.[CONFIG.idField] ?? 'no-id'})`
+
+// The card decks (機會 / 命運); used to validate that drawCard points to a real deck.
+const decks = data && data.decks && typeof data.decks === 'object' && !Array.isArray(data.decks) ? data.decks : {}
+
+// Validate one effect object against the vocab; drawCard must reference a real, non-empty deck.
+function checkEffect(eff, ctx) {
+  for (const [k, v] of Object.entries(eff)) {
+    const expected = CONFIG.effectVocab[k]
+    if (!expected) {
+      err(`${ctx} unknown effect key "${k}" (typo? not in effectVocab).`)
+      continue
+    }
+    if (typeof v !== expected) {
+      err(`${ctx} effect "${k}" must be ${expected}, got ${typeof v}.`)
+      continue
+    }
+    if (k === 'drawCard' && !(Array.isArray(decks[v]) && decks[v].length))
+      err(`${ctx} effect drawCard:"${v}" has no matching non-empty deck in "decks".`)
+  }
+}
 
 const seen = new Map()
 ;(items || []).forEach((it, i) => {
@@ -141,13 +165,7 @@ const seen = new Map()
 
   // effect vocabulary (item.effect and event.effect)
   const effects = [it.effect, it.event?.effect].filter((e) => e && typeof e === 'object')
-  for (const eff of effects) {
-    for (const [k, v] of Object.entries(eff)) {
-      const expected = CONFIG.effectVocab[k]
-      if (!expected) err(`${label(it, i)} unknown effect key "${k}" (typo? not in effectVocab).`)
-      else if (typeof v !== expected) err(`${label(it, i)} effect "${k}" must be ${expected}, got ${typeof v}.`)
-    }
-  }
+  for (const eff of effects) checkEffect(eff, label(it, i))
 
   // numeric ranges
   for (const [field, [min, max]] of Object.entries(CONFIG.ranges)) {
@@ -157,6 +175,36 @@ const seen = new Map()
     else if (v < min || v > max) warn(`${label(it, i)} "${field}"=${v} outside [${min}, ${max}].`)
   }
 })
+
+// ---- decks（機會 / 命運卡）：每張卡的 title / effect / kind 深檢 ----
+if (data.decks !== undefined) {
+  if (typeof data.decks !== 'object' || Array.isArray(data.decks)) {
+    err(`"decks" must be an object of named card arrays (e.g. { chance: [...], fate: [...] }).`)
+  } else {
+    for (const [name, cards] of Object.entries(data.decks)) {
+      if (!Array.isArray(cards)) {
+        err(`deck "${name}" must be an array.`)
+        continue
+      }
+      if (cards.length === 0) warn(`deck "${name}" is empty.`)
+      cards.forEach((c, ci) => {
+        const ctx = `deck "${name}" card #${ci + 1}`
+        if (!c || typeof c !== 'object') {
+          err(`${ctx} is not an object.`)
+          return
+        }
+        if (c.title === undefined || String(c.title).trim() === '') err(`${ctx} missing "title".`)
+        if (c.text === undefined || String(c.text).trim() === '') warn(`${ctx} has empty "text".`)
+        if (c.kind !== undefined && c.kind !== 'good' && c.kind !== 'bad')
+          warn(`${ctx} kind "${c.kind}" is not good/bad.`)
+        if (c.effect !== undefined) {
+          if (c.effect && typeof c.effect === 'object') checkEffect(c.effect, ctx)
+          else err(`${ctx} "effect" must be an object.`)
+        }
+      })
+    }
+  }
+}
 
 // ----------------------------------------------------------------- report ---
 console.log(`\nValidated ${file} — ${items?.length ?? 0} items.`)

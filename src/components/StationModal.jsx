@@ -5,6 +5,8 @@ const TYPE_LABEL = {
   story: '劇情',
   event: '事件卡',
   quiz: '聖經問答',
+  chance: '機會',
+  fate: '命運',
   rest: '休息',
   end: '終點',
 }
@@ -12,6 +14,7 @@ const TYPE_LABEL = {
 export default function StationModal({
   station,
   quiz,
+  card,
   phase,
   result,
   scoreLabel,
@@ -23,6 +26,7 @@ export default function StationModal({
   const isResult = phase === 'result'
   // 每座城市都可能附問答（不再只有 quiz 類型的格子）；quiz 是這一輪從題庫抽中的那一題。
   const hasQuiz = !!quiz
+  const hasCard = !!card // 這一輪是否抽到機會／命運卡（內容在結算後才翻開）
 
   const pickAnswer = (i) => {
     if (isResult) return
@@ -91,6 +95,16 @@ export default function StationModal({
             </div>
           )}
 
+          {isResult && hasCard && (
+            <div className={`gamecard gamecard--${card.kind === 'bad' ? 'bad' : 'good'}`}>
+              <span className="gamecard__deck">
+                {card.deck === 'fate' ? '🃏 命運卡' : '🎲 機會卡'}
+              </span>
+              <span className="gamecard__title">{card.title}</span>
+              <p className="gamecard__text">{card.text}</p>
+            </div>
+          )}
+
           {isResult && result && (
             <div className={`result ${result.correct === false ? 'result--miss' : 'result--ok'}`}>
               {result.lines.map((line, i) => (
@@ -108,7 +122,7 @@ export default function StationModal({
         <div className="modal__foot">
           {!isResult && !hasQuiz && (
             <button className="btn btn--primary" onClick={() => onResolve({})}>
-              {station.type === 'event' ? '翻開事件卡 →' : '繼續 →'}
+              {hasCard ? '翻開卡片 →' : station.type === 'event' ? '翻開事件卡 →' : '繼續 →'}
             </button>
           )}
           {!isResult && hasQuiz && <span className="modal__tip">選一個答案來賺取點數</span>}

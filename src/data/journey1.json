@@ -4,6 +4,32 @@
   "subtitle": "使徒行傳 13–14 章",
   "scoreLabel": "福音點數",
   "turnCap": 200,
+  "decks": {
+    "chance": [
+      { "title": "放膽傳道", "kind": "good", "text": "你倚靠聖靈放膽講道，許多人聽了就信。福音點數 +2。", "effect": { "gospelPoints": 2 } },
+      { "title": "會堂的講台", "kind": "good", "text": "安息日你被請上台讀經、勸勉眾人。福音點數 +2。", "effect": { "gospelPoints": 2 } },
+      { "title": "主行神蹟", "kind": "good", "text": "主藉你的手行了神蹟奇事，眾人歸榮耀給神。福音點數 +3。", "effect": { "gospelPoints": 3 } },
+      { "title": "外邦人渴慕真道", "kind": "good", "text": "城裡的人懇求你下個安息日再講這道。福音點數 +2。", "effect": { "gospelPoints": 2 } },
+      { "title": "書信的勉勵", "kind": "good", "text": "你寫信堅固遠方的教會，他們大得安慰。福音點數 +1。", "effect": { "gospelPoints": 1 } },
+      { "title": "新的同工", "kind": "good", "text": "一位當地門徒願意與你同行傳道。", "effect": { "addCompanion": "當地門徒" } },
+      { "title": "慷慨的接待", "kind": "good", "text": "有信徒開門接待你們，供應所需、彼此代禱。福音點數 +1。", "effect": { "gospelPoints": 1 } },
+      { "title": "禁食禱告", "kind": "good", "text": "教會為你們禁食禱告，差遣的確據更堅定。福音點數 +2。", "effect": { "gospelPoints": 2 } },
+      { "title": "逼迫中站立", "kind": "good", "text": "面對反對你仍不退縮，信徒大得激勵。福音點數 +2。", "effect": { "gospelPoints": 2 } },
+      { "title": "道傳開了", "kind": "good", "text": "主的道傳遍那一帶地方。福音點數 +3。", "effect": { "gospelPoints": 3 } }
+    ],
+    "fate": [
+      { "title": "旅途疲乏", "kind": "bad", "text": "長途跋涉，身體需要休息——暫停一回合。", "effect": { "skipNext": true } },
+      { "title": "海上逆風", "kind": "bad", "text": "船遇逆風，行程耽延了。福音點數 -1。", "effect": { "gospelPoints": -1 } },
+      { "title": "同伴離隊", "kind": "bad", "text": "有同工因軟弱半途返回（若有「當地門徒」則離隊）。", "effect": { "removeCompanion": "當地門徒" } },
+      { "title": "被趕出境", "kind": "bad", "text": "反對的人把你們趕出境外，你們跺下腳上的塵土往前走。福音點數 -1。", "effect": { "gospelPoints": -1 } },
+      { "title": "遭受毀謗", "kind": "bad", "text": "有人嫉妒，毀謗你所傳的道。福音點數 -1。", "effect": { "gospelPoints": -1 } },
+      { "title": "身體軟弱", "kind": "bad", "text": "你病倒了，需要休養——暫停一回合。", "effect": { "skipNext": true } },
+      { "title": "意外的供應", "kind": "good", "text": "路上遇見弟兄供應所需，精神大振。福音點數 +1。", "effect": { "gospelPoints": 1 } },
+      { "title": "平安的日子", "kind": "good", "text": "教會得平安，門徒人數增多。福音點數 +2。", "effect": { "gospelPoints": 2 } },
+      { "title": "母會問安", "kind": "good", "text": "收到差派你出去的教會的問安與代禱。福音點數 +1。", "effect": { "gospelPoints": 1 } },
+      { "title": "風浪中蒙保守", "kind": "good", "text": "雖遇危險，神保守你們平安度過。福音點數 +2。", "effect": { "gospelPoints": 2 } }
+    ]
+  },
   "stations": [
     {
       "id": "antioch_start",
@@ -34,6 +60,7 @@
       "y": 55,
       "scripture": "使徒行傳 13:4",
       "text": "他們既被聖靈差遣，就下到西流基，從那裡坐船往居比路（賽普勒斯）去。揚帆出海，宣教正式啟航！",
+      "effect": { "drawCard": "chance" },
       "lat": 36.12,
       "lon": 35.93,
       "history": {
@@ -324,6 +351,7 @@
       "y": 26.8,
       "scripture": "使徒行傳 14:21-23",
       "text": "他們回到路司得、以哥念、彼西底的安提阿，堅固門徒的心，勸他們恆守所信的道，又說：「我們進入神的國，必須經歷許多艱難。」並在各教會選立長老。",
+      "effect": { "drawCard": "fate" },
       "lat": 37.7,
       "lon": 31.95,
       "history": {

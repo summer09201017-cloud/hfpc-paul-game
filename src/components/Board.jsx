@@ -7,6 +7,8 @@ const TYPE_ICON = {
   story: '📜',
   event: '✨',
   quiz: '❓',
+  chance: '🎲',
+  fate: '🃏',
   rest: '⛺',
   end: '🏁',
 }
