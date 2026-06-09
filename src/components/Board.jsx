@@ -105,11 +105,34 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
         })}
       </div>
 
-      {/* 縮放控制（固定在角落，不跟著縮放）；顯示目前百分比 */}
+      {/* 縮放控制（固定在角落，不跟著縮放）：＋／－、拉桿、可輸入百分比、重設 */}
       <div className="board__zoom">
         <button onClick={zp.zoomIn} disabled={!zp.canZoomIn} aria-label="放大" title="放大">＋</button>
-        <span className="board__zoom-pct" aria-label={`目前縮放 ${zp.percent}%`}>{zp.percent}%</span>
+        <input
+          className="board__zoom-slider"
+          type="range"
+          min={zp.minPercent}
+          max={zp.maxPercent}
+          step="5"
+          value={zp.percent}
+          onChange={(e) => zp.setPercent(Number(e.target.value))}
+          aria-label={`縮放倍率，目前 ${zp.percent}%`}
+          title="拖曳調整縮放倍率"
+        />
         <button onClick={zp.zoomOut} disabled={!zp.canZoomOut} aria-label="縮小" title="縮小">－</button>
+        <div className="board__zoom-num" title="輸入縮放百分比">
+          <input
+            className="board__zoom-input"
+            type="number"
+            min={zp.minPercent}
+            max={zp.maxPercent}
+            step="5"
+            value={zp.percent}
+            onChange={(e) => zp.setPercent(Number(e.target.value))}
+            aria-label="輸入縮放百分比"
+          />
+          <span className="board__zoom-pct-sign">%</span>
+        </div>
         <button onClick={zp.reset} disabled={zp.scale === 1} aria-label="重設為 100%" title="重設為 100%">⟳</button>
       </div>
     </div>

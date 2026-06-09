@@ -2,10 +2,11 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 
-// 用「百分比級距」來縮放，避免放太大（並降低極端縮放造成的算繪空白）。
-const LEVELS = [1, 1.5, 2, 2.5] // 100% / 150% / 200% / 250%
-const MIN = LEVELS[0]
-const MAX = LEVELS[LEVELS.length - 1]
+// 連續縮放：100%~250%（上限 250% 是為了避免放太大後出現算繪空白）。
+// 滑桿／輸入框可設任意百分比；＋／－與滾輪則以固定級距變動。
+const MIN = 1
+const MAX = 2.5
+const STEP = 0.25 // ＋／－、滾輪每次變動 25%
 
 // 地圖縮放 / 平移。回傳要掛到「裁切容器」的 ref、指標事件處理器、目前 transform，
 // 以及 +／－／重設 與目前百分比。座標系：transform-origin 0 0；平移會被夾住。
@@ -40,13 +41,10 @@ export function useZoomPan() {
     })
   }, [])
 
-  // 跳到下一／上一個百分比級距（dir>0 放大）；可指定定點，否則以中心。
+  // ＋／－／滾輪：以固定級距連續縮放（dir>0 放大）；可指定定點，否則以中心。
   const step = useCallback((dir, px, py) => {
     setTf((t) => {
-      const s =
-        dir > 0
-          ? LEVELS.find((l) => l > t.s + 0.001) ?? MAX
-          : [...LEVELS].reverse().find((l) => l < t.s - 0.001) ?? MIN
+      const s = clamp(t.s + dir * STEP, MIN, MAX)
       const { w, h } = dims()
       const cx = px ?? w / 2
       const cy = py ?? h / 2
@@ -121,6 +119,16 @@ export function useZoomPan() {
   const zoomOut = useCallback(() => step(-1), [step])
   const reset = useCallback(() => setTf({ s: 1, x: 0, y: 0 }), [])
 
+  // 滑桿／輸入框：直接設定百分比（朝畫面中心縮放）；非法值忽略。
+  const setPercent = useCallback(
+    (pct) => {
+      if (!Number.isFinite(pct) || pct <= 0) return
+      const { w, h } = dims()
+      zoomAt(w / 2, h / 2, pct / 100)
+    },
+    [zoomAt],
+  )
+
   // transform 數值一律保證有限，避免 "translate(NaNpx…)" 整塊地圖消失。
   const safe = Number.isFinite(tf.s) && Number.isFinite(tf.x) && Number.isFinite(tf.y)
   const t = safe ? tf : { s: 1, x: 0, y: 0 }
@@ -130,11 +138,14 @@ export function useZoomPan() {
     transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`,
     scale: t.s,
     percent: Math.round(t.s * 100),
+    minPercent: Math.round(MIN * 100),
+    maxPercent: Math.round(MAX * 100),
     canZoomOut: t.s > MIN + 0.001,
     canZoomIn: t.s < MAX - 0.001,
     handlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp },
     zoomIn,
     zoomOut,
     reset,
+    setPercent,
   }
 }
