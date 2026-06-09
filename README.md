@@ -1,5 +1,7 @@
 # 📖 保羅宣教之旅（v1 雛形）
 
+[![CI](https://github.com/summer09201017-cloud/hfpc-paul-game/actions/workflows/ci.yml/badge.svg)](https://github.com/summer09201017-cloud/hfpc-paul-game/actions/workflows/ci.yml)
+
 互動式聖經地圖關卡遊戲。跟著使徒保羅走過**第一次宣教旅程**（使徒行傳 13–14 章）：
 轉**跑馬燈（1～3 步）**→ 沿著旅程地圖前進 → 停在城市看「**劇情 / 事件卡 + 歷史小檔案**」，
 並回答**那座城市的聖經問答**來賺「**福音點數**」。

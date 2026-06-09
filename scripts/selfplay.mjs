@@ -51,7 +51,8 @@ function playOneGame(numPlayers, seed) {
     } else if (state.phase === 'resolving') {
       const station = getStation(state, state.pendingStationId)
       let payload = {}
-      if (station.type === 'quiz') {
+      // 與引擎一致：只要這一格「有問答題」就作答（不限 type，event/story/end 也可能掛題）。
+      if (station.quiz) {
         // 隨機作答，刻意製造答對/答錯兩種情況
         payload = { answerIndex: Math.floor(rng() * station.quiz.options.length) }
       }

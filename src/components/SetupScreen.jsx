@@ -60,7 +60,7 @@ export default function SetupScreen({ journey, onStart }) {
         <div className="setup__how">
           <strong>怎麼玩：</strong>
           擲骰 → 沿著保羅的旅程前進 → 停在城市觸發「劇情 / 事件 / 聖經問答」→ 答對得「
-          {journey.scoreLabel}」。最先回到安提阿述職的人獲勝！
+          {journey.scoreLabel}」。大家都走完旅程後，「{journey.scoreLabel}」最高的人獲勝（答對問答、把握事件才是關鍵，不是比誰先到）！
         </div>
 
         <button className="btn btn--primary setup__start" onClick={start}>
