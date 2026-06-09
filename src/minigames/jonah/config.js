@@ -17,7 +17,7 @@ export const RUN = {
   startSpeed: 280, // 起始捲動速度 (px/s)
   maxSpeed: 470, // 最高速度
   rampDistance: 7000, // 在此距離內線性加速到最高速
-  goalDistance: 9000, // 跑完這段距離 = 抵達往他施的船
+  goalDistance: 9000, // 跑完這段距離 = 抵達彼西底的安提阿（終點城）
 }
 
 // 漫步模式:由玩家控制前進/後退,沒有時間壓力

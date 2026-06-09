@@ -118,10 +118,10 @@ export class Renderer {
       this._emoji(n.done ? '✅' : '❓', n.x, GROUND_Y - 66 + bob, 30, 'middle')
     }
 
-    // 往他施的船(接近終點時滑入)
+    // 終點：彼西底的安提阿（接近終點時滑入；使徒行傳 13:14）
     const shipX = game.shipPos(dist)
     if (shipX !== null) {
-      this._emoji('⛵', shipX, GROUND_Y + 8, 120)
+      this._emoji('🏛️', shipX, GROUND_Y + 8, 110)
     }
 
     // 保羅(向先知,向右奔跑;受擊無敵時閃爍)
@@ -581,7 +581,7 @@ export class Renderer {
       )
     }
 
-    // 進度條(約帕 → 船)
+    // 進度條(別加 → 彼西底安提阿)
     const barW = 360
     const barH = 16
     const bx = (VIEW.W - barW) / 2
@@ -597,9 +597,9 @@ export class Renderer {
     ctx.font = '600 16px "Noto Sans TC","Microsoft JhengHei",sans-serif'
     ctx.textBaseline = 'bottom'
     ctx.textAlign = 'left'
-    ctx.fillText('約帕', bx, by - 4)
+    ctx.fillText('別加', bx, by - 4)
     ctx.textAlign = 'right'
-    ctx.fillText('往他施的船 ⛵', bx + barW, by - 4)
+    ctx.fillText('彼西底安提阿 🏛️', bx + barW, by - 4)
 
     // 到了船邊但船價不足:紅色提示橫幅,引導回頭收集
     if (game.shortFare) {

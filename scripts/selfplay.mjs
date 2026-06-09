@@ -15,7 +15,13 @@ import { dirname, join } from 'node:path'
 import { createGame, roll, advance, resolve, endTurn, getGameStatus, getActiveQuiz } from '../src/core/engine.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const board = JSON.parse(readFileSync(join(__dirname, '../src/data/journey1.json'), 'utf-8'))
+
+// 所有旅程都要驗證會正常結束（roll-and-move 外框可掛多條旅程）。
+const JOURNEYS = [
+  ['第一次旅程', '../src/data/journey1.json'],
+  ['第二次旅程', '../src/data/journey2.json'],
+  ['約拿旅程', '../src/data/journey-jonah.json'],
+].map(([name, p]) => ({ name, board: JSON.parse(readFileSync(join(__dirname, p), 'utf-8')) }))
 
 // 簡單可重現的亂數產生器 (mulberry32)，吃一個種子。
 function makeRng(seed) {
@@ -29,7 +35,7 @@ function makeRng(seed) {
   }
 }
 
-function playOneGame(numPlayers, seed) {
+function playOneGame(board, numPlayers, seed) {
   const rng = makeRng(seed)
   const configs = Array.from({ length: numPlayers }, (_, i) => ({ name: `P${i + 1}` }))
   let state = createGame(configs, board)
@@ -71,31 +77,24 @@ function playOneGame(numPlayers, seed) {
   return { iterations, turnCount: state.turnCount, status, state }
 }
 
-let totalGames = 0
-let totalTurns = 0
-let maxTurns = 0
-const reasons = {}
-
-for (let numPlayers = 1; numPlayers <= 4; numPlayers++) {
-  for (let seed = 1; seed <= 300; seed++) {
-    const { turnCount, status } = playOneGame(numPlayers, seed)
-    totalGames++
-    totalTurns += turnCount
-    maxTurns = Math.max(maxTurns, turnCount)
-    reasons[status.reason] = (reasons[status.reason] || 0) + 1
+for (const { name, board } of JOURNEYS) {
+  let totalGames = 0
+  let totalTurns = 0
+  let maxTurns = 0
+  const reasons = {}
+  for (let numPlayers = 1; numPlayers <= 4; numPlayers++) {
+    for (let seed = 1; seed <= 300; seed++) {
+      const { turnCount, status } = playOneGame(board, numPlayers, seed)
+      totalGames++
+      totalTurns += turnCount
+      maxTurns = Math.max(maxTurns, turnCount)
+      reasons[status.reason] = (reasons[status.reason] || 0) + 1
+    }
   }
+  console.log(
+    `✅ ${name}（${board.stations.length} 站）：${totalGames} 場全部結束；平均回合 ${(totalTurns / totalGames).toFixed(1)}、最多 ${maxTurns}；結束原因`,
+    reasons,
+  )
 }
 
-console.log('✅ 自我對戰測試通過')
-console.log(`   場數：${totalGames}（1~4 人 × 300 種子）`)
-console.log(`   平均回合：${(totalTurns / totalGames).toFixed(1)}，最多回合：${maxTurns}`)
-console.log(`   結束原因分布：`, reasons)
-
-// 抽一場 2 人遊戲印出最終名次，肉眼確認結果合理。
-const sample = playOneGame(2, 42)
-console.log('\n   範例（2 人 / 種子 42）最終名次：')
-sample.status.ranking.forEach((p, i) => {
-  console.log(
-    `     ${i + 1}. ${p.name}  位置=${p.position}  ${board.scoreLabel}=${p.gospelPoints}  ${p.finished ? '✔抵達終點' : ''}`,
-  )
-})
+console.log('\n✅ 全部旅程自我對戰測試通過')

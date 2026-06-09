@@ -62,7 +62,13 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 ## Adding a new journey
 
-Copy `journey1.json` to e.g. `journey2.json` and edit content. Note: `useGame.js` currently **hardcodes** `import journey from '../data/journey1.json'`, so adding a selectable second journey requires a code change there (and likely in `SetupScreen`), not just a new data file. A new journey also needs its own real-geography coordinates: add the journey's cities to the `CITIES` map (and a matching map-frame/bounds) in `gen-map.mjs` so its `x`/`y` and the coastline can be generated.
+**Multi-journey is now wired.** `useGame.js` holds a `JOURNEYS` array — currently `paul` (journey1, 20 tiles), `paul2` (journey2, Paul's 2nd journey into Europe, 12 tiles), and `jonah` (journey-jonah). `SetupScreen` shows a journey picker. To add another (e.g. journey3 / 海路到羅馬):
+1. Create `src/data/journeyN.json` (copy an existing one; edit content — see [[roll-and-move-game]]).
+2. Add its cities (real `lat`/`lon`) as a new `buildRegion({...})` call in `gen-map.mjs` (each region has its own bounds + ISO country set + output `region-mapN.json`), then `npm run gen:map` — this writes `x`/`y` back and emits the coastline.
+3. Add `{ key, journey, map }` to `JOURNEYS` in `useGame.js`.
+4. `npm run test:selfplay` already loops over all journey files — add the new one to its `JOURNEYS` list too.
+
+> **目前進度（已完成 vs 真正待做）見 `roadmap.md`。** Embedded mini-games live in `src/minigames/` (see [[embed-minigame]]); challenge stations use `type: "challenge"` + `minigame` + optional `mustStop` (see [[add-challenge-station]]).
 
 ## Embedded mini-games (`src/minigames/`)
 

@@ -1,7 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import journey1 from '../data/journey1.json'
+import journey2 from '../data/journey2.json'
 import journeyJonah from '../data/journey-jonah.json'
 import regionMapPaul from '../data/region-map.json'
+import regionMapPaul2 from '../data/region-map2.json'
 import regionMapJonah from '../data/region-map-jonah.json'
 import * as engine from '../core/engine'
 import { sound } from '../audio/sound'
@@ -9,6 +11,7 @@ import { sound } from '../audio/sound'
 // 可選旅程：roll-and-move 外框可掛多條旅程，各自帶內容(journey)＋底圖(map)。
 const JOURNEYS = [
   { key: 'paul', journey: journey1, map: regionMapPaul },
+  { key: 'paul2', journey: journey2, map: regionMapPaul2 },
   { key: 'jonah', journey: journeyJonah, map: regionMapJonah },
 ]
 
