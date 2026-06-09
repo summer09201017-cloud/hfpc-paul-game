@@ -581,7 +581,7 @@ export class Renderer {
       )
     }
 
-    // 進度條(別加 → 彼西底安提阿)
+    // 進度條(起點 → 終點)——通用標籤,讓同一關卡能被任何旅程的挑戰站重用
     const barW = 360
     const barH = 16
     const bx = (VIEW.W - barW) / 2
@@ -597,9 +597,9 @@ export class Renderer {
     ctx.font = '600 16px "Noto Sans TC","Microsoft JhengHei",sans-serif'
     ctx.textBaseline = 'bottom'
     ctx.textAlign = 'left'
-    ctx.fillText('別加', bx, by - 4)
+    ctx.fillText('起點', bx, by - 4)
     ctx.textAlign = 'right'
-    ctx.fillText('彼西底安提阿 🏛️', bx + barW, by - 4)
+    ctx.fillText('終點 ⛵', bx + barW, by - 4)
 
     // 到了船邊但船價不足:紅色提示橫幅,引導回頭收集
     if (game.shortFare) {
