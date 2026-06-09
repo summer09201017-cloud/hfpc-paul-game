@@ -117,7 +117,15 @@ export function advance(state, quizRoll = 0, cardRoll = 0) {
   const players = clonefPlayers(state.players)
   const player = players[state.currentPlayerIndex]
 
-  const target = Math.min(player.position + state.diceValue, lastIndex)
+  let target = Math.min(player.position + state.diceValue, lastIndex)
+  // 必停檢查點：不可一步跨過（例如「海上遇風暴」必須停下來玩過才能前進）。
+  // 夾在「目前位置之後、射程之內」的第一個 mustStop 站。
+  for (let i = player.position + 1; i <= target; i++) {
+    if (state.board.stations[i].mustStop) {
+      target = i
+      break
+    }
+  }
   player.position = target
   const station = state.board.stations[target]
 

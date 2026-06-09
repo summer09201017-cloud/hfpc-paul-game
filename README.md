@@ -59,9 +59,10 @@ npm run preview    # 本機預覽打包後的版本
 {
   "id": "salamis",            // 唯一代號（英文，不要重複）
   "name": "撒拉米",            // 顯示在地圖上的城市名
-  "type": "quiz",             // 格子類型：start / story / event / quiz / chance / fate / end
+  "type": "quiz",             // 格子類型：start / story / event / quiz / chance / fate / challenge / end
   "x": 53, "y": 72,           // ⚠️ 自動產生，請勿手改（見下方「地圖」）
   "arriveBy": "sea",          // 選填："sea"=這一段是搭船（地圖上畫成藍色航線）
+  "mustStop": true,           // 選填：必停檢查點，棋子不能一步跨過，一定要停下來玩過才能前進
   "scripture": "使徒行傳 13:5",
   "text": "到了撒拉米，就在猶太人的各會堂裡傳講神的道。",
 

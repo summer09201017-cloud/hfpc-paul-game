@@ -597,7 +597,8 @@
       "name": "海上遇風暴",
       "type": "challenge",
       "arriveBy": "sea",
-      "text": "歸航的船在地中海上遇見大風浪！穩住這艘船，平安度過風暴。",
+      "mustStop": true,
+      "text": "歸航的船在地中海上遇見大風浪！這一關每個人都必須親自度過——穩住這艘船，平安度過風暴，才能繼續前進。",
       "minigame": {
         "level": 2,
         "winPoints": 5
