@@ -2,10 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Game } from '../minigames/jonah/game'
 import { sound } from '../audio/sound'
 
-// 空殼 UI：約拿引擎會呼叫一堆 ui.xxx()（標題/暫停/過關選單），嵌入在保羅彈窗裡時
-// 這些 DOM 選單都不需要，於是用 Proxy 把任何方法呼叫都變成「無動作」。
-const NullUI = new Proxy({}, { get: () => () => {} })
-
 // 各關的標題與玩法說明（顯示在開始前的提示卡）。
 const LEVELS = {
   1: {
@@ -16,10 +12,129 @@ const LEVELS = {
     title: '🌊 海上遇風暴',
     how: '船在風浪中搖晃！用 ← → 方向鍵（或點畫面左右兩側）把船扶正，撐過風暴就過關！',
   },
+  3: {
+    title: '🐋 大魚肚中的禱告',
+    how: '黑暗魚腹中：按住 →（或畫面右半）往前走、↑/空白跳、↓/畫面左半 蹲下鑽過骨頭；跳起碰到禱告蠟燭，答對點亮五盞禱告之光就過關（這一關不會失敗）。',
+  },
   4: {
     title: '🏜️ 曠野趕路 → 尼尼微',
     how: '空白鍵 / ↑ / 點畫面 = 跳，穿過曠野、躲過障礙，跑到尼尼微城門就過關！',
   },
+  5: {
+    title: '📣 尼尼微傳道',
+    how: '按住 →（或畫面右半）在大城往前走，走到居民面前停下對話、宣告神的話；五位（含王）都悔改就過關（這一關不會失敗）。',
+  },
+  6: {
+    title: '🌿 蓖麻樹的功課',
+    how: '看五幕「神的安排」：蓖麻、蟲子、東風……每幕結束回答一個反思題（輕點可跳過動畫；這一關不會失敗）。',
+  },
+}
+
+// 卡片流程關（3/5/6）：引擎的 ui.showXxx 由下面的 EmbedUI 接手畫成 React 卡片。
+const CARD_LEVELS = new Set([3, 5, 6])
+
+// 建立「會畫卡片的嵌入 UI」：把引擎的 showFish*/showPreach*/showGourd* 轉成 setCard(規格)，
+// 其餘 ui 方法（標題/暫停鈕/過關選單…）一律無動作（Proxy 兜底）。
+function makeEmbedUI(setCard) {
+  const intro = (prefix, btn) => (L) =>
+    setCard({
+      kind: 'intro',
+      prefix,
+      kicker: L.title,
+      sub: L.subtitle,
+      ref: L.ref,
+      verse: L.verse,
+      body: L.intro,
+      btn,
+      act: `${prefix}-begin`,
+    })
+  const tryAgain = (prefix, body, btn) => () =>
+    setCard({ kind: 'tryagain', prefix, body, btn, act: `${prefix}-retry` })
+
+  const impl = {
+    hide: () => setCard(null),
+    // ---- 第三關 大魚肚 ----
+    showFishIntro: intro('fish', '🚶 進入魚腹'),
+    showFishQuestion: (st, idx, total) =>
+      setCard({
+        kind: 'question',
+        prefix: 'fish',
+        kicker: `🐋 魚腹中的禱告　${idx + 1} / ${total}`,
+        q: st.q,
+        choices: st.choices,
+      }),
+    showFishReveal: (st, last) =>
+      setCard({
+        kind: 'reveal',
+        prefix: 'fish',
+        kicker: '✓ 一同禱告',
+        ref: st.ref,
+        line: st.line,
+        explain: st.explain,
+        btn: last ? '🌅 浮上水面' : '繼續前行 →',
+        act: 'fish-continue',
+      }),
+    showFishTryAgain: tryAgain(
+      'fish',
+      '這一段禱告還沒答對。再讀一次題目，想想約拿的心，然後再選一次。',
+      '再試一次',
+    ),
+    // ---- 第五關 尼尼微傳道 ----
+    showPreachIntro: intro('preach', '📣 進城傳道'),
+    showPreachDialog: (st, idx, total) =>
+      setCard({
+        kind: 'question',
+        prefix: 'preach',
+        kicker: `📣 尼尼微傳道　${idx + 1} / ${total}`,
+        name: `${st.emoji} ${st.name}`,
+        say: st.say,
+        q: st.q,
+        choices: st.choices,
+      }),
+    showPreachReveal: (st, last) =>
+      setCard({
+        kind: 'reveal',
+        prefix: 'preach',
+        kicker: `🙇 ${st.name} 悔改了`,
+        ref: st.ref,
+        line: st.line,
+        explain: st.explain,
+        btn: last ? '🕊️ 看神的回應' : '繼續前行 →',
+        act: 'preach-continue',
+      }),
+    showPreachTryAgain: tryAgain(
+      'preach',
+      '他還沒被說服。再讀一次他的話，想想經文怎麼說，然後再宣告一次。',
+      '再說一次',
+    ),
+    // ---- 第六關 蓖麻樹 ----
+    showGourdIntro: intro('gourd', '🌿 坐到棚下'),
+    showGourdQuestion: (st, idx, total) =>
+      setCard({
+        kind: 'question',
+        prefix: 'gourd',
+        kicker: `🌿 蓖麻樹下　第 ${idx + 1} / ${total} 幕 · ${st.name}`,
+        q: st.q,
+        choices: st.choices,
+      }),
+    showGourdReveal: (st, last) =>
+      setCard({
+        kind: 'reveal',
+        prefix: 'gourd',
+        kicker: `✓ ${st.name}`,
+        ref: st.ref,
+        line: st.line,
+        explain: st.explain,
+        btn: last ? '📖 全書終' : '下一幕 →',
+        act: 'gourd-continue',
+      }),
+    showGourdTryAgain: tryAgain(
+      'gourd',
+      '回想剛才那一幕發生了什麼，經文怎麼說，然後再選一次。',
+      '再試一次',
+    ),
+  }
+  return new Proxy(impl, { get: (t, k) => (k in t ? t[k] : () => {}) })
 }
 
 // 把約拿的即時小遊戲嵌進保羅彈窗：掛一個 canvas，啟動引擎（嵌入模式），
@@ -28,12 +143,22 @@ export default function MiniGameModal({ minigame, onComplete }) {
   const canvasRef = useRef(null)
   const gameRef = useRef(null)
   const [started, setStarted] = useState(false)
+  const [card, setCard] = useState(null) // 3/5/6 卡片流程關目前顯示的卡（null=遊戲畫面）
 
-  const level = [1, 2, 4].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單 1/2/4（見約拿 CLAUDE.md 嵌入契約）
+  const level = [1, 2, 3, 4, 5, 6].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡的預設）。
   const info = {
     title: minigame.label || LEVELS[level].title,
     how: minigame.how || LEVELS[level].how,
+  }
+
+  // 卡片按鈕 → 依前綴分派給引擎對應的 handler（嵌入模式下 boot 不註冊 ui 回呼，直接呼叫公開方法）。
+  const dispatch = (act, ds = {}) => {
+    const g = gameRef.current
+    if (!g) return
+    if (act.startsWith('fish-')) g.handleFishAction(act, ds)
+    else if (act.startsWith('preach-')) g.handlePreachAction(act, ds)
+    else if (act.startsWith('gourd-')) g.handleGourdAction(act, ds)
   }
 
   // 在使用者點「開始挑戰」的手勢中啟動：此時 canvas 已排版好（renderer 量得到尺寸），
@@ -42,8 +167,12 @@ export default function MiniGameModal({ minigame, onComplete }) {
     if (started || gameRef.current) return
     setStarted(true)
     sound.stopBgm() // 暫停保羅背景音樂，避免和小遊戲音效打架
+    // 1/2/4 純 Canvas 關用空殼 UI；3/5/6 卡片流程關用會畫卡片的 EmbedUI（嵌入契約）。
+    const ui = CARD_LEVELS.has(level)
+      ? makeEmbedUI(setCard)
+      : new Proxy({}, { get: () => () => {} })
     const game = new Game(canvasRef.current, {
-      ui: NullUI,
+      ui,
       embed: true,
       level,
       mode: minigame.mode === 'walk' ? 'walk' : 'run',
@@ -80,6 +209,49 @@ export default function MiniGameModal({ minigame, onComplete }) {
               <button className="btn btn--primary" onClick={begin}>
                 開始挑戰 →
               </button>
+            </div>
+          )}
+          {card && (
+            <div className="minigame__card" data-kind={card.kind}>
+              <div className="mgcard">
+                <div className={`mgcard__kicker mgcard__kicker--${card.kind}`}>{card.kicker || (card.kind === 'tryagain' ? '再想想～' : '')}</div>
+                {card.sub && <p className="mgcard__sub">{card.sub}</p>}
+                {card.name && <p className="mgcard__sub">{card.name}</p>}
+                {card.say && <div className="mgcard__verse">「{card.say}」</div>}
+                {card.ref && card.verse && (
+                  <div className="mgcard__verse">
+                    <span className="mgcard__ref">{card.ref}</span>
+                    {card.verse}
+                  </div>
+                )}
+                {card.ref && card.line && (
+                  <div className="mgcard__verse">
+                    <span className="mgcard__ref">{card.ref}</span>
+                    {card.line}
+                  </div>
+                )}
+                {card.body && <p className="mgcard__body">{card.body}</p>}
+                {card.q && <h3 className="mgcard__q">{card.q}</h3>}
+                {card.explain && <p className="mgcard__body">{card.explain}</p>}
+                {card.choices && (
+                  <div className="mgcard__choices">
+                    {card.choices.map((c, i) => (
+                      <button
+                        key={i}
+                        className="btn mgcard__choice"
+                        onClick={() => dispatch(`${card.prefix}-choice`, { choice: String(i) })}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {card.btn && card.act && (
+                  <button className="btn btn--primary mgcard__btn" onClick={() => dispatch(card.act)}>
+                    {card.btn}
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>

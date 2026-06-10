@@ -695,6 +695,81 @@ body {
   width: 100%;
 }
 
+/* ---- 嵌入小遊戲的卡片流程（第 3/5/6 關：禱告卡 / 對話卡 / 反思卡，EmbedUI 畫的）---- */
+.minigame__card {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(20, 14, 6, 0.55);
+  padding: 1rem;
+  z-index: 5;
+  animation: fade 0.18s ease;
+}
+.mgcard {
+  background: var(--card, #fffdf6);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 1rem 1.2rem;
+  max-width: 560px;
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  text-align: center;
+}
+.mgcard__kicker {
+  font-weight: 800;
+  color: #6b4d12;
+  margin-bottom: 0.35rem;
+}
+.mgcard__kicker--reveal {
+  color: #2f7d32;
+}
+.mgcard__kicker--tryagain {
+  color: #b3541e;
+}
+.mgcard__sub {
+  margin: 0 0 0.4rem;
+  color: #8a7654;
+  font-size: 0.95rem;
+}
+.mgcard__verse {
+  background: var(--parchment, #f6eed9);
+  border-radius: 10px;
+  padding: 0.55rem 0.8rem;
+  margin: 0.4rem 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+.mgcard__ref {
+  display: block;
+  font-size: 0.8rem;
+  color: #8a7654;
+  margin-bottom: 0.15rem;
+}
+.mgcard__body {
+  margin: 0.45rem 0;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  white-space: pre-line;
+}
+.mgcard__q {
+  margin: 0.5rem 0;
+  font-size: 1.05rem;
+}
+.mgcard__choices {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+}
+.mgcard__choice {
+  width: 100%;
+}
+.mgcard__btn {
+  margin-top: 0.6rem;
+  min-width: 60%;
+}
+
 /* 提前停下說明（必停站 / 已到終點）——免得玩家以為步數和骰子不符是 bug */
 .modal__movenote {
   background: #fff7df;

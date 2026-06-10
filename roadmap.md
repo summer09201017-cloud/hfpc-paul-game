@@ -18,20 +18,22 @@
 **玩法內容**
 - **三條旅程 + 旅程選單**：
   - 第一次宣教旅程（**20 站**，含 6 機會/命運卡站 + 2 必停闖關站）。
-  - 第二次宣教旅程（**12 站**，福音首次進歐洲：腓立比/帖撒羅尼迦/庇哩亞/雅典/哥林多…）。
-  - 約拿宣教之旅（**15 站**，約拿書 1–4 章）。
+  - 第二次宣教旅程（**20 站**，福音首次進歐洲：腓立比/帖撒羅尼迦/庇哩亞/雅典/哥林多…；含 ⛰️ 翻越托魯斯山、🌊 地中海長航 2 個必停闖關站）。
+  - 約拿宣教之旅（**20 站**，約拿書 1–4 章，**6 個必停闖關站＝約拿全六關**）。
 - 每城**多題隨機抽**（`quizzes[]`，落格抽一題）。
 - **機會 / 命運卡**：頂層 `decks`、`drawCard` 觸發、**點牌翻牌** UI；規則「每張卡都必須加或減點數」（validate 強制）。
-- **嵌入式即時小遊戲（路線 A）**：把約拿 2D Canvas 引擎嵌進城市站當闖關，兩個**必停**關卡：
-  - 🏃 跑酷關（同一引擎被多條旅程重用：保羅＝翻山越嶺 / 約拿＝逃往約帕；關內 HUD 已改**通用「起點 → 終點 ⛵」**，不再寫死某旅程地名）。
-  - 🌊 海上遇風暴（平衡穩船，回程海路）。
+- **嵌入式即時小遊戲（路線 A）— 約拿全六關都可嵌（2026-06-10）**：
+  - **1/2/4 純 Canvas 關**（跑酷／暴風雨／曠野→尼尼微）：配空殼 NullUI；同一跑酷引擎被多條旅程重用（保羅＝翻山越嶺用 L4 曠野美術 / 約拿＝逃往約帕用 L1 港口美術），HUD 地名由站點 `minigame.hudLabels` 或引擎各關預設決定。
+  - **3/5/6 卡片流程關**（大魚肚禱告／尼尼微傳道／蓖麻樹）：`MiniGameModal.jsx` 的 `makeEmbedUI` 把引擎的 `showFish*/showPreach*/showGourd*` 畫成 React 卡片，按鈕回呼 `game.handleXxxAction`（嵌入契約見約拿 CLAUDE.md 第 4 點）。
+  - **已用 Playwright 全自動 e2e 驗證**：約拿之旅整條 20 站、6 個小遊戲全部可玩到結束、零 JS 錯誤。
 - 骰子 **1~6 點**（點數骰、轉 3 秒）；地圖縮放連續可調（拉桿 + 可輸入百分比，100–250%）。
 - 勝負＝**福音點數最高**（不是最先到）。
 - **一點點 RPG（資料驅動，目前在第一次旅程）**：同工被動加成（巴拿巴答對 +1、馬可闖關 +1）、屬靈裝備/恩賜（全副軍裝 弗 6：真理腰帶/信德盾牌/聖靈寶劍，靠機會卡 `addGift` 取得）、福音點數頭銜（蒙召的人→門徒→傳道者→使徒）。只加分、不卡關；validate + 三旅程 selfplay 仍全綠。詳見 README「🎒 一點點 RPG」。
 
-**Skill 庫（全域 `~/.claude/skills/`，已建立 6 個，可跨專案重用）**
+**Skill 庫（全域 `~/.claude/skills/`，可跨專案重用）**
 - 大富翁三件套：`roll-and-move-game`、`game-content-validator`、`real-geography-board`。
 - 闖關三件套：`embed-minigame`、`add-challenge-station`、`arcade-game-kit`。
+- 系列／品質／交付：`bible-game-studio`（內容神學慣例）、`game-smoke-test`（上課前煙霧測試，約拿 `npm test` 是活範例，可補本專案離線檢查）、`classroom-game-deploy`、`web-launch`、`packer-theology`、`board-game-designer`。
 
 ---
 
@@ -48,7 +50,8 @@
 7. **正式部署**：Netlify（`hfpc-paul-game`）上線 + 手機安裝→關 Wi-Fi 離線煙霧測試。
 
 ### 技術債 / 注意事項
-- `src/minigames/jonah/` 是約拿專案（`hfpc-jonah-game`）的**一份 fork**；上游更新後要手動重新同步並重套「嵌入模式」改動（見 `embed-minigame` skill）。
+- `src/minigames/jonah/` 是約拿專案（`hfpc-jonah-game`）的**純複製 copy**；上游更新後跑 **`npm run sync:jonah`** 一鍵同步（約拿端守住其 CLAUDE.md「嵌入契約」，這裡就不必重套改動）。
+- 🚀 **未來功能點子（跨兩專案，按 CP 值排序）見 `讀我-HANDOFF.txt` 的「未來功能點子」**。
 - `useGame.js` 的 `JOURNEYS` 已支援多旅程；新增旅程只要加一筆 + 對應 `journeyX.json` 與 `region-mapX.json`。
 - 站點 `x`/`y` 與 `region-map*.json` 都是 `gen-map.mjs` 的**產生物**，請勿手改；要動地圖改 `CITIES` 經緯度再 `npm run gen:map`。
 

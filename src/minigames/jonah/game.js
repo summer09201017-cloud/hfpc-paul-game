@@ -26,7 +26,9 @@ export class Game {
     this.ui = opts.ui // 由外部注入（單機 new UI()／嵌入 NullUI）
     this.embed = !!opts.embed
     this.onComplete = opts.onComplete || null
-    this.embedLevel = [1, 2, 4].includes(opts.level) ? opts.level : 1 // 嵌入支援 1/2/4（3=大魚肚、5=傳道是 DOM 選單流程，不嵌入）
+    // 嵌入支援全六關。注意：3/5/6 的卡片流程走 ui.showFish*/showPreach*/showGourd*——
+    // 宿主(保羅)嵌入這幾關時，注入的 ui 必須實作這些卡片方法(EmbedUI)，純 NullUI 會卡在 intro。
+    this.embedLevel = [1, 2, 3, 4, 5, 6].includes(opts.level) ? opts.level : 1
     this.embedMode = opts.mode === 'walk' ? 'walk' : 'run'
     this._hudOverride = opts.hudLabels || null // 外層(保羅)注入的進度條地名；沒注入時各關用自己的預設(LEVELx.hud)
     this.hudLabels = this._hudOverride || { ...LEVEL1.hud }
@@ -54,10 +56,14 @@ export class Game {
     window.addEventListener('resize', this._onResize)
 
     if (this.embed) {
-      // 嵌入(保羅大富翁)：跳過標題選單，直接開指定關卡（UI 是空殼，標題按鈕用不到）。
+      // 嵌入(保羅大富翁)：跳過標題選單，直接開指定關卡。
+      // 1/2/4 用空殼 NullUI 即可；3/5/6 的卡片流程需要宿主注入會畫卡片的 EmbedUI。
       Audio.unlock()
       if (this.embedLevel === 2) this.startStorm()
+      else if (this.embedLevel === 3) this.startFish()
       else if (this.embedLevel === 4) this.startNineveh(this.embedMode)
+      else if (this.embedLevel === 5) this.startPreach()
+      else if (this.embedLevel === 6) this.startGourd()
       else this.start(this.embedMode)
       requestAnimationFrame((t) => this.loop(t))
       return
@@ -727,6 +733,7 @@ export class Game {
     this.state = STATE.WIN
     this.ui.hidePauseButton()
     Audio.sfx('win')
+    if (this.embed) return this._finish(true) // 嵌入：回報過關（默想關不會失敗）
     this.ui.showWin(LEVEL3, null, {
       showCoins: false,
       nextLabel: '下一關 · 上岸往尼尼微',
@@ -834,6 +841,7 @@ export class Game {
     this.ui.hidePauseButton()
     Audio.stopMusic()
     Audio.sfx('win')
+    if (this.embed) return this._finish(true) // 嵌入：回報過關（傳道關不會失敗）
     this.ui.showWin(LEVEL5, null, {
       showCoins: false,
       nextLabel: '下一關 · 蓖麻樹',
@@ -929,6 +937,7 @@ export class Game {
     this.state = STATE.WIN
     this.ui.hidePauseButton()
     Audio.sfx('win')
+    if (this.embed) return this._finish(true) // 嵌入：回報過關（反思關不會失敗）
     this.ui.showWin(LEVEL6, null, {
       showCoins: false,
       nextLabel: '🏠 回標題(全書完)',

@@ -1,0 +1,132 @@
+============================================================
+讀我 — HANDOFF(給 HFPC 那台 PC 的 AI / 開發者)
+更新:2026-06-10 晚(約拿全書完 + 全六關嵌入保羅)
+============================================================
+
+這個資料夾裡有「兩個獨立但相關」的聖經遊戲專案:
+
+  1) 保羅大富翁   ……  保羅大富翁\保羅大富翁\
+        GitHub: https://github.com/summer09201017-cloud/hfpc-paul-game
+        是什麼:擲骰移動桌遊(roll-and-move)。三條旅程(保羅第一/二次、約拿)、
+                每城聖經問答、機會/命運卡、真實地理棋盤、輕 RPG 層(同工/裝備/頭銜)、
+                3D 骰子。城市觸發即時闖關小遊戲。React + Vite PWA。
+
+  2) 約拿闖關     ……  聖經遊戲\聖經遊戲\
+        GitHub: https://github.com/summer09201017-cloud/hfpc-jonah-game
+        是什麼:即時 2D Canvas 遊戲,「約拿書」全書六關(跑酷/暴風雨/大魚肚默想/
+                第二次機會跑酷/尼尼微傳道對話 RPG/蓖麻樹反思結局)。
+                純 vanilla JS、零相依、零美術檔、Web Audio 合成、可離線 PWA。
+        ★ 已上線:https://hfpc-jonah-game.netlify.app/(push main 即自動部署)
+
+■ 接手第一步:每個專案都先讀這三份(在各自的資料夾裡)
+  1. CLAUDE.md   —— 架構與開發守則 + 這台機器的地雷(給 AI/工程師,最重要)。
+  2. roadmap.md  —— 「已完成 vs 真正待做」進度(兩個專案現在都有,已對齊現況)。
+  3. README.md   —— 玩法與內容編輯(給老師)。
+
+■ 現況一句話(2026-06-10)
+  約拿書六關「全書完」且已上線;保羅大富翁把約拿全六關都嵌入(約拿之旅 20 站、
+  6 個闖關站),Playwright 全自動 e2e 驗證整條路線可玩到終點、零 JS 錯誤。
+  兩個 repo 都已 push GitHub——接手請直接 git pull 取最新版。
+
+■ 兩個專案怎麼關聯(很重要)
+  「保羅大富翁」是外框(桌遊);「約拿闖關」是上游的小遊戲引擎。
+  保羅的 src\minigames\jonah\ 是約拿引擎的純複製 copy:
+     在保羅資料夾跑  npm run sync:jonah  即一鍵同步最新引擎(不必手動重套)。
+  嵌入契約(寫在約拿 CLAUDE.md,改引擎前必讀):
+     • ui 由外部注入(單機 new UI() / 嵌入 NullUI 或 EmbedUI),game.js 不 import ui.js
+     • opts.embed=true 走嵌入分支;白名單 level 1~6
+     • 1/2/4 純 Canvas 關:配空殼 NullUI 即可
+     • 3/5/6 卡片流程關:保羅 MiniGameModal.jsx 的 makeEmbedUI 把
+       showFish*/showPreach*/showGourd* 畫成 React 卡片,按鈕回呼 handleXxxAction
+  上線節奏(牧師定的):新功能一律 feature branch + 測試全綠 → 牧師實測
+  → 說「滿意請 merge」才 merge main(約拿 main = Netlify 自動部署)。
+
+■ 怎麼跑 / 怎麼測(起手式)
+     npm install
+     npm run dev            # 兩專案都是 Vite;保羅常占 5173,約拿會跳 5174
+   約拿:
+     npm test               # 煙霧測試:內容/語法/狀態機/嵌入契約(零相依,~2 秒)
+     npm run test:offline   # 再加 build + PWA 離線就緒(sw 預快取/manifest)
+     npm run build          # ⚠ 不是 vite build!(這台 Node 24 地雷,見 CLAUDE.md)
+   保羅:
+     npm run validate       # 內容驗證(journey JSON)
+     npm run test:selfplay  # 引擎自我對戰
+     npm run test:browser   # Playwright 實機測試(需先起 preview/dev server)
+     npm run sync:jonah     # 同步約拿引擎
+
+■ 共用的 Skill(11 個,裝在 C:\Users\<帳號>\.claude\skills\;壓縮檔內附 claude-skills\)
+  引擎藍圖:arcade-game-kit(即時 Canvas)、roll-and-move-game(擲骰桌遊)、
+            board-game-designer(棋類)
+  內容/系列:bible-game-studio(聖經遊戲慣例)、packer-theology(巴刻神學)
+  跨專案工具:embed-minigame(嵌入小遊戲)、add-challenge-station(棋盤加站)、
+            game-content-validator(內容驗證)、game-smoke-test(上課前煙霧測試)、
+            real-geography-board(真實地圖棋盤)、classroom-game-deploy(教室部署)、
+            web-launch(一鍵啟動)
+
+============================================================
+■ 已完成 vs 真正待做(兩專案合併視角,2026-06-10)
+============================================================
+✅ 已完成
+  約拿:六關全書完、PWA 全 shell 預快取(裝了即離線)、npm test 128 項全綠、
+        已部署 Netlify、過關卡有「約拿的旅程 X/6」進度。
+  保羅:三條旅程、真實地理底圖、輕 RPG 層、3D 骰子、約拿全六關嵌入(e2e 過)。
+
+🔜 真正待做(必要,依優先)
+  1. 真實手機離線實測:裝一台 → 關網路 → 六關都跑一遍(自動檢查全綠,但手感要人測)。
+  2. 神學/題庫審核:保羅 journey2 與約拿旅程題目是 AI 草擬,請牧者過目後正式上線。
+  3. 實機手感微調:全在 config.js(STORM/FISH/NINEVEH/PREACH/GOURD)。
+  4. 保羅大富翁正式部署 Netlify(約拿已上線,保羅還沒)。
+
+============================================================
+■ 🚀 未來功能點子(按「CP 值高→低 × 開發時間短→長」排序)
+   給 HFPC PC 的 AI:跟牧師確認想做哪個,再開 feature branch 動工。
+============================================================
+
+【第一梯隊:半天內、立刻有感】
+ 1. 全書通關證書畫面(約拿)— 打完六關出一張可截圖的「約拿書通關證書」
+    (名字+日期+金句),小孩最愛、老師可印。純前端 Canvas 繪製。 ~2-3 小時
+ 2. 上課前一鍵檢查 .bat — 雙擊跑 npm test + 列印「今天可以上課 ✓」報告,
+    給不會終端機的同工。重用 game-smoke-test。 ~1 小時
+ 3. 班級計分板(保羅)— 遊戲結束畫面加「全班排行榜」(localStorage 記多場結果),
+    主日學分組競賽用。 ~2-3 小時
+ 4. 約拿題庫擴充到約拿書 3–4 章(現有 22 題只涵蓋 1–2 章;第四關漫步的長者
+    NPC 因此被關掉,補題後可重新打開)。內容工作,跑 npm test 驗證。 ~2 小時
+
+【第二梯隊:1-2 天、明顯加值】
+ 5. 老師模式/講解暫停(約拿)— 過關反思卡加「老師講解」按鈕:放大經文、
+    隱藏按鈕,投影時老師講完再繼續。 ~半天
+ 6. 音量/語速無障礙設定 + 大字模式 — 教室後排看得到。 ~半天
+ 7. 保羅大富翁部署 Netlify + PWA 離線(套 game-smoke-test 的離線檢查 +
+    classroom-game-deploy skill;約拿已驗證整套流程)。 ~半天
+ 8. 第三次宣教旅程 + 海路到羅馬(保羅 journey3)— 用 roll-and-move-game skill
+    開新旅程 JSON + real-geography-board 產底圖;引擎不用動。 ~1-2 天
+ 9. 經文朗讀(Web Speech API)— 反思卡/禱告卡按一下用中文 TTS 唸出和合本,
+    給還不識字的小小孩。零音檔,但要實測中文語音品質。 ~半天
+
+【第三梯隊:2 天以上、大型但高回報】
+ 10. 真實美術 PNG sprite sheet 換掉 emoji/向量(先知/障礙/寶物)。
+     美術來源是瓶頸;程式面 renderer.js 已隔離好。 ~2-3 天+美術
+ 11. 下一卷書遊戲:「但以理」或「出埃及」六關(套 arcade-game-kit +
+     bible-game-studio,引擎/PWA/測試全現成,主要是內容與新機制)。 ~1 週
+ 12. 多人同樂模式(保羅)— 平板傳手機房間制(WebRTC/WebSocket 需後端或
+     P2P,複雜度高;教室同 Wi-Fi 場景可考慮)。 ~1 週+
+ 13. 約拿地圖改真實「尼尼微→地中海」經緯度底圖(real-geography-board;
+     保羅的約拿之旅已有真實底圖,此項是約拿單機版的選配)。 ~1 天
+
+【Skill / Tool-Calling 點子(讓 AI 自己更好用)】
+ 14. quiz-authoring skill — 「幫我出某卷書 N 題」→ 自動依 bible-game-studio
+     出題慣例產題 + 跑 game-content-validator 驗證 answerIndex。 ~半天
+ 15. playtest-bot skill — 把這次的 Playwright 全自動通關腳本(保羅
+     scripts/browser-playtest.mjs + 本次 e2e 經驗)整理成跨專案 skill:
+     「自動玩一遍找 bug」。 ~半天
+ 16. sermon-companion skill — 牧師講道配套:從遊戲關卡反思文案 + packer-theology
+     產生主日學教案/講章大綱(.docx 輸出)。 ~半天
+
+============================================================
+■ 給 HFPC PC 的注意事項
+  • 兩台機器路徑不同:本包解壓後路徑自帶;CLAUDE.md 裡的絕對路徑「因機器而異」。
+  • 這台(agape250)的 Node 24 地雷(vite build 會被無聲殺掉)是「機器特性」,
+    HFPC 那台若 Node 版本不同,約拿的 npm run build 照樣能用(它只是逐檔複製)。
+  • .bat 檔一律純英文 + CRLF(中文會亂碼)。
+  • git pull 兩個 repo 是拿最新版最保險的方式;壓縮檔是備援。
+============================================================
