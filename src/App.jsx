@@ -54,6 +54,7 @@ export default function App() {
             players={g.game.players}
             currentPlayerId={g.currentPlayer?.id}
             scoreLabel={g.journey.scoreLabel}
+            journey={g.journey}
           />
           <DicePanel
             phase={g.phase}

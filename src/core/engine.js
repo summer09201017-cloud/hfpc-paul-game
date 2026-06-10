@@ -16,7 +16,7 @@ export const PLAYER_COLORS = ['#e4572e', '#2e86ab', '#3a9d23', '#f3a712', '#8e44
 
 /** 深拷貝玩家陣列，保持 immutability。 */
 function clonefPlayers(players) {
-  return players.map((p) => ({ ...p, companions: [...p.companions] }))
+  return players.map((p) => ({ ...p, companions: [...p.companions], gifts: [...(p.gifts || [])] }))
 }
 
 /**
@@ -35,6 +35,7 @@ export function createGame(playerConfigs, board) {
     position: 0, // station index
     gospelPoints: 0,
     companions: [...startCompanions],
+    gifts: [...(startStation.startGifts || [])], // 屬靈裝備/恩賜（全副軍裝）；被動加成見 board.gifts
     skipNext: false, // 下一回合是否要暫停（被石頭打傷之類）
     finished: false, // 是否已抵達終點
   }))
@@ -179,9 +180,11 @@ export function resolve(state, payload = {}) {
   if (state.phase !== 'resolving' || !state.pendingStationId) return state
 
   const station = state.board.stations.find((s) => s.id === state.pendingStationId)
+  const board = state.board
   const players = clonefPlayers(state.players)
   const player = players[state.currentPlayerIndex]
   const scoreLabel = state.board.scoreLabel || '分數'
+  const startPoints = player.gospelPoints // 用回合開始的分數決定頭銜（避免本回合加分又回饋自己）
 
   let result = { stationId: station.id, type: station.type, lines: [] }
   let log = state.log
@@ -190,20 +193,20 @@ export function resolve(state, payload = {}) {
   //    每一格都可以再附一題問答（見步驟 2）——劇情與答題並存。
   if (station.type === 'event' && station.event) {
     const ev = station.event
-    applyEffect(player, ev.effect, result, scoreLabel)
+    applyEffect(player, ev.effect, result, scoreLabel, board, `事件「${ev.title}」：`)
     result.eventTitle = ev.title
     result.eventKind = ev.kind
     if (ev.resultText) result.lines.unshift(ev.resultText)
     log = pushLog(log, `${player.name} 觸發事件「${ev.title}」。`)
   } else if (station.effect) {
     // start / story / end ：直接套用 effect（若有）。drawCard 不是即時效果，applyEffect 會略過。
-    applyEffect(player, station.effect, result, scoreLabel)
+    applyEffect(player, station.effect, result, scoreLabel, board, '劇情：')
   }
 
   // 1.5) 若這一格抽了機會／命運卡：套用卡片效果，並把卡片資訊記進結果（給畫面翻牌用）。
   const card = getActiveCard(state)
   if (card) {
-    applyEffect(player, card.effect, result, scoreLabel)
+    applyEffect(player, card.effect, result, scoreLabel, board, `${card.deck === 'fate' ? '命運' : '機會'}卡：`)
     result.card = { deck: card.deck, title: card.title, kind: card.kind, text: card.text }
     log = pushLog(log, `${player.name} 抽到${card.deck === 'fate' ? '命運' : '機會'}卡「${card.title}」。`)
   }
@@ -218,6 +221,11 @@ export function resolve(state, payload = {}) {
       player.gospelPoints += pts
       result.lines.push(`闖關成功！${scoreLabel} +${pts}`)
       log = pushLog(log, `${player.name} 闖關成功，${scoreLabel} +${pts}。`)
+      const mb = passiveBonus(board, player, 'minigameBonus', startPoints)
+      if (mb.bonus > 0) {
+        player.gospelPoints += mb.bonus
+        result.lines.push(`有 ${mb.sources.join('、')} 助陣，闖關額外 +${mb.bonus}`)
+      }
     } else {
       result.lines.push('闖關沒成功，沒關係，重要的是有嘗試！')
       log = pushLog(log, `${player.name} 闖關未過關。`)
@@ -238,8 +246,13 @@ export function resolve(state, payload = {}) {
       player.gospelPoints += reward
       result.lines.push(`答對了！${scoreLabel} +${reward}`)
       log = pushLog(log, `${player.name} 答對問答，${scoreLabel} +${reward}。`)
+      const qb = passiveBonus(board, player, 'quizBonus', startPoints)
+      if (qb.bonus > 0) {
+        player.gospelPoints += qb.bonus
+        result.lines.push(`有 ${qb.sources.join('、')} 同行/裝備，答對額外 +${qb.bonus}`)
+      }
     } else {
-      result.lines.push('答錯了，沒關係，再接再厲！')
+      result.lines.push('答錯了，這一題沒有加分——沒關係，再接再厲！')
       log = pushLog(log, `${player.name} 答錯了問答。`)
     }
   }
@@ -248,6 +261,10 @@ export function resolve(state, payload = {}) {
   if (player.position === state.board.stations.length - 1) {
     player.finished = true
   }
+
+  // 記下這位玩家目前的頭銜（給畫面顯示用；board 沒設 titles 時為 null）。
+  const title = getTitle(board, player.gospelPoints)
+  result.title = title ? title.name : null
 
   return {
     ...state,
@@ -258,13 +275,15 @@ export function resolve(state, payload = {}) {
   }
 }
 
-/** 把一個 effect 套用到玩家身上，並把人看得懂的描述寫進 result.lines。 */
-function applyEffect(player, effect, result, scoreLabel) {
+/** 把一個 effect 套用到玩家身上，並把人看得懂的描述寫進 result.lines。
+ *  srcLabel：加分訊息的來源前綴（如「劇情：」「機會卡：」）——讓「事件加分」和「答題加分」
+ *  分得清清楚楚，答錯問答時才不會把劇情的加分誤會成答錯也有分。 */
+function applyEffect(player, effect, result, scoreLabel, board, srcLabel = '') {
   if (!effect) return
   if (typeof effect.gospelPoints === 'number' && effect.gospelPoints !== 0) {
     player.gospelPoints += effect.gospelPoints
     const sign = effect.gospelPoints > 0 ? '+' : ''
-    result.lines.push(`${scoreLabel} ${sign}${effect.gospelPoints}`)
+    result.lines.push(`${srcLabel}${scoreLabel} ${sign}${effect.gospelPoints}`)
   }
   if (effect.removeCompanion) {
     const idx = player.companions.indexOf(effect.removeCompanion)
@@ -277,10 +296,87 @@ function applyEffect(player, effect, result, scoreLabel) {
     player.companions.push(effect.addCompanion)
     result.lines.push(`${effect.addCompanion} 加入了！`)
   }
-  if (effect.skipNext) {
-    player.skipNext = true
-    result.lines.push('下一回合暫停一次')
+  // 屬靈裝備/恩賜（全副軍裝，弗 6）：擁有後給被動加成（見 board.gifts 與 resolve 的 passiveBonus）。
+  if (effect.removeGift) {
+    if (!player.gifts) player.gifts = []
+    const gi = player.gifts.indexOf(effect.removeGift)
+    if (gi >= 0) player.gifts.splice(gi, 1)
   }
+  if (effect.addGift) {
+    if (!player.gifts) player.gifts = []
+    if (!player.gifts.includes(effect.addGift)) {
+      player.gifts.push(effect.addGift)
+      const g = board && board.gifts && board.gifts[effect.addGift]
+      result.lines.push(`配備了「${g ? g.name : effect.addGift}」！`)
+    }
+  }
+  if (effect.skipNext) {
+    // 信德的盾牌（帶 guard 旗標的裝備）可滅盡惡者一切的火箭——擋下「暫停一回合」。
+    const shield = giftWith(board, player, 'guard')
+    if (shield) {
+      result.lines.push(`「${shield.name}」擋下了暫停一回合！`)
+    } else {
+      player.skipNext = true
+      result.lines.push('下一回合暫停一次')
+    }
+  }
+}
+
+/** 玩家身上是否有「帶某 flag（如 guard）」的裝備；回傳該裝備資料或 null。 */
+function giftWith(board, player, flag) {
+  const gifts = (board && board.gifts) || {}
+  for (const id of player.gifts || []) {
+    const g = gifts[id]
+    if (g && g[flag]) return g
+  }
+  return null
+}
+
+/**
+ * 依分數門檻取得頭銜（board.titles 是 [{ min, name, quizBonus? }]）。
+ * 回傳符合的「最高門檻」者，或 null（board 沒設 titles 時）。
+ */
+export function getTitle(board, points) {
+  const titles = (board && board.titles) || []
+  let best = null
+  for (const t of titles) {
+    const min = t.min || 0
+    if (points >= min && (!best || min >= (best.min || 0))) best = t
+  }
+  return best
+}
+
+/**
+ * 算「答對問答 / 闖關過關」的被動額外加成（同工 + 裝備/恩賜 + 頭銜），純由 board 資料驅動。
+ * @param key 'quizBonus' | 'minigameBonus'
+ * @param titlePoints 判定頭銜用的分數（用回合開始的分數，避免本回合加分又回饋自己）
+ * 回傳 { bonus, sources[] }；board 沒設這些資料時回 { bonus:0, sources:[] }（向後相容）。
+ */
+function passiveBonus(board, player, key, titlePoints) {
+  let bonus = 0
+  const sources = []
+  const companions = (board && board.companions) || {}
+  for (const name of player.companions) {
+    const c = companions[name]
+    if (c && c[key]) {
+      bonus += c[key]
+      sources.push(c.label || name)
+    }
+  }
+  const gifts = (board && board.gifts) || {}
+  for (const id of player.gifts || []) {
+    const g = gifts[id]
+    if (g && g[key]) {
+      bonus += g[key]
+      sources.push(g.name || id)
+    }
+  }
+  const title = getTitle(board, titlePoints)
+  if (title && title[key]) {
+    bonus += title[key]
+    sources.push(title.name)
+  }
+  return { bonus, sources }
 }
 
 /**

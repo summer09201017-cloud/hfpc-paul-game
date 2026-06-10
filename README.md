@@ -143,6 +143,33 @@ npm run preview    # 本機預覽打包後的版本
 > 想新增整條旅程（第二次、第三次、到羅馬）？複製一份 `journey1.json` 改成 `journey2.json`，
 > 之後可以做成「選章節」。新旅程的城市座標一樣用下方「地圖」的方式產生。
 
+### 🎒 一點點 RPG：同工 / 屬靈裝備 / 頭銜（選用，目前在第一次旅程）
+
+讓遊戲多一點「養成」味道，全部寫在 `journey1.json` 頂層，**不想要可以整段刪掉**，核心玩法不受影響。重點是：**它們只會「加分」，鼓勵收集與答題，不會卡關。**
+
+```jsonc
+// 1) 同工被動加成：隊上有這位同工(靠劇情 addCompanion / 起點 startCompanions 取得)就生效
+"companions": {
+  "巴拿巴":  { "label": "勸慰子巴拿巴", "quizBonus": 1, "blurb": "有他同行，答對問答額外 +1。" },
+  "約翰‧馬可": { "label": "助手馬可", "minigameBonus": 1, "blurb": "闖關額外 +1（他離隊後就沒了）。" }
+},
+// 2) 屬靈裝備/恩賜（全副軍裝，弗 6）：玩家抽到帶 addGift 的機會卡就配備
+"gifts": {
+  "belt":   { "name": "真理的腰帶", "ref": "弗 6:14", "icon": "🥋", "quizBonus": 1, "blurb": "…" },
+  "shield": { "name": "信德的盾牌", "ref": "弗 6:16", "icon": "🛡️", "guard": true, "blurb": "可擋下一次「暫停一回合」。" },
+  "sword":  { "name": "聖靈的寶劍", "ref": "弗 6:17", "icon": "⚔️", "minigameBonus": 2, "blurb": "…" }
+},
+// 3) 頭銜：依福音點數的門檻自動升級(顯示在玩家卡)，高階可附小特權
+"titles": [
+  { "min": 0, "name": "蒙召的人" }, { "min": 6, "name": "門徒" },
+  { "min": 14, "name": "傳道者", "quizBonus": 1 }, { "min": 26, "name": "使徒", "quizBonus": 1 }
+]
+```
+
+- 要讓玩家**拿到裝備**：在機會牌庫加一張卡，`effect` 寫 `{ "addGift": "shield", "gospelPoints": 1 }`（每張卡仍須加減點數，見上）。
+- `quizBonus`＝答對問答時額外加的分；`minigameBonus`＝闖關過關時額外加的分；`guard`＝可擋一次暫停。
+- 數值都可自己調；想關掉某項，把那一段刪掉即可。改完記得跑 `npm run validate`（會檢查 `addGift` 有對應到 `gifts`）。
+
 ### ✅ 題庫審核清單（請老師 / 牧者過目後再上線）
 
 新增或修改問答後，建議照這張清單檢查一遍——尤其是 AI 幫忙產的題目，務必人工把關：

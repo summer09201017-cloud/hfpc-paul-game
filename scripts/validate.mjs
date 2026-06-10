@@ -47,6 +47,8 @@ const CONFIG = {
     removeItem: 'string',
     addCompanion: 'string',
     removeCompanion: 'string',
+    addGift: 'string', // 配備一件屬靈裝備/恩賜（全副軍裝），值須對應到頂層 gifts。
+    removeGift: 'string',
     move: 'number',
     drawCard: 'string', // 觸發抽卡，值是牌名（chance / fate），須對應到 decks。
   },
@@ -89,6 +91,8 @@ const label = (it, i) => `item #${i + 1} (${it?.[CONFIG.idField] ?? 'no-id'})`
 
 // The card decks (機會 / 命運); used to validate that drawCard points to a real deck.
 const decks = data && data.decks && typeof data.decks === 'object' && !Array.isArray(data.decks) ? data.decks : {}
+// 屬靈裝備/恩賜目錄（頂層 gifts）；用來檢查 addGift/removeGift 指到真的存在的恩賜。
+const gifts = data && data.gifts && typeof data.gifts === 'object' && !Array.isArray(data.gifts) ? data.gifts : {}
 
 // Validate one effect object against the vocab; drawCard must reference a real, non-empty deck.
 function checkEffect(eff, ctx) {
@@ -104,6 +108,8 @@ function checkEffect(eff, ctx) {
     }
     if (k === 'drawCard' && !(Array.isArray(decks[v]) && decks[v].length))
       err(`${ctx} effect drawCard:"${v}" has no matching non-empty deck in "decks".`)
+    if ((k === 'addGift' || k === 'removeGift') && !gifts[v])
+      err(`${ctx} effect ${k}:"${v}" has no matching entry in top-level "gifts".`)
   }
 }
 
