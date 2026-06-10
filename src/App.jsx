@@ -84,6 +84,7 @@ export default function App() {
             result={g.game.lastResult}
             scoreLabel={g.journey.scoreLabel}
             currentPlayer={g.currentPlayer}
+            moveNote={g.game.moveNote}
             onResolve={g.resolveStation}
             onFinish={g.finishTurn}
           />
@@ -94,7 +95,9 @@ export default function App() {
           status={g.status}
           scoreLabel={g.journey.scoreLabel}
           journey={g.journey}
+          nextJourney={g.nextJourney}
           onRestart={g.restart}
+          onContinue={g.continueJourney}
         />
       )}
     </div>

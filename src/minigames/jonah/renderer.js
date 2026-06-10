@@ -1,4 +1,4 @@
-import { VIEW, GROUND_Y, PLAYER, RUN, STORM, FARE, FISH, PREACH } from './config.js'
+import { VIEW, GROUND_Y, PLAYER, RUN, STORM, FARE, FISH, PREACH, GOURD } from './config.js'
 
 // 所有畫面繪製集中在這裡。背景用 Canvas 圖形畫,角色/物件用 emoji 當圖示
 // (零美術檔即可運行,日後可換成真圖)。採邏輯解析度 960×540,等比縮放置中。
@@ -61,6 +61,11 @@ export class Renderer {
     // 第五關「尼尼微傳道」也是另一個畫面
     if (game.level === 5) {
       this._drawPreach(game)
+      return
+    }
+    // 第六關「蓖麻樹」也是另一個畫面
+    if (game.level === 6) {
+      this._drawGourd(game)
       return
     }
 
@@ -601,6 +606,253 @@ export class Renderer {
       ctx.fillText('按住 →/右側 往前走　·　走到居民面前就停下對話、宣告神的話', VIEW.W / 2, VIEW.H - 12)
     } else {
       ctx.fillText(`悔改的人  ${f.repented || 0} / ${total}`, VIEW.W / 2, VIEW.H - 12)
+    }
+  }
+
+  // 第六關「蓖麻樹」畫面:城東的山坡,五幕場景——棚下發怒 / 蓖麻長高 / 蟲咬枯槁 /
+  // 東風曝曬 / 神的心(城發光)。蓖麻的生長與枯萎跟著本幕動畫進度 t 演;約拿用蹲姿當坐姿。
+  _drawGourd(game) {
+    const ctx = this.ctx
+    const f = game.gourd || { idx: 0, done: 0, total: 1, t: 0, phase: 'intro' }
+    const total = f.total || 1
+    const idx = f.idx || 0
+    // 本幕動畫進度 0..1;作答/結束時固定為 1(維持該幕的結束畫面)
+    const p = f.phase === 'scene' ? Math.min(1, (f.t || 0) / GOURD.sceneTime) : 1
+    this._gourdT = (this._gourdT || 0) + 1 / 60 // renderer 自己的環境動畫時鐘(氣氛用)
+    const t = this._gourdT
+    const lerp = (a, b, k) => a + (b - a) * k
+
+    // 每一幕的天空(0 黃昏的悶氣 / 1 舒服的蔭涼 / 2 黎明 / 3 烈日 / 4 神的晨光)
+    const SKIES = [
+      ['#e8a96a', '#f3cf9b', '#f7e7c8'], // 0 棚下:黃昏悶熱
+      ['#8fc8e8', '#cde9f3', '#eaf7f0'], // 1 蓖麻:清爽
+      ['#f0b2c0', '#f7d6c2', '#fbeed8'], // 2 蟲子:黎明
+      ['#f2a040', '#f6c468', '#fce69a'], // 3 東風:烈日當空,天色發燙
+      ['#ffd9a0', '#ffe9c4', '#fff7e6'], // 4 神的心:金色晨光
+    ]
+    const sk = SKIES[Math.min(idx, SKIES.length - 1)]
+    const sky = ctx.createLinearGradient(0, 0, 0, VIEW.H)
+    sky.addColorStop(0, sk[0])
+    sky.addColorStop(0.6, sk[1])
+    sky.addColorStop(1, sk[2])
+    ctx.fillStyle = sky
+    ctx.fillRect(0, 0, VIEW.W, VIEW.H)
+
+    // 烈日:第 1 幕(悶熱的午後——約拿正是因為很曬才搭棚遮蔭,拿 4:5)與第 4 幕(日頭曝曬)都有;
+    // 第 4 幕(hard)另加炎熱的東風、更強的熱浪與灼熱色調。
+    if (idx === 0 || idx === 3) {
+      const hard = idx === 3 // 第 4 幕:最毒的那種曬
+      const sx = VIEW.W * (hard ? 0.72 : 0.8)
+      const sy = VIEW.H * 0.2
+      const R = hard ? 44 : 38 // 日輪大小
+      const pulse = 1 + Math.sin(t * 3) * 0.06 // 烈日灼熱脈動
+      // 大光暈
+      const halo = ctx.createRadialGradient(sx, sy, 10, sx, sy, hard ? 210 : 170)
+      halo.addColorStop(0, 'rgba(255,238,180,0.95)')
+      halo.addColorStop(0.5, 'rgba(255,210,120,0.45)')
+      halo.addColorStop(1, 'rgba(255,210,120,0)')
+      ctx.fillStyle = halo
+      ctx.fillRect(sx - 210, sy - 210, 420, 420)
+      // 光芒(12 道,緩慢旋轉)
+      ctx.fillStyle = 'rgba(255,214,110,0.65)'
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2 + t * 0.25
+        ctx.save()
+        ctx.translate(sx, sy)
+        ctx.rotate(a)
+        ctx.beginPath()
+        ctx.moveTo((R + 8) * pulse, -7)
+        ctx.lineTo((R + 42) * pulse, 0)
+        ctx.lineTo((R + 8) * pulse, 7)
+        ctx.closePath()
+        ctx.fill()
+        ctx.restore()
+      }
+      // 日輪
+      ctx.fillStyle = '#fff1c0'
+      ctx.beginPath()
+      ctx.arc(sx, sy, R * pulse, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#ffe28a'
+      ctx.beginPath()
+      ctx.arc(sx, sy, (R - 10) * pulse, 0, Math.PI * 2)
+      ctx.fill()
+      // 地面附近的熱浪(扭動的細波,往上飄;第 1 幕較淡、第 4 幕較強)
+      ctx.strokeStyle = hard ? 'rgba(255,235,190,0.4)' : 'rgba(255,235,190,0.28)'
+      ctx.lineWidth = 2
+      const waves = hard ? 5 : 3
+      for (let i = 0; i < waves; i++) {
+        const hy = GROUND_Y - 8 - ((t * 26 + i * 22) % 70)
+        ctx.beginPath()
+        for (let x = 0; x <= VIEW.W; x += 18) {
+          const off = Math.sin(x * 0.05 + t * 5 + i * 2) * 3.5
+          if (x === 0) ctx.moveTo(x, hy + off)
+          else ctx.lineTo(x, hy + off)
+        }
+        ctx.stroke()
+      }
+      if (hard) {
+        // 炎熱的東風(風線由右往左)
+        ctx.strokeStyle = 'rgba(214,150,80,0.55)'
+        ctx.lineWidth = 3
+        for (let i = 0; i < 7; i++) {
+          const wy = 90 + i * 52 + Math.sin(t * 2 + i) * 6
+          const wx = VIEW.W - (((t * 260 * p + i * 170) % (VIEW.W + 200)) - 100)
+          ctx.beginPath()
+          ctx.moveTo(wx, wy)
+          ctx.quadraticCurveTo(wx - 40, wy - 8, wx - 84, wy)
+          ctx.stroke()
+        }
+      }
+      // 整體加一層灼熱色調(第 4 幕較重)
+      ctx.fillStyle = hard ? 'rgba(255,140,60,0.08)' : 'rgba(255,160,80,0.05)'
+      ctx.fillRect(0, 0, VIEW.W, VIEW.H)
+    }
+    // 第 5 幕:從天而下的柔光(神的憐憫照著大城)
+    if (idx === 4) {
+      ctx.fillStyle = 'rgba(255,236,180,0.30)'
+      for (let i = 0; i < 4; i++) {
+        const bx = 60 + i * 70
+        ctx.beginPath()
+        ctx.moveTo(bx, 0)
+        ctx.lineTo(bx + 46, 0)
+        ctx.lineTo(bx - 30 + 30, GROUND_Y - 40)
+        ctx.lineTo(bx - 60 + 30, GROUND_Y - 40)
+        ctx.closePath()
+        ctx.fill()
+      }
+    }
+
+    // 遠方的尼尼微城(左邊地平線的剪影;第 5 幕微微發亮)
+    const base = GROUND_Y - 4
+    ctx.fillStyle = idx === 4 ? 'rgba(196,150,92,0.85)' : 'rgba(120,95,66,0.55)'
+    for (let i = 0; i < 7; i++) {
+      const bw = 34 + ((i * 37) % 28)
+      const bh = 26 + ((i * 53) % 40)
+      const bx = 28 + i * 44
+      ctx.fillRect(bx, base - bh, bw, bh)
+    }
+    ctx.fillRect(16, base - 14, 7 * 44 + 40, 14) // 城牆
+
+    // 地面(城東乾旱的山坡)
+    ctx.fillStyle = '#d3b377'
+    ctx.fillRect(0, GROUND_Y, VIEW.W, VIEW.H - GROUND_Y)
+    ctx.fillStyle = 'rgba(150,115,60,0.4)'
+    for (let i = 0; i < 9; i++) ctx.fillRect(40 + i * 110, GROUND_Y + 26 + (i % 3) * 14, 22, 4)
+
+    const jx = VIEW.W * 0.56 // 約拿(坐在棚下,面向左邊的城)
+    const gx = jx + 96 // 蓖麻長在棚旁
+
+    // 棚(兩根木柱 + 枝條棚頂,拿 4:5)
+    ctx.strokeStyle = '#8a5a2a'
+    ctx.lineWidth = 6
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    ctx.moveTo(jx - 46, GROUND_Y)
+    ctx.lineTo(jx - 40, GROUND_Y - 86)
+    ctx.moveTo(jx + 46, GROUND_Y)
+    ctx.lineTo(jx + 40, GROUND_Y - 86)
+    ctx.stroke()
+    ctx.strokeStyle = '#a8743c'
+    ctx.lineWidth = 5
+    ctx.beginPath()
+    ctx.moveTo(jx - 52, GROUND_Y - 86)
+    ctx.lineTo(jx + 52, GROUND_Y - 86)
+    ctx.stroke()
+    ctx.strokeStyle = 'rgba(140,160,90,0.8)'
+    ctx.lineWidth = 3
+    for (let i = -2; i <= 2; i++) {
+      ctx.beginPath()
+      ctx.moveTo(jx + i * 20 - 8, GROUND_Y - 90)
+      ctx.lineTo(jx + i * 20 + 10, GROUND_Y - 83)
+      ctx.stroke()
+    }
+
+    // 蓖麻:第 2 幕隨 p 長高;第 3 幕起枯萎(綠→褐、下垂)。第 1 幕還沒有。
+    let grow = 0
+    let wither = 0
+    if (idx === 1) grow = p
+    else if (idx === 2) {
+      grow = 1
+      wither = p
+    } else if (idx >= 3) {
+      grow = 1
+      wither = 1
+    }
+    if (grow > 0) {
+      const H = 150 * grow
+      const droop = wither * 26 // 枯萎下垂
+      const leafCol = `rgb(${lerp(86, 150, wither) | 0},${lerp(150, 110, wither) | 0},${lerp(70, 58, wither) | 0})`
+      ctx.strokeStyle = `rgb(${lerp(96, 140, wither) | 0},${lerp(130, 104, wither) | 0},${lerp(60, 56, wither) | 0})`
+      ctx.lineWidth = 7
+      ctx.lineCap = 'round'
+      ctx.beginPath() // 主莖(枯萎時頂端垂下)
+      ctx.moveTo(gx, GROUND_Y)
+      ctx.quadraticCurveTo(gx + 6, GROUND_Y - H * 0.6, gx + 2 + droop * 0.4, GROUND_Y - H + droop)
+      ctx.stroke()
+      ctx.fillStyle = leafCol
+      const leaves = Math.max(1, Math.round(4 * grow))
+      for (let i = 0; i < leaves; i++) {
+        const ly = GROUND_Y - H * (0.4 + i * 0.18) + droop * (0.4 + i * 0.2)
+        const side = i % 2 === 0 ? 1 : -1
+        ctx.save()
+        ctx.translate(gx + side * 16, ly)
+        ctx.rotate(side * (0.5 + wither * 0.7))
+        ctx.beginPath()
+        ctx.ellipse(0, 0, 26 * grow, 11 * grow * (1 - wither * 0.4), 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
+      }
+      // 頂葉(遮蔭的「影兒」:健康時在約拿頭上方畫一片淡蔭)
+      if (wither < 0.5 && grow > 0.7) {
+        ctx.fillStyle = 'rgba(86,150,70,0.25)'
+        ctx.beginPath()
+        ctx.ellipse(jx, GROUND_Y - 96, 70, 16, 0, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    // 第 3 幕:神安排的蟲子 🐛 從右邊爬向蓖麻根部
+    if (idx === 2) {
+      const wx = lerp(VIEW.W - 40, gx + 14, Math.min(1, p * 1.15))
+      this._emoji('🐛', wx, GROUND_Y + 4, 30)
+    }
+
+    // 約拿:蹲姿當坐姿,面向左(望著城)。
+    // 第 1 幕:生氣 💢;第 4 幕:大大發怒(拿 4:9「我發怒以至於死」)——
+    // 比第一幕更氣:怒氣泡泡更大更多、跳更快,人氣到發抖,還被烈日曬出汗 💦
+    const furious = idx === 3
+    const shake = furious ? Math.sin(t * 16) * 1.6 : 0 // 氣到發抖
+    this._prophet(jx + shake, GROUND_Y, 0, false, true, true)
+    const moodBob = Math.sin(t * (furious ? 6 : 3)) * (furious ? 5 : 3)
+    if (idx === 0) this._emoji('💢', jx + 26, GROUND_Y - 78 + moodBob, 26, 'middle')
+    if (furious) {
+      this._emoji('💢', jx + 30, GROUND_Y - 86 + moodBob, 38, 'middle')
+      this._emoji('💢', jx - 26, GROUND_Y - 72 - moodBob, 24, 'middle')
+      this._emoji('💦', jx + 4, GROUND_Y - 56 + moodBob * 0.5, 20, 'middle')
+    }
+
+    // 頂端:五幕進度(完成=🌿,未完成=淡色)
+    for (let i = 0; i < total; i++) {
+      const lx = VIEW.W / 2 + (i - (total - 1) / 2) * 70
+      if (i < (f.done || 0)) {
+        this._emoji('🌿', lx, 54, 30, 'middle')
+      } else {
+        ctx.globalAlpha = 0.3
+        this._emoji('🌿', lx, 54, 26, 'middle')
+        ctx.globalAlpha = 1
+      }
+    }
+
+    // 底部提示
+    ctx.fillStyle = 'rgba(80,60,35,0.8)'
+    ctx.font = '600 18px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'bottom'
+    if (f.phase === 'scene') {
+      ctx.fillText('看著神的「安排」發生……(輕點可跳過)', VIEW.W / 2, VIEW.H - 12)
+    } else {
+      ctx.fillText(`第 ${Math.min(idx + 1, total)} / ${total} 幕`, VIEW.W / 2, VIEW.H - 12)
     }
   }
 

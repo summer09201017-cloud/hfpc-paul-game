@@ -9,10 +9,11 @@ import * as engine from '../core/engine'
 import { sound } from '../audio/sound'
 
 // 可選旅程：roll-and-move 外框可掛多條旅程，各自帶內容(journey)＋底圖(map)。
+// nextKey：這條旅程走完後可「接續」的下一段（宣教接力——帶著福音點數與裝備繼續）。
 const JOURNEYS = [
-  { key: 'paul', journey: journey1, map: regionMapPaul },
-  { key: 'paul2', journey: journey2, map: regionMapPaul2 },
-  { key: 'jonah', journey: journeyJonah, map: regionMapJonah },
+  { key: 'paul', journey: journey1, map: regionMapPaul, nextKey: 'paul2' },
+  { key: 'paul2', journey: journey2, map: regionMapPaul2, nextKey: null }, // 之後接 journey3（第三次旅程）
+  { key: 'jonah', journey: journeyJonah, map: regionMapJonah, nextKey: null },
 ]
 
 const ROLL_MS = 3000 // 跑馬燈轉動時間（3 秒）
@@ -134,6 +135,26 @@ export function useGame() {
     setPhase('setup')
   }, [clearAll])
 
+  // 宣教接力：這條旅程走完後，接著走下一段（JOURNEYS 的 nextKey）。
+  // 玩家名字、福音點數、屬靈裝備帶過去；同工換成新旅程的起點同工
+  // （聖經上各次旅程的同工本來就不同——第二次旅程保羅與巴拿巴分隊、改帶西拉）。
+  const continueJourney = useCallback(() => {
+    if (phase !== 'gameover' || !game) return
+    const next = JOURNEYS.find((j) => j.key === active.nextKey)
+    if (!next) return
+    clearAll()
+    setActiveKey(next.key)
+    sound.unlock()
+    sound.startBgm()
+    const carryConfigs = game.players.map((p) => ({
+      name: p.name,
+      gospelPoints: p.gospelPoints,
+      gifts: p.gifts || [],
+    }))
+    setGame(engine.createGame(carryConfigs, next.journey))
+    setPhase('idle')
+  }, [phase, game, active, clearAll])
+
   const status = game ? engine.getGameStatus(game) : null
   const currentStation =
     game && game.pendingStationId ? engine.getStation(game, game.pendingStationId) : null
@@ -159,10 +180,16 @@ export function useGame() {
     currentQuiz,
     currentCard,
     currentPlayer: game ? game.players[game.currentPlayerIndex] : null,
+    // 走完後可接續的下一段旅程（沒有則 null）——GameOverScreen 用來顯示「接續」按鈕。
+    nextJourney: (() => {
+      const n = JOURNEYS.find((j) => j.key === active.nextKey)
+      return n ? { key: n.key, title: n.journey.title, subtitle: n.journey.subtitle } : null
+    })(),
     startGame,
     rollAndMove,
     resolveStation,
     finishTurn,
     restart,
+    continueJourney,
   }
 }

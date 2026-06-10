@@ -1,6 +1,6 @@
 const MEDALS = ['🥇', '🥈', '🥉']
 
-export default function GameOverScreen({ status, scoreLabel, journey, onRestart }) {
+export default function GameOverScreen({ status, scoreLabel, journey, nextJourney, onRestart, onContinue }) {
   const ranking = status.ranking || []
   const winner = ranking[0]
 
@@ -33,7 +33,16 @@ export default function GameOverScreen({ status, scoreLabel, journey, onRestart 
           ))}
         </div>
 
-        <button className="btn btn--primary gameover__btn" onClick={onRestart}>
+        {nextJourney && (
+          <button className="btn btn--primary gameover__btn" onClick={onContinue}>
+            ⛵ 接續下一段：{nextJourney.title}
+            <span className="gameover__carry">（帶著{scoreLabel}與裝備繼續宣教！）</span>
+          </button>
+        )}
+        <button
+          className={`btn ${nextJourney ? '' : 'btn--primary'} gameover__btn`}
+          onClick={onRestart}
+        >
           🔄 再玩一次
         </button>
       </div>

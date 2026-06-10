@@ -1,14 +1,14 @@
-import { VIEW, GROUND_Y, RUN, WALK, PLAYER, LIVES, INVULN_TIME, FARE, FISH, NINEVEH, PREACH } from './config.js'
+import { VIEW, GROUND_Y, RUN, WALK, PLAYER, LIVES, INVULN_TIME, FARE, FISH, NINEVEH, PREACH, GOURD } from './config.js'
 import { Player } from './player.js'
 import { Spawner } from './spawner.js'
 import { Renderer } from './renderer.js'
 import { Input } from './input.js'
 import { Audio } from './audio.js'
 import { Storm } from './storm.js'
-import { LEVEL1, LEVEL2, LEVEL3, LEVEL4, LEVEL5 } from './scripture.js'
+import { LEVEL1, LEVEL2, LEVEL3, LEVEL4, LEVEL5, LEVEL6 } from './scripture.js'
 import { QUESTIONS, pickQuestions, quizRemark } from './quiz.js'
 
-const STATE = { TITLE: 'title', PLAYING: 'playing', PAUSED: 'paused', WIN: 'win', LOSE: 'lose', QUIZ: 'quiz', FISH: 'fish', PREACH: 'preach' }
+const STATE = { TITLE: 'title', PLAYING: 'playing', PAUSED: 'paused', WIN: 'win', LOSE: 'lose', QUIZ: 'quiz', FISH: 'fish', PREACH: 'preach', GOURD: 'gourd' }
 const STEP = 1 / 60 // 固定時間步長,讓物理在任何更新率下都一致
 
 export class Game {
@@ -39,6 +39,7 @@ export class Game {
     this.quiz = null // 進行中的聖經問答(null=沒有);{list,pos,correct,returnTo,single}
     this.fish = null // 第三關大魚肚的禱告進度;{stations,idx,lit,total,lastCorrect}
     this.preach = null // 第五關尼尼微傳道的進度;{stations,idx,repented,total,dist,phase}
+    this.gourd = null // 第六關蓖麻樹的進度;{stations,idx,done,total,t,phase}
     this.last = 0
     this.acc = 0
     this.stopped = false // 嵌入卸載時設 true，停止 requestAnimationFrame 迴圈
@@ -73,6 +74,7 @@ export class Game {
     this.ui.onQuizAction((act, ds) => this.handleQuizAction(act, ds)) // 聖經問答按鈕
     this.ui.onFishAction((act, ds) => this.handleFishAction(act, ds)) // 第三關大魚肚按鈕
     this.ui.onPreachAction((act, ds) => this.handlePreachAction(act, ds)) // 第五關傳道按鈕
+    this.ui.onGourdAction((act, ds) => this.handleGourdAction(act, ds)) // 第六關蓖麻樹按鈕
     this.ui.setMuteIcon(Audio.muted)
     this.ui.showTitle(LEVEL1)
 
@@ -161,7 +163,8 @@ export class Game {
 
   // 重玩目前這一關(失敗/暫停→重新開始 用)
   restartCurrent() {
-    if (this.level === 5) this.startPreach()
+    if (this.level === 6) this.startGourd()
+    else if (this.level === 5) this.startPreach()
     else if (this.level === 4) this.startNineveh(this.mode)
     else if (this.level === 3) this.startFish()
     else if (this.level === 2) this.startStorm()
@@ -174,7 +177,8 @@ export class Game {
     else if (this.level === 2) this.startFish()
     else if (this.level === 3) this.startNineveh('run') // 大魚肚 → 上岸往尼尼微(跑酷)
     else if (this.level === 4) this.startPreach() // 進了城門 → 尼尼微傳道(對話)
-    // 第五關之後(蓖麻樹)尚未製作
+    else if (this.level === 5) this.startGourd() // 全城悔改 → 蓖麻樹(反思結局)
+    else if (this.level === 6) this.toTitle() // 全書完 → 回標題
   }
 
   loop(t) {
@@ -230,6 +234,12 @@ export class Game {
     // 第五關「尼尼微傳道」的走路段交給 _preachStep(對話作答時不在 PLAYING,不會進來)
     if (this.level === 5) {
       this._preachStep(dt)
+      return
+    }
+
+    // 第六關「蓖麻樹」的場景動畫交給 _gourdStep(反思作答時不在 PLAYING,不會進來)
+    if (this.level === 6) {
+      this._gourdStep(dt)
       return
     }
 
@@ -421,19 +431,26 @@ export class Game {
     if (this.embed) return this._finish(true)
     if (this.level === 2) {
       // 暴風雨:無寶物分數;下一關 = 大魚肚
-      this.ui.showWin(LEVEL2, null, { showCoins: false, nextLabel: '下一關 · 大魚肚', nextEnabled: true })
+      this.ui.showWin(LEVEL2, null, {
+        showCoins: false,
+        nextLabel: '下一關 · 大魚肚',
+        nextEnabled: true,
+        progress: '約拿的旅程 2 / 6',
+      })
     } else if (this.level === 4) {
       // 上岸→尼尼微:有寶物分數;下一關 = 尼尼微傳道
       this.ui.showWin(LEVEL4, this.coinsCollected, {
         showCoins: true,
         nextLabel: '下一關 · 尼尼微傳道',
         nextEnabled: true,
+        progress: '約拿的旅程 4 / 6',
       })
     } else {
       this.ui.showWin(LEVEL1, this.coinsCollected, {
         showCoins: true,
         nextLabel: '下一關 · 暴風雨',
         nextEnabled: true,
+        progress: '約拿的旅程 1 / 6',
       })
     }
   }
@@ -714,6 +731,7 @@ export class Game {
       showCoins: false,
       nextLabel: '下一關 · 上岸往尼尼微',
       nextEnabled: true,
+      progress: '約拿的旅程 3 / 6',
     })
   }
 
@@ -818,8 +836,104 @@ export class Game {
     Audio.sfx('win')
     this.ui.showWin(LEVEL5, null, {
       showCoins: false,
-      nextLabel: '下一關 · 蓖麻樹(製作中)',
-      nextEnabled: false,
+      nextLabel: '下一關 · 蓖麻樹',
+      nextEnabled: true,
+      progress: '約拿的旅程 5 / 6',
+    })
+  }
+
+  // ---- 第六關 蓖麻樹(反思結局):五幕場景動畫——蓖麻、蟲子、東風都是神「安排」的,
+  //      玩家不操控、只觀看(可輕點跳過),每幕結束回答一個反思題;五幕走完 = 全書完。----
+  handleGourdAction(act, ds) {
+    if (act === 'gourd-start') this.startGourd()
+    else if (act === 'gourd-begin') {
+      this.gourd.idx = 0
+      this._gourdStartScene()
+    } else if (act === 'gourd-choice') this.answerGourd(Number(ds.choice))
+    else if (act === 'gourd-continue') this._gourdContinue()
+    else if (act === 'gourd-retry') this._showGourdQuestion()
+  }
+
+  startGourd() {
+    this._enterImmersive()
+    this.level = 6
+    this.gourd = {
+      stations: LEVEL6.stations,
+      idx: 0,
+      done: 0, // 已完成(答對)的幕數
+      total: LEVEL6.stations.length,
+      t: 0, // 本幕場景動畫已播放秒數
+      phase: 'intro', // intro / scene(場景動畫) / ask(反思作答) / done
+    }
+    this.player.reset()
+    this.state = STATE.GOURD
+    this.ui.hidePauseButton()
+    Audio.unlock()
+    Audio.stopMusic() // 城外安靜的黃昏與清晨,不放輕快旋律
+    this.ui.showGourdIntro(LEVEL6)
+  }
+
+  // 播這一幕的場景動畫;收起卡片,進 PLAYING 讓 step 跑
+  _gourdStartScene() {
+    this.gourd.phase = 'scene'
+    this.gourd.t = 0
+    this.ui.hide()
+    this.ui.hidePauseButton()
+    this.state = STATE.PLAYING
+  }
+
+  // 場景動畫更新(phase==='scene'):看著神的「安排」發生;輕點/跳鍵可跳過,播完出反思題
+  _gourdStep(dt) {
+    const f = this.gourd
+    if (!f || f.phase !== 'scene') return
+    const skip = this.input.consumeJump() || this.input.consumeTap() || this.input.consumePress()
+    f.t += dt
+    if (skip) f.t = GOURD.sceneTime // 跳過:直接視為播完
+    if (f.t >= GOURD.sceneTime) {
+      f.phase = 'ask'
+      this.state = STATE.GOURD
+      Audio.sfx('treasure', { value: 1 })
+      this._showGourdQuestion()
+    }
+  }
+
+  _showGourdQuestion() {
+    this.ui.showGourdQuestion(this.gourd.stations[this.gourd.idx], this.gourd.idx, this.gourd.total)
+  }
+
+  answerGourd(choice) {
+    if (!this.gourd || this.gourd.phase !== 'ask') return
+    const st = this.gourd.stations[this.gourd.idx]
+    if (choice === st.answer) {
+      this.gourd.done = this.gourd.idx + 1 // 答對 = 完成這一幕
+      Audio.sfx('treasure', { value: 5 })
+      this.ui.showGourdReveal(st, this.gourd.idx === this.gourd.total - 1)
+    } else {
+      Audio.sfx('hit') // 答錯:再想一次(反思關,不懲罰)
+      this.ui.showGourdTryAgain()
+    }
+  }
+
+  _gourdContinue() {
+    if (!this.gourd) return
+    if (this.gourd.idx >= this.gourd.total - 1) this._gourdWin()
+    else {
+      this.gourd.idx += 1
+      this._gourdStartScene() // 進入下一幕
+    }
+  }
+
+  _gourdWin() {
+    this.gourd.done = this.gourd.total
+    this.gourd.phase = 'done'
+    this.state = STATE.WIN
+    this.ui.hidePauseButton()
+    Audio.sfx('win')
+    this.ui.showWin(LEVEL6, null, {
+      showCoins: false,
+      nextLabel: '🏠 回標題(全書完)',
+      nextEnabled: true, // next() 在第六關會回標題
+      progress: '約拿的旅程 6 / 6 · 全書完 🎉',
     })
   }
 }

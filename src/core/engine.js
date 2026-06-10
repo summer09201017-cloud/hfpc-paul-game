@@ -21,7 +21,9 @@ function clonefPlayers(players) {
 
 /**
  * 建立一場新遊戲。
- * @param {Array<{name:string}>} playerConfigs 玩家設定（1~4 人）
+ * @param {Array<{name:string, gospelPoints?:number, gifts?:string[]}>} playerConfigs 玩家設定（1~4 人）。
+ *   gospelPoints / gifts 可選——「接續上一段旅程」時帶入累積的分數與屬靈裝備（宣教接力）；
+ *   同工一律換成新旅程的起點同工（聖經上各次旅程的同工本來就不同）。
  * @param {object} board journeyX.json 的內容（含 stations）
  */
 export function createGame(playerConfigs, board) {
@@ -33,9 +35,9 @@ export function createGame(playerConfigs, board) {
     name: cfg.name && cfg.name.trim() ? cfg.name.trim() : `玩家 ${i + 1}`,
     color: PLAYER_COLORS[i % PLAYER_COLORS.length],
     position: 0, // station index
-    gospelPoints: 0,
+    gospelPoints: typeof cfg.gospelPoints === 'number' ? cfg.gospelPoints : 0,
     companions: [...startCompanions],
-    gifts: [...(startStation.startGifts || [])], // 屬靈裝備/恩賜（全副軍裝）；被動加成見 board.gifts
+    gifts: Array.isArray(cfg.gifts) ? [...cfg.gifts] : [...(startStation.startGifts || [])], // 屬靈裝備/恩賜（全副軍裝）；被動加成見 board.gifts
     skipNext: false, // 下一回合是否要暫停（被石頭打傷之類）
     finished: false, // 是否已抵達終點
   }))
@@ -118,17 +120,28 @@ export function advance(state, quizRoll = 0, cardRoll = 0) {
   const players = clonefPlayers(state.players)
   const player = players[state.currentPlayerIndex]
 
-  let target = Math.min(player.position + state.diceValue, lastIndex)
+  const wanted = player.position + state.diceValue // 骰子原本要走到的位置
+  let target = Math.min(wanted, lastIndex)
+  let stopReason = wanted > lastIndex ? 'end' : null // 終點卡住（不能超過最後一站）
   // 必停檢查點：不可一步跨過（例如「海上遇風暴」必須停下來玩過才能前進）。
   // 夾在「目前位置之後、射程之內」的第一個 mustStop 站。
   for (let i = player.position + 1; i <= target; i++) {
     if (state.board.stations[i].mustStop) {
+      if (i < target || stopReason === 'end') stopReason = 'mustStop'
       target = i
       break
     }
   }
   player.position = target
   const station = state.board.stations[target]
+
+  // 提前停下的說明（給畫面顯示，免得玩家以為「步數和骰子不符」是 bug）。
+  const moveNote =
+    stopReason === 'mustStop'
+      ? `⚓ 「${station.name}」是必停站——骰子擲出 ${state.diceValue} 點，但這裡必須停下來完成才能繼續前進。`
+      : stopReason === 'end'
+        ? `🏁 已抵達旅程終點——骰子擲出 ${state.diceValue} 點，多的步數不需要走了。`
+        : null
 
   // 這一輪從該格題庫抽中哪一題（沒有題目則為 null）。
   const pendingQuizIndex = pickIndex(getQuizPool(station).length, quizRoll)
@@ -145,9 +158,14 @@ export function advance(state, quizRoll = 0, cardRoll = 0) {
     pendingStationId: station.id,
     pendingQuizIndex,
     pendingCard,
+    moveNote,
     lastMoverId: player.id,
     phase: 'resolving',
-    log: pushLog(state.log, `${player.name} 擲出 ${state.diceValue}，前進到「${station.name}」。`),
+    log: pushLog(
+      state.log,
+      `${player.name} 擲出 ${state.diceValue}，前進到「${station.name}」。` +
+        (stopReason === 'mustStop' ? '（必停站，先停下）' : stopReason === 'end' ? '（已到終點）' : ''),
+    ),
   }
 }
 
@@ -224,7 +242,7 @@ export function resolve(state, payload = {}) {
       const mb = passiveBonus(board, player, 'minigameBonus', startPoints)
       if (mb.bonus > 0) {
         player.gospelPoints += mb.bonus
-        result.lines.push(`有 ${mb.sources.join('、')} 助陣，闖關額外 +${mb.bonus}`)
+        result.lines.push(`有 ${mb.sources.join('、')} 相助，闖關額外 +${mb.bonus}`)
       }
     } else {
       result.lines.push('闖關沒成功，沒關係，重要的是有嘗試！')
@@ -249,7 +267,7 @@ export function resolve(state, payload = {}) {
       const qb = passiveBonus(board, player, 'quizBonus', startPoints)
       if (qb.bonus > 0) {
         player.gospelPoints += qb.bonus
-        result.lines.push(`有 ${qb.sources.join('、')} 同行/裝備，答對額外 +${qb.bonus}`)
+        result.lines.push(`有 ${qb.sources.join('、')} 相助，答對額外 +${qb.bonus}`)
       }
     } else {
       result.lines.push('答錯了，這一題沒有加分——沒關係，再接再厲！')
@@ -319,6 +337,16 @@ function applyEffect(player, effect, result, scoreLabel, board, srcLabel = '') {
       player.skipNext = true
       result.lines.push('下一回合暫停一次')
     }
+  }
+  // 卡片移動（如約拿命運卡「神安排大魚：前進 2 格」）：直接推移棋子、夾在棋盤範圍內。
+  // 是「被送了一程」的紅利移動——不觸發新落點的劇情/問答，也不卡必停站（大魚直接載過去）。
+  if (typeof effect.move === 'number' && effect.move !== 0 && board) {
+    const lastIdx = board.stations.length - 1
+    const from = player.position
+    player.position = Math.max(0, Math.min(lastIdx, from + effect.move))
+    const delta = player.position - from
+    if (delta > 0) result.lines.push(`🎲 順勢前進 ${delta} 格，來到「${board.stations[player.position].name}」`)
+    else if (delta < 0) result.lines.push(`↩️ 往後退 ${-delta} 格，回到「${board.stations[player.position].name}」`)
   }
 }
 
@@ -408,7 +436,7 @@ export function endTurn(state) {
 
   const status = getGameStatus(state)
   if (status.over) {
-    return { ...state, phase: 'gameover', diceValue: null, pendingStationId: null, pendingQuizIndex: null, pendingCard: null }
+    return { ...state, phase: 'gameover', diceValue: null, pendingStationId: null, pendingQuizIndex: null, pendingCard: null, moveNote: null }
   }
 
   const players = clonefPlayers(state.players)
@@ -416,7 +444,7 @@ export function endTurn(state) {
 
   // 沒有人能再行動（全部完成或全部卡住）→ 結束
   if (nextIndex === -1) {
-    return { ...state, players, phase: 'gameover', diceValue: null, pendingStationId: null, pendingQuizIndex: null, pendingCard: null }
+    return { ...state, players, phase: 'gameover', diceValue: null, pendingStationId: null, pendingQuizIndex: null, pendingCard: null, moveNote: null }
   }
 
   return {
@@ -427,6 +455,7 @@ export function endTurn(state) {
     pendingStationId: null,
     pendingQuizIndex: null,
     pendingCard: null,
+    moveNote: null,
     lastResult: null,
     turnCount: state.turnCount + 1,
     phase: 'idle',

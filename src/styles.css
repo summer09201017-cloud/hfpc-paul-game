@@ -695,6 +695,24 @@ body {
   width: 100%;
 }
 
+/* 提前停下說明（必停站 / 已到終點）——免得玩家以為步數和骰子不符是 bug */
+.modal__movenote {
+  background: #fff7df;
+  border: 1px solid #e8cf8a;
+  border-radius: 10px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.92rem;
+  color: #6b4d12;
+  margin: 0 0 0.6rem;
+}
+/* 結束畫面「接續下一段旅程」按鈕的小字 */
+.gameover__carry {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
 /* ---------- 彈窗 ---------- */
 .modal__overlay {
   position: fixed;

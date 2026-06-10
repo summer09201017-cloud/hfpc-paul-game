@@ -20,6 +20,7 @@ export default function StationModal({
   result,
   scoreLabel,
   currentPlayer,
+  moveNote,
   onResolve,
   onFinish,
 }) {
@@ -53,6 +54,7 @@ export default function StationModal({
         </div>
 
         <div className="modal__body">
+          {moveNote && <p className="modal__movenote">{moveNote}</p>}
           <p className="modal__text">{station.text}</p>
 
           {station.history && (
