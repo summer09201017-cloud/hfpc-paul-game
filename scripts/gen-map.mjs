@@ -6,8 +6,9 @@
 //
 //   輸入：scripts/_geodata/ne50m_countries.geojson  (下載自 Natural Earth)
 //   輸出（每條旅程一組）：
-//     journey1 → src/data/region-map.json   + 寫回 journey1.json
-//     journey2 → src/data/region-map2.json  + 寫回 journey2.json
+//     journey1     → src/data/region-map.json       + 寫回 journey1.json
+//     journey2     → src/data/region-map2.json      + 寫回 journey2.json
+//     journey-jonah→ src/data/region-map-jonah.json + 寫回 journey-jonah.json
 //
 // 投影：等距圓柱投影 (equirectangular)，經度乘上 cos(中央緯度) 修正寬窄，
 //       再各自正規化到 0~100。棋盤容器的長寬比設為 aspect 即可避免變形。
@@ -233,5 +234,50 @@ buildRegion({
     ephesus2:       { lat: 37.94, lon: 27.34 }, // 以弗所（短暫停留）
     caesarea2:      { lat: 32.50, lon: 34.89 }, // 該撒利亞（回程登岸）
     antioch2_end:   { lat: 36.42, lon: 36.40 }, // 回到安提阿（旅程結束）
+  },
+})
+
+// ===========================================================================
+// 約拿宣教之旅（真實地理版）——東地中海岸 → 美索不達米亞。
+//   教學重點：約拿被召去「東邊」的尼尼微（地圖最右、底格里斯河畔），卻往「西邊」
+//   逃出海（往他施／Tarshish，遠在地中海西端、出圖外，用箭頭示意）；大魚之後再
+//   往東去尼尼微。海上各站＝約帕以西的地中海「途中站」（非城市，給海面座標）。
+// ===========================================================================
+buildRegion({
+  label: '約拿宣教之旅',
+  bounds: { lonMin: 30.0, lonMax: 44.5, latMin: 29.5, latMax: 37.8 },
+  // 以色列/巴勒斯坦、黎巴嫩、敘利亞、約旦、伊拉克（尼尼微/美索不達米亞）、土耳其、賽普勒斯、埃及、沙烏地北緣
+  iso: ['ISR', 'PSE', 'LBN', 'SYR', 'JOR', 'IRQ', 'TUR', 'CYP', 'CYN', 'EGY', 'SAU'],
+  journeyFile: 'journey-jonah.json',
+  mapFile: 'region-map-jonah.json',
+  labels: [
+    { t: '地　中　海', lat: 30.4, lon: 32.2, kind: 'sea' },
+    { t: '⟵ 往他施（Tarshish，地中海西端）', lat: 34.7, lon: 30.4, kind: 'sea' },
+    { t: '以色列', lat: 31.0, lon: 35.4, kind: 'region' },
+    { t: '曠野（往尼尼微 ⟶）', lat: 34.9, lon: 39.0, kind: 'region' },
+    { t: '亞述 · 尼尼微', lat: 37.4, lon: 41.8, kind: 'region' },
+  ],
+  // 海上各站把弧線「撐大」一點，免得擠在一起（投影後仍落在約帕以西的地中海）。
+  cities: {
+    jonah_call:       { lat: 32.95, lon: 35.55 }, // 迦特希弗（約拿家鄉，神的呼召；內陸偏東）
+    road_to_joppa:    { lat: 32.55, lon: 35.20 }, // 下約帕的路上（機會卡，途中站）
+    flee_joppa:       { lat: 32.05, lon: 34.75 }, // 約帕港（下到海邊逃跑）
+    board_tarshish:   { lat: 31.80, lon: 34.05 }, // 上船出海（往西）
+    sea_chance:       { lat: 32.55, lon: 33.05 }, // 海上途中
+    great_storm:      { lat: 33.55, lon: 32.20 }, // 海上遇大風暴
+    cast_into_sea:    { lat: 34.10, lon: 31.20 }, // 被拋在海中
+    sink_deep_fate:   { lat: 33.95, lon: 30.55 }, // 沉入深海（命運卡，海面途中站）
+    great_fish:       { lat: 33.30, lon: 30.30 }, // 大魚吞了約拿（逃得最遠處，近他施方向）
+    belly_prayer1:    { lat: 32.55, lon: 30.45 }, // 魚腹禱告 · 呼求（大魚開始把他帶回）
+    belly_prayer_hope:{ lat: 32.05, lon: 30.85 }, // 魚腹禱告 · 仰望
+    belly_prayer2:    { lat: 31.75, lon: 31.55 }, // 魚腹禱告 · 救恩
+    fish_fate:        { lat: 31.55, lon: 32.65 }, // 神吩咐大魚
+    spit_dry_land:    { lat: 31.55, lon: 33.85 }, // 吐在旱地上（回到海岸）
+    second_call:      { lat: 33.55, lon: 37.10 }, // 神第二次呼召（起身往東，內陸）
+    desert_run:       { lat: 34.65, lon: 39.30 }, // 曠野趕路（第四關闖關站，幼發拉底曠野）
+    nineveh_gate_fate:{ lat: 35.55, lon: 41.40 }, // 三日路程的大城（命運卡，近尼尼微）
+    nineveh_repents:  { lat: 36.20, lon: 42.95 }, // 尼尼微全城悔改
+    plant_lesson:     { lat: 36.85, lon: 43.65 }, // 蓖麻樹的功課（城外東北）
+    gods_mercy:       { lat: 35.75, lon: 42.55 }, // 神憐憫尼尼微（城南）
   },
 })
