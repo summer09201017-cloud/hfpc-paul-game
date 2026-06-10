@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "gen:icons": "node scripts/gen-icons.mjs",
     "gen:map": "node scripts/gen-map.mjs",
+    "sync:jonah": "node scripts/sync-jonah-engine.mjs",
     "validate": "node scripts/validate.mjs src/data/journey1.json",
     "test:selfplay": "node scripts/selfplay.mjs",
     "test:browser": "node scripts/browser-playtest.mjs"

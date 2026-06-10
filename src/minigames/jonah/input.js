@@ -8,6 +8,7 @@ export class Input {
   constructor() {
     this.right = false // → / D 是否按住
     this.left = false // ← / A 是否按住
+    this.down = false // ↓ / S 是否按住(第三關蹲下)
     this.jumpQueued = false // 鍵盤跳躍(邊緣)
     this.pauseQueued = false // 暫停(邊緣;鍵盤或右上角熱區)
     this.muteQueued = false // 靜音切換(邊緣;M 鍵)
@@ -28,7 +29,7 @@ export class Input {
 
   attach(canvas) {
     this.canvas = canvas
-    // 處理器存成具名參考，detach() 才能移除（嵌入反覆進出小遊戲不會累積監聽）。
+    // 處理器存成具名參考,detach() 才能移除(嵌入反覆進出小遊戲不會累積監聽)。
     this._onKeyDown = (e) => {
       switch (e.code) {
         case 'Space':
@@ -44,6 +45,11 @@ export class Input {
         case 'ArrowLeft':
         case 'KeyA':
           this.left = true
+          break
+        case 'ArrowDown':
+        case 'KeyS':
+          e.preventDefault()
+          this.down = true
           break
         case 'KeyP':
         case 'Escape':
@@ -64,6 +70,10 @@ export class Input {
         case 'ArrowLeft':
         case 'KeyA':
           this.left = false
+          break
+        case 'ArrowDown':
+        case 'KeyS':
+          this.down = false
           break
       }
     }
@@ -111,7 +121,7 @@ export class Input {
     }
     this._onBlur = () => {
       // 視窗失焦時清掉「按住」狀態,避免卡住一直走/跳
-      this.right = this.left = false
+      this.right = this.left = this.down = false
       this.pointerDown = false
     }
 
@@ -124,7 +134,7 @@ export class Input {
     window.addEventListener('blur', this._onBlur)
   }
 
-  // 移除所有監聽（嵌入卸載時呼叫）。
+  // 移除所有監聽(嵌入卸載時 game.destroy() 呼叫;單機不會用到)。
   detach() {
     if (this._onKeyDown) window.removeEventListener('keydown', this._onKeyDown)
     if (this._onKeyUp) window.removeEventListener('keyup', this._onKeyUp)

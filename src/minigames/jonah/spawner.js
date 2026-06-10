@@ -18,7 +18,7 @@ const TREASURES = [
   { emoji: '🪙', kind: 'points', value: 1, weight: 50, r: 16, size: 30 }, // 船價(最常見)
   { emoji: '🏺', kind: 'points', value: 3, weight: 22, r: 17, size: 32 }, // 陶罐
   { emoji: '📜', kind: 'points', value: 5, weight: 14, r: 17, size: 30 }, // 經卷
-  { emoji: '🕊️', kind: 'points', value: 10, weight: 8, r: 17, size: 32 }, // 鴿子(平安的象徵)
+  { emoji: '🕊️', kind: 'points', value: 10, weight: 8, r: 17, size: 32 }, // 鴿子(約拿之名)
   { emoji: '❤️', kind: 'life', value: 0, weight: 6, r: 16, size: 30 }, // 補一條命
 ]
 const TREASURE_WEIGHT = TREASURES.reduce((s, t) => s + t.weight, 0)
@@ -60,7 +60,7 @@ export class Spawner {
   update(dt, speed, distanceTraveled, goalDistance, enemiesOn = false) {
     const dx = speed * dt
 
-    // 接近終點時不再生成障礙,留一段乾淨跑道讓保羅跑向終點
+    // 接近終點時不再生成障礙,留一段乾淨跑道讓約拿跑向船
     const spawning = distanceTraveled < goalDistance - 1000
 
     // ---- 障礙 ----

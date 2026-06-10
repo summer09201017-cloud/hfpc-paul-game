@@ -16,6 +16,10 @@ const LEVELS = {
     title: '🌊 海上遇風暴',
     how: '船在風浪中搖晃！用 ← → 方向鍵（或點畫面左右兩側）把船扶正，撐過風暴就過關！',
   },
+  4: {
+    title: '🏜️ 曠野趕路 → 尼尼微',
+    how: '空白鍵 / ↑ / 點畫面 = 跳，穿過曠野、躲過障礙，跑到尼尼微城門就過關！',
+  },
 }
 
 // 把約拿的即時小遊戲嵌進保羅彈窗：掛一個 canvas，啟動引擎（嵌入模式），
@@ -25,7 +29,7 @@ export default function MiniGameModal({ minigame, onComplete }) {
   const gameRef = useRef(null)
   const [started, setStarted] = useState(false)
 
-  const level = minigame.level === 1 ? 1 : 2
+  const level = [1, 2, 4].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單 1/2/4（見約拿 CLAUDE.md 嵌入契約）
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡的預設）。
   const info = {
     title: minigame.label || LEVELS[level].title,
@@ -43,6 +47,10 @@ export default function MiniGameModal({ minigame, onComplete }) {
       embed: true,
       level,
       mode: minigame.mode === 'walk' ? 'walk' : 'run',
+      // 進度條地名:站點可在 minigame.hudLabels 覆寫(如約拿路線傳 { start:'約帕', goal:'往他施的船 ⛵' })。
+      // 沒覆寫時:第 1 關用通用「起點 → 終點 ⛵」(同一跑酷引擎被任何旅程重用);
+      // 其他關(如 4=曠野→尼尼微)傳 undefined,讓引擎用該關自己的預設(LEVELx.hud,嵌入契約)。
+      hudLabels: minigame.hudLabels || (level === 1 ? { start: '起點', goal: '終點 ⛵' } : undefined),
       onComplete: (result) => onComplete(result),
     })
     gameRef.current = game
