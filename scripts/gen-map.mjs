@@ -222,18 +222,26 @@ buildRegion({
     { t: '地　中　海', lat: 33.6, lon: 28.5, kind: 'sea' },
   ],
   cities: {
-    antioch2_start: { lat: 36.20, lon: 36.16 }, // 敘利亞安提阿（出發）
-    derbe2:         { lat: 37.35, lon: 33.28 }, // 特庇
-    lystra2:        { lat: 37.58, lon: 32.45 }, // 路司得（提摩太加入）
-    troas:          { lat: 39.78, lon: 26.16 }, // 特羅亞（馬其頓異象）
-    philippi:       { lat: 41.01, lon: 24.29 }, // 腓立比（歐洲第一間教會）
-    thessalonica:   { lat: 40.64, lon: 22.94 }, // 帖撒羅尼迦
-    berea:          { lat: 40.52, lon: 22.20 }, // 庇哩亞
-    athens:         { lat: 37.98, lon: 23.73 }, // 雅典（亞略巴古）
-    corinth:        { lat: 37.91, lon: 22.88 }, // 哥林多（住一年半）
-    ephesus2:       { lat: 37.94, lon: 27.34 }, // 以弗所（短暫停留）
-    caesarea2:      { lat: 32.50, lon: 34.89 }, // 該撒利亞（回程登岸）
-    antioch2_end:   { lat: 36.42, lon: 36.40 }, // 回到安提阿（旅程結束）
+    antioch2_start:     { lat: 36.20, lon: 36.16 }, // 敘利亞安提阿（出發）
+    cilicia_strengthen: { lat: 36.92, lon: 34.90 }, // 敘利亞與基利家（大數一帶，堅固教會）
+    cilician_gates:     { lat: 37.28, lon: 34.61 }, // 翻越托魯斯山（基利家門隘口，闖關站）
+    derbe2:             { lat: 37.35, lon: 33.28 }, // 特庇
+    lystra2:            { lat: 37.58, lon: 32.45 }, // 路司得（提摩太加入）
+    phrygia_galatia:    { lat: 38.85, lon: 29.20 }, // 弗呂家、加拉太（聖靈攔阻）
+    troas:              { lat: 39.78, lon: 26.16 }, // 特羅亞（馬其頓異象）
+    neapolis:           { lat: 40.94, lon: 24.41 }, // 尼亞波利（福音登陸歐洲的第一個港口）
+    philippi:           { lat: 41.01, lon: 24.29 }, // 腓立比（歐洲第一間教會）
+    amphipolis_chance:  { lat: 40.74, lon: 23.70 }, // 經過暗妃波里（機會卡，羅馬大道途中）
+    thessalonica:       { lat: 40.64, lon: 22.94 }, // 帖撒羅尼迦
+    berea:              { lat: 40.52, lon: 22.20 }, // 庇哩亞
+    aegean_fate:        { lat: 39.30, lon: 23.40 }, // 愛琴海航路（命運卡，海上途中站）
+    athens:             { lat: 37.98, lon: 23.73 }, // 雅典（亞略巴古）
+    corinth:            { lat: 37.91, lon: 22.88 }, // 哥林多（住一年半）
+    cenchreae:          { lat: 37.72, lon: 23.30 }, // 堅革哩（哥林多東邊外港，剪髮許願；稍偏移避免和哥林多重疊）
+    ephesus2:           { lat: 37.94, lon: 27.34 }, // 以弗所（短暫停留）
+    med_voyage:         { lat: 34.60, lon: 31.50 }, // 地中海長航（闖關站，海上）
+    caesarea2:          { lat: 32.50, lon: 34.89 }, // 該撒利亞（回程登岸）
+    antioch2_end:       { lat: 36.42, lon: 36.40 }, // 回到安提阿（旅程結束）
   },
 })
 

@@ -4,6 +4,26 @@
   "subtitle": "約拿書 1–4 章 · 從他施到尼尼微",
   "scoreLabel": "順服點數",
   "turnCap": 160,
+  "titles": [
+    {
+      "min": 0,
+      "name": "蒙召的人"
+    },
+    {
+      "min": 8,
+      "name": "回轉的人"
+    },
+    {
+      "min": 16,
+      "name": "順服的僕人",
+      "quizBonus": 1
+    },
+    {
+      "min": 26,
+      "name": "憐憫的使者",
+      "quizBonus": 1
+    }
+  ],
   "decks": {
     "chance": [
       {

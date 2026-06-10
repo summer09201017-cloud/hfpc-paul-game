@@ -631,44 +631,65 @@ body {
   display: inline-block;
   margin-bottom: 0.8rem;
 }
-/* ---- 骰子（六面，點數呈現，1~6 點）---- */
-.die {
-  width: clamp(4rem, 10vw, 5.6rem);
-  height: clamp(4rem, 10vw, 5.6rem);
+/* ---- 3D 骰子（CSS 3D 立方體；對面相加 = 7）---- */
+.die3d-stage {
+  /* 透視舞台：值越小立體感越強 */
+  --die: clamp(4rem, 10vw, 5.6rem);
+  width: var(--die);
+  height: var(--die);
+  perspective: calc(var(--die) * 5);
+  display: inline-block;
+}
+.die3d {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  /* 停下時平滑滾到目標面（含兩整圈），像真的骰子落定 */
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.3, 1);
+  transform: rotateX(720deg) rotateY(720deg);
+}
+.die3d--rolling {
+  transition: none;
+  animation: die3d-tumble 0.7s linear infinite;
+}
+@keyframes die3d-tumble {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(360deg) rotateY(720deg) rotateZ(180deg);
+  }
+}
+.die3d__face {
+  position: absolute;
+  inset: 0;
   background: linear-gradient(155deg, #fff 0%, #fff6e0 100%);
-  border: 4px solid var(--gold, #f3a712);
-  border-radius: 18px;
-  box-shadow: var(--shadow), inset 0 0 0 2px #fff;
+  border: 3px solid var(--gold, #f3a712);
+  border-radius: 16%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  padding: clamp(0.5rem, 1.4vw, 0.8rem);
-  gap: 0;
+  padding: 14%;
   place-items: center;
+  backface-visibility: hidden;
 }
-.die__pip {
-  width: clamp(0.7rem, 1.8vw, 1rem);
-  height: clamp(0.7rem, 1.8vw, 1rem);
+/* 六面方位：half = 邊長一半，各面先轉向再外推 */
+.die3d__face--front  { transform: rotateY(0deg)    translateZ(calc(var(--die) / 2)); }
+.die3d__face--back   { transform: rotateY(180deg)  translateZ(calc(var(--die) / 2)); }
+.die3d__face--right  { transform: rotateY(90deg)   translateZ(calc(var(--die) / 2)); }
+.die3d__face--left   { transform: rotateY(-90deg)  translateZ(calc(var(--die) / 2)); }
+.die3d__face--top    { transform: rotateX(90deg)   translateZ(calc(var(--die) / 2)); }
+.die3d__face--bottom { transform: rotateX(-90deg)  translateZ(calc(var(--die) / 2)); }
+.die3d__pip {
+  width: 55%;
+  height: 55%;
   border-radius: 50%;
   background: transparent;
 }
-.die__pip--on {
+.die3d__pip--on {
   background: var(--accent-warm, #e4572e);
   box-shadow: inset 0 -2px 2px rgba(0, 0, 0, 0.18);
-}
-.die--rolling {
-  animation: die-shake 0.18s linear infinite;
-}
-@keyframes die-shake {
-  0%,
-  100% {
-    transform: rotate(-7deg) scale(1);
-    border-color: var(--gold, #f3a712);
-  }
-  50% {
-    transform: rotate(7deg) scale(1.06);
-    border-color: var(--accent-warm, #e4572e);
-  }
 }
 .dice__btn {
   width: 100%;

@@ -1,4 +1,5 @@
-// 骰子：標準六面骰，用點數（pip）呈現。轉動時點數快速跳動，停下即為前進步數。
+// 骰子：CSS 3D 立方體。轉動時整顆骰子立體翻滾，停下時平滑轉到擲出的那一面。
+// 點數佈局與真實骰子相同（對面相加 = 7：1-6、2-5、3-4）。
 // PIPS：3×3 格中哪幾格要亮點（標準骰子佈局）。
 const PIPS = {
   1: [4],
@@ -9,13 +10,43 @@ const PIPS = {
   6: [0, 2, 3, 5, 6, 8],
 }
 
-function Die({ value, rolling }) {
+// 立方體六面的擺放（face 值 → 該面在立方體上的方位 class）。
+const FACE_POS = { 1: 'front', 6: 'back', 3: 'right', 4: 'left', 2: 'top', 5: 'bottom' }
+
+// 「讓某一面轉到正前方」的最終角度（加兩整圈，停下前還會多翻幾圈才落定）。
+const FACE_ROT = {
+  1: { x: 0, y: 0 },
+  2: { x: 90, y: 0 }, // top 轉下來
+  3: { x: 0, y: -90 }, // right 轉過來
+  4: { x: 0, y: 90 }, // left 轉過來
+  5: { x: -90, y: 0 }, // bottom 轉上來
+  6: { x: 0, y: 180 }, // back 轉過來
+}
+
+function Face({ value }) {
   const on = new Set(PIPS[value] || [])
   return (
-    <div className={`die ${rolling ? 'die--rolling' : ''}`} aria-label={`骰子 ${value} 點`}>
+    <div className={`die3d__face die3d__face--${FACE_POS[value]}`}>
       {Array.from({ length: 9 }, (_, i) => (
-        <span key={i} className={`die__pip ${on.has(i) ? 'die__pip--on' : ''}`} />
+        <span key={i} className={`die3d__pip ${on.has(i) ? 'die3d__pip--on' : ''}`} />
       ))}
+    </div>
+  )
+}
+
+function Die3D({ value, rolling }) {
+  const rot = FACE_ROT[value] || FACE_ROT[1]
+  // 停下時：多轉兩整圈再落在目標面，看起來像真的骰子滾到定點。
+  const style = rolling
+    ? undefined
+    : { transform: `rotateX(${720 + rot.x}deg) rotateY(${720 + rot.y}deg)` }
+  return (
+    <div className="die3d-stage" aria-label={`骰子 ${value} 點`}>
+      <div className={`die3d ${rolling ? 'die3d--rolling' : ''}`} style={style}>
+        {[1, 2, 3, 4, 5, 6].map((v) => (
+          <Face key={v} value={v} />
+        ))}
+      </div>
     </div>
   )
 }
@@ -31,7 +62,7 @@ export default function DicePanel({ phase, diceFace, currentPlayer, onRoll }) {
         <strong style={{ color: currentPlayer?.color }}>{currentPlayer?.name}</strong>
       </div>
       <div className="dice__die">
-        <Die value={diceFace} rolling={rolling} />
+        <Die3D value={diceFace} rolling={rolling} />
       </div>
       <button className="btn btn--primary dice__btn" disabled={!canRoll} onClick={onRoll}>
         {rolling ? '擲骰中…' : phase === 'idle' ? '🎲 擲骰子' : '前進中…'}
