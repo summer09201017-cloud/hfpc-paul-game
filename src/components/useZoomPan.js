@@ -129,13 +129,17 @@ export function useZoomPan() {
     [zoomAt],
   )
 
-  // transform 數值一律保證有限，避免 "translate(NaNpx…)" 整塊地圖消失。
+  // 數值一律保證有限，避免 NaN 讓整塊地圖消失。
   const safe = Number.isFinite(tf.s) && Number.isFinite(tf.x) && Number.isFinite(tf.y)
   const t = safe ? tf : { s: 1, x: 0, y: 0 }
 
   return {
     ref,
-    transform: `translate(${t.x}px, ${t.y}px) scale(${t.s})`,
+    // ⚠ 不再回傳 transform scale：手機高 DPR 下「transform 放大」會產生超過 GPU
+    //   紋理上限的合成層 → 整個畫面變白。改由 Board 以「實際版面放大」呈現
+    //   （scene 的 width/height = scale×100%、left/top = x/y px——純排版繪製、可分塊上色）。
+    x: t.x,
+    y: t.y,
     scale: t.s,
     percent: Math.round(t.s * 100),
     minPercent: Math.round(MIN * 100),

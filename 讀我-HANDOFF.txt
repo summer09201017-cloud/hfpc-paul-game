@@ -1,6 +1,6 @@
 ============================================================
 讀我 — HANDOFF(給 HFPC 那台 PC 的 AI / 開發者)
-更新:2026-06-10 晚(約拿全書完 + 全六關嵌入保羅)
+更新:2026-06-11(手感大調整上線:衝刺/曠野蛇蠍/拋約拿入海)
 ============================================================
 
 這個資料夾裡有「兩個獨立但相關」的聖經遊戲專案:
@@ -20,13 +20,31 @@
 
 ■ 接手第一步:每個專案都先讀這三份(在各自的資料夾裡)
   1. CLAUDE.md   —— 架構與開發守則 + 這台機器的地雷(給 AI/工程師,最重要)。
-  2. roadmap.md  —— 「已完成 vs 真正待做」進度(兩個專案現在都有,已對齊現況)。
+  2. roadmap.md  —— 「已完成 vs 真正待做」進度(都已對齊 2026-06-11 現況)。
   3. README.md   —— 玩法與內容編輯(給老師)。
 
-■ 現況一句話(2026-06-10)
-  約拿書六關「全書完」且已上線;保羅大富翁把約拿全六關都嵌入(約拿之旅 20 站、
-  6 個闖關站),Playwright 全自動 e2e 驗證整條路線可玩到終點、零 JS 錯誤。
-  兩個 repo 都已 push GitHub——接手請直接 git pull 取最新版。
+■ 現況一句話(2026-06-11)
+  約拿書六關「全書完」且已上線;保羅大富翁嵌入全六關(約拿之旅 20 站、6 闖關站,
+  Playwright e2e 全綠)。昨晚~今天又依牧師實測回饋上線一批手感調整(見下),
+  保羅的嵌入 copy 也已 sync 同步。兩 repo 都已 push GitHub——接手請直接 git pull。
+
+■ 2026-06-11 新上線(牧師實測回饋批次)
+  跑酷(L1/L4):
+    • ⚡ 衝刺寶物(撿到 4 秒 ×1.45,金色速度線+HUD 倒數;config.BOOST)
+    • 「按住不放=衝刺」(按住螢幕/→ 超過 0.22s 持續 ×1.3;輕點仍是跳;config.SPRINT。
+      設計筆記:不用「連點加速」——連點會跟「點=跳」衝突)
+    • ❤️ 補命更常見(weight 6→8)
+    • 修死局 bug:船價不足回頭收集時,寶物會從畫面左側迎面補生(spawner backfill)
+    • 第四關曠野:房子改零星聚落(密度 0.28)、障礙 🪨🌵、闖關模式也出 🐍蛇/🦂蠍子
+      (spawner.theme = 'harbor'/'desert')
+  暴風雨(L2):
+    • 更短更易:duration 30→20s、回正力↑、後段風↓(config.STORM)
+    • 大船 1.5 倍、烏雲密布(兩層漂移雲)、暴風大雨(130 道斜雨)
+    • 水手改「向量小人」五姿勢(renderer._sailor):跪求揮手/俯伏禱告/拋貨入海(1:5)/
+      死抓欄杆被甩/古代船主深紅長袍白頭巾喊❗(1:6)——不再用呆板 emoji
+    • 新結尾「拋約拿入海」:撐過風暴→cast 階段(約拿光暈+經文 1:12 提示)→
+      輕點把約拿拋出(拋物線+水花+浪平雨停)→「海的狂浪就平息了」(1:15)才過關。
+      過關的動作本身就是經文。
 
 ■ 兩個專案怎麼關聯(很重要)
   「保羅大富翁」是外框(桌遊);「約拿闖關」是上游的小遊戲引擎。
@@ -40,6 +58,7 @@
        showFish*/showPreach*/showGourd* 畫成 React 卡片,按鈕回呼 handleXxxAction
   上線節奏(牧師定的):新功能一律 feature branch + 測試全綠 → 牧師實測
   → 說「滿意請 merge」才 merge main(約拿 main = Netlify 自動部署)。
+  牧師的實測回饋通常很短(一句話),要從經文脈絡理解意圖再動手。
 
 ■ 怎麼跑 / 怎麼測(起手式)
      npm install
@@ -47,35 +66,40 @@
    約拿:
      npm test               # 煙霧測試:內容/語法/狀態機/嵌入契約(零相依,~2 秒)
      npm run test:offline   # 再加 build + PWA 離線就緒(sw 預快取/manifest)
-     npm run build          # ⚠ 不是 vite build!(這台 Node 24 地雷,見 CLAUDE.md)
+     npm run build          # ⚠ 不是 vite build!(agape250 那台 Node 24 地雷,見 CLAUDE.md)
    保羅:
      npm run validate       # 內容驗證(journey JSON)
-     npm run test:selfplay  # 引擎自我對戰
+     npm run test:selfplay  # 引擎自我對戰(三旅程各 1200 場)
      npm run test:browser   # Playwright 實機測試(需先起 preview/dev server)
      npm run sync:jonah     # 同步約拿引擎
 
-■ 共用的 Skill(11 個,裝在 C:\Users\<帳號>\.claude\skills\;壓縮檔內附 claude-skills\)
+■ 共用的 Skill(12 個,裝在 C:\Users\<帳號>\.claude\skills\;壓縮檔內附 claude-skills\)
   引擎藍圖:arcade-game-kit(即時 Canvas)、roll-and-move-game(擲骰桌遊)、
             board-game-designer(棋類)
   內容/系列:bible-game-studio(聖經遊戲慣例)、packer-theology(巴刻神學)
-  跨專案工具:embed-minigame(嵌入小遊戲)、add-challenge-station(棋盤加站)、
-            game-content-validator(內容驗證)、game-smoke-test(上課前煙霧測試)、
-            real-geography-board(真實地圖棋盤)、classroom-game-deploy(教室部署)、
-            web-launch(一鍵啟動)
+  跨專案工具:embed-minigame(嵌入小遊戲,含 EmbedUI 卡片轉接器模式)、
+            add-challenge-station(棋盤加站)、game-content-validator(內容驗證)、
+            game-smoke-test(上課前煙霧測試)、real-geography-board(真實地圖棋盤)、
+            classroom-game-deploy(教室部署)、web-launch(一鍵啟動)、
+            force-landscape-pwa(手機強制橫式全螢幕,兩專案都是活範例)
 
 ============================================================
-■ 已完成 vs 真正待做(兩專案合併視角,2026-06-10)
+■ 已完成 vs 真正待做(兩專案合併視角,2026-06-11)
 ============================================================
 ✅ 已完成
   約拿:六關全書完、PWA 全 shell 預快取(裝了即離線)、npm test 128 項全綠、
-        已部署 Netlify、過關卡有「約拿的旅程 X/6」進度。
-  保羅:三條旅程、真實地理底圖、輕 RPG 層、3D 骰子、約拿全六關嵌入(e2e 過)。
+        已部署 Netlify、過關卡「約拿的旅程 X/6」進度、
+        手感批次(衝刺/曠野蛇蠍/回頭補船價/大船向量水手/拋約拿入海)。
+  保羅:三條旅程、真實地理底圖、輕 RPG 層、3D 骰子、約拿全六關嵌入(e2e 過)、
+        引擎已 sync 至 2026-06-11 最新。
 
 🔜 真正待做(必要,依優先)
-  1. 真實手機離線實測:裝一台 → 關網路 → 六關都跑一遍(自動檢查全綠,但手感要人測)。
-  2. 神學/題庫審核:保羅 journey2 與約拿旅程題目是 AI 草擬,請牧者過目後正式上線。
-  3. 實機手感微調:全在 config.js(STORM/FISH/NINEVEH/PREACH/GOURD)。
-  4. 保羅大富翁正式部署 Netlify(約拿已上線,保羅還沒)。
+  1. 真實手機離線實測:裝一台 → 關網路 → 六關都跑一遍(自動檢查全綠,但手感要人測;
+     特別實測新的「按住衝刺」與「拋約拿入海」在真手機上的觸感)。
+  2. 神學/題庫審核:保羅 journey2 與約拿旅程「2026-06-10 以前草擬」的題目,
+     請牧者過目後正式上線(當日新增部分已審核通過)。
+  3. 保羅大富翁正式部署 Netlify(約拿已上線,保羅還沒)。
+  4. 細部手感微調:全在 config.js(STORM/FISH/NINEVEH/PREACH/GOURD/BOOST/SPRINT)。
 
 ============================================================
 ■ 🚀 未來功能點子(按「CP 值高→低 × 開發時間短→長」排序)
@@ -86,7 +110,7 @@
  1. 全書通關證書畫面(約拿)— 打完六關出一張可截圖的「約拿書通關證書」
     (名字+日期+金句),小孩最愛、老師可印。純前端 Canvas 繪製。 ~2-3 小時
  2. 上課前一鍵檢查 .bat — 雙擊跑 npm test + 列印「今天可以上課 ✓」報告,
-    給不會終端機的同工。重用 game-smoke-test。 ~1 小時
+    給不會終端機的同工(注意:.bat 純英文+CRLF)。重用 game-smoke-test。 ~1 小時
  3. 班級計分板(保羅)— 遊戲結束畫面加「全班排行榜」(localStorage 記多場結果),
     主日學分組競賽用。 ~2-3 小時
  4. 約拿題庫擴充到約拿書 3–4 章(現有 22 題只涵蓋 1–2 章;第四關漫步的長者
@@ -104,20 +128,20 @@
     給還不識字的小小孩。零音檔,但要實測中文語音品質。 ~半天
 
 【第三梯隊:2 天以上、大型但高回報】
- 10. 真實美術 PNG sprite sheet 換掉 emoji/向量(先知/障礙/寶物)。
-     美術來源是瓶頸;程式面 renderer.js 已隔離好。 ~2-3 天+美術
+ 10. 真實美術 PNG sprite sheet 換掉 emoji/向量(先知/水手/障礙/寶物)。
+     美術來源是瓶頸;程式面 renderer.js 已隔離好(_prophet/_sailor 都集中)。 ~2-3 天+美術
  11. 下一卷書遊戲:「但以理」或「出埃及」六關(套 arcade-game-kit +
      bible-game-studio,引擎/PWA/測試全現成,主要是內容與新機制)。 ~1 週
  12. 多人同樂模式(保羅)— 平板傳手機房間制(WebRTC/WebSocket 需後端或
      P2P,複雜度高;教室同 Wi-Fi 場景可考慮)。 ~1 週+
- 13. 約拿地圖改真實「尼尼微→地中海」經緯度底圖(real-geography-board;
+ 13. 約拿單機版地圖改真實「尼尼微→地中海」經緯度底圖(real-geography-board;
      保羅的約拿之旅已有真實底圖,此項是約拿單機版的選配)。 ~1 天
 
 【Skill / Tool-Calling 點子(讓 AI 自己更好用)】
  14. quiz-authoring skill — 「幫我出某卷書 N 題」→ 自動依 bible-game-studio
      出題慣例產題 + 跑 game-content-validator 驗證 answerIndex。 ~半天
- 15. playtest-bot skill — 把這次的 Playwright 全自動通關腳本(保羅
-     scripts/browser-playtest.mjs + 本次 e2e 經驗)整理成跨專案 skill:
+ 15. playtest-bot skill — 把 Playwright 全自動通關腳本(保羅
+     scripts/browser-playtest.mjs + 約拿之旅 e2e 經驗)整理成跨專案 skill:
      「自動玩一遍找 bug」。 ~半天
  16. sermon-companion skill — 牧師講道配套:從遊戲關卡反思文案 + packer-theology
      產生主日學教案/講章大綱(.docx 輸出)。 ~半天
@@ -125,7 +149,7 @@
 ============================================================
 ■ 給 HFPC PC 的注意事項
   • 兩台機器路徑不同:本包解壓後路徑自帶;CLAUDE.md 裡的絕對路徑「因機器而異」。
-  • 這台(agape250)的 Node 24 地雷(vite build 會被無聲殺掉)是「機器特性」,
+  • agape250 那台的 Node 24 地雷(vite build 會被無聲殺掉)是「機器特性」,
     HFPC 那台若 Node 版本不同,約拿的 npm run build 照樣能用(它只是逐檔複製)。
   • .bat 檔一律純英文 + CRLF(中文會亂碼)。
   • git pull 兩個 repo 是拿最新版最保險的方式;壓縮檔是備援。

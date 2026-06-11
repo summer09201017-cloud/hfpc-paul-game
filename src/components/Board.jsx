@@ -44,10 +44,18 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
       style={{ aspectRatio: (map && map.aspect) || 1.322, touchAction: 'none' }}
       {...zp.handlers}
     >
-      {/* 可縮放 / 平移的整個地圖場景（地圖、路線、城市、棋子一起縮放）。 */}
+      {/* 可縮放 / 平移的整個地圖場景（地圖、路線、城市、棋子一起縮放）。
+          用「實際版面放大」(width/height %) 而非 transform scale——
+          手機高 DPR 下 transform 放大會產生超過 GPU 上限的合成層，整個畫面變白。 */}
       <div
         className="board__scene"
-        style={{ transform: zp.transform, transformOrigin: '0 0', cursor: zp.scale > 1 ? 'grab' : 'default' }}
+        style={{
+          width: `${zp.scale * 100}%`,
+          height: `${zp.scale * 100}%`,
+          left: `${zp.x}px`,
+          top: `${zp.y}px`,
+          cursor: zp.scale > 1 ? 'grab' : 'default',
+        }}
       >
         <MapBackground map={map} />
 

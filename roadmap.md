@@ -1,6 +1,6 @@
 # 🗺️ 保羅大富翁 — 進度藍圖（已完成 vs 真正待做）
 
-> 對齊現況：**2026-06-10**。GitHub：`summer09201017-cloud/hfpc-paul-game`（branch `main`，CI 全綠）。
+> 對齊現況：**2026-06-11**(嵌入引擎已 sync 至最新:衝刺/曠野蛇蠍/拋約拿入海)。GitHub：`summer09201017-cloud/hfpc-paul-game`（branch `main`，CI 全綠）。
 > 這份是給接手的人 / AI 看的「目前到哪了、接下來做什麼」。技術細節看 `CLAUDE.md`，玩法/編輯看 `README.md`。
 
 ---

@@ -206,6 +206,60 @@ body {
   }
 }
 
+/* 手機「強制橫向全螢幕」後的小高度螢幕：
+   先前單欄直疊會讓棋盤超過螢幕高、而棋盤又吃掉所有觸控(touch-action:none)導致無法捲動
+   →「地圖只看到上半部、看不見骰子」。改成：地圖靠左以「高度」撐滿、面板右欄可捲動。 */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 560px) {
+  .app {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .app__header {
+    padding: 0.25rem 0.8rem 0.1rem;
+  }
+  .app__header .app__subtitle {
+    display: none;
+  }
+  .app__header .app__title {
+    font-size: 1.02rem;
+  }
+  .app__main {
+    grid-template-columns: minmax(0, 1fr) clamp(200px, 34vw, 300px);
+    align-items: stretch;
+    align-content: stretch;
+    min-height: 0;
+    overflow: hidden;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+  }
+  .app__board {
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  /* aspect-ratio 容器改由「高度」決定大小（max-* 會互相轉換，比例不變形） */
+  .app__board .board {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+  }
+  .app__side {
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  /* 小螢幕：骰子排最上面（最常用），玩家卡往下捲 */
+  .app__side .dice {
+    order: -1;
+    flex-shrink: 0;
+  }
+}
+
 /* ---------- 地圖 ---------- */
 .app__board {
   background: var(--parchment);
@@ -221,10 +275,15 @@ body {
   border-radius: 14px;
   overflow: hidden;
 }
-/* 可縮放 / 平移的場景容器（地圖+路線+城市+棋子一起縮放） */
+/* 可縮放 / 平移的場景容器（地圖+路線+城市+棋子一起縮放）。
+   大小/位移由 Board.jsx 以行內樣式控制（width/height=scale×100%、left/top=平移 px）——
+   刻意不用 transform scale，避免手機高 DPR 合成層過大導致整片變白。 */
 .board__scene {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 /* 縮放控制按鈕（固定在地圖右下角） */
 .board__zoom {
