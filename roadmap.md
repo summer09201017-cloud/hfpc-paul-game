@@ -49,7 +49,7 @@
 4. **更深的大富翁機制**：同工卡牌、植堂計分、機會/命運再擴充。
 5. **雲端存檔 / 班級排行榜**（Supabase）。
 6. **AI 輔助產題**：檢索式、附經文出處，由牧者審核（先用在「幫忙產題並校對」最安全）。
-7. **正式部署**：Netlify（`hfpc-paul-game`）上線 + 手機安裝→關 Wi-Fi 離線煙霧測試。
+7. ~~正式部署~~ **✅ 已上線（2026-06-11）：https://hfpc-paul-game.netlify.app/**（連 GitHub `main` 自動部署，Netlify 雲端用 Node 20 建置——本機 Node 24 的 vite build 地雷不影響雲端；首次部署一次全綠，Playwright 已實機驗證線上版可開局/擲骰/進闖關站）。**剩**：手機「加入主畫面」安裝 → 關 Wi-Fi 離線煙霧測試。
 
 ### 技術債 / 注意事項
 - `src/minigames/jonah/` 是約拿專案（`hfpc-jonah-game`）的**純複製 copy**；上游更新後跑 **`npm run sync:jonah`** 一鍵同步（約拿端守住其 CLAUDE.md「嵌入契約」，這裡就不必重套改動）。

@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/summer09201017-cloud/hfpc-paul-game/actions/workflows/ci.yml/badge.svg)](https://github.com/summer09201017-cloud/hfpc-paul-game/actions/workflows/ci.yml)
 
+> 🌐 **線上版：https://hfpc-paul-game.netlify.app/**（push `main` 即自動重新部署；可在手機「加入主畫面」安裝、離線玩）
+
 互動式聖經地圖關卡遊戲。跟著使徒保羅走過**第一次宣教旅程**（使徒行傳 13–14 章）：
 擲**骰子（1～6 點）**→ 沿著旅程地圖前進 → 停在城市看「**劇情 / 事件卡 + 歷史小檔案**」，
 並回答**那座城市的聖經問答**來賺「**福音點數**」。
