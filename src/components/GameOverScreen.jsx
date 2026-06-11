@@ -1,3 +1,5 @@
+import { getTitle } from '../core/engine'
+
 const MEDALS = ['🥇', '🥈', '🥉']
 
 export default function GameOverScreen({ status, scoreLabel, journey, nextJourney, onRestart, onContinue }) {
@@ -16,21 +18,26 @@ export default function GameOverScreen({ status, scoreLabel, journey, nextJourne
         )}
 
         <div className="gameover__ranking">
-          {ranking.map((p, i) => (
-            <div key={p.id} className="rankrow" style={{ '--player-color': p.color }}>
-              <span className="rankrow__medal">{MEDALS[i] || `${i + 1}.`}</span>
-              <span className="rankrow__chip" style={{ background: p.color }}>
-                {p.name.slice(0, 1)}
-              </span>
-              <span className="rankrow__name">
-                {p.name}
-                {p.finished && <span className="rankrow__finished"> ✔ 抵達終點</span>}
-              </span>
-              <span className="rankrow__score">
-                {p.gospelPoints} {scoreLabel}
-              </span>
-            </div>
-          ))}
+          {ranking.map((p, i) => {
+            // 最終頭銜（依分數門檻，journey.titles；沒設定就不顯示）——讓累積的點數看得到回報。
+            const title = journey ? getTitle(journey, p.gospelPoints) : null
+            return (
+              <div key={p.id} className="rankrow" style={{ '--player-color': p.color }}>
+                <span className="rankrow__medal">{MEDALS[i] || `${i + 1}.`}</span>
+                <span className="rankrow__chip" style={{ background: p.color }}>
+                  {p.name.slice(0, 1)}
+                </span>
+                <span className="rankrow__name">
+                  {p.name}
+                  {title && <span className="playercard__title rankrow__title">{title.name}</span>}
+                  {p.finished && <span className="rankrow__finished"> ✔ 抵達終點</span>}
+                </span>
+                <span className="rankrow__score">
+                  {p.gospelPoints} {scoreLabel}
+                </span>
+              </div>
+            )
+          })}
         </div>
 
         {nextJourney && (

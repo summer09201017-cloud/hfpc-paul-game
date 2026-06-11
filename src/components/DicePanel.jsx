@@ -14,12 +14,14 @@ const PIPS = {
 const FACE_POS = { 1: 'front', 6: 'back', 3: 'right', 4: 'left', 2: 'top', 5: 'bottom' }
 
 // 「讓某一面轉到正前方」的最終角度（加兩整圈，停下前還會多翻幾圈才落定）。
+// ⚠ CSS 的 Y 軸朝下：top 面(2)要轉到正前方是 rotateX(-90)、bottom 面(5)是 rotateX(+90)。
+//   之前 2/5 寫反，造成「引擎擲 2、骰子顯示 5」的步數不符 bug（2026-06-11 修正）。
 const FACE_ROT = {
   1: { x: 0, y: 0 },
-  2: { x: 90, y: 0 }, // top 轉下來
+  2: { x: -90, y: 0 }, // top 轉下來面向觀眾
   3: { x: 0, y: -90 }, // right 轉過來
   4: { x: 0, y: 90 }, // left 轉過來
-  5: { x: -90, y: 0 }, // bottom 轉上來
+  5: { x: 90, y: 0 }, // bottom 轉上來面向觀眾
   6: { x: 0, y: 180 }, // back 轉過來
 }
 

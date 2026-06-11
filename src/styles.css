@@ -780,6 +780,10 @@ body {
   color: #6b4d12;
   margin: 0 0 0.6rem;
 }
+/* 結束畫面排行榜的頭銜徽章（沿用玩家卡頭銜樣式，加一點間距） */
+.rankrow__title {
+  margin-left: 0.4rem;
+}
 /* 結束畫面「接續下一段旅程」按鈕的小字 */
 .gameover__carry {
   display: block;
