@@ -18,6 +18,8 @@ export class Game {
   //   level      —— 嵌入要開的關：1=跑酷 / 2=暴風雨 / 4=上岸→尼尼微跑酷（3=大魚肚、5=傳道是 DOM 選單流程，不嵌入）。
   //   mode       —— 'run'(闖關) / 'walk'(漫步)。
   //   hudLabels  —— 進度條兩端文字 { start, goal }；單機=約拿地名，嵌入可傳通用「起點/終點」。
+  //   stormCast  —— 第二關結尾「拋約拿入海」橋段開關（預設 true）。嵌入到「非約拿」的旅程
+  //                 （保羅的海路闖關站）時傳 false：撐過風暴即直接過關——丟約拿只屬於約拿的故事。
   //   onComplete({ won, score, level }) —— 嵌入過關 / 失敗時呼叫。
   constructor(canvas, opts = {}) {
     this.canvas = canvas
@@ -25,6 +27,7 @@ export class Game {
     this.input = new Input()
     this.ui = opts.ui // 由外部注入（單機 new UI()／嵌入 NullUI）
     this.embed = !!opts.embed
+    this.stormCast = opts.stormCast !== false // 拋約拿入海結尾；單機與約拿之旅恆為 true
     this.onComplete = opts.onComplete || null
     // 嵌入支援全六關。注意：3/5/6 的卡片流程走 ui.showFish*/showPreach*/showGourd*——
     // 宿主(保羅)嵌入這幾關時，注入的 ui 必須實作這些卡片方法(EmbedUI)，純 NullUI 會卡在 intro。

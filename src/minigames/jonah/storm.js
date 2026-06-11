@@ -157,6 +157,13 @@ export class Storm {
       this.done = true
       this.game.gameOver()
     } else if (this.survival >= STORM.duration) {
+      // 嵌入到「非約拿」旅程(保羅的海路闖關站,opts.stormCast=false):撐過風暴即直接過關——
+      // 「拋約拿入海」只屬於約拿的故事(約拿之旅與單機版維持 cast 結尾)。
+      if (this.game.stormCast === false) {
+        this.done = true
+        this.game.win()
+        return
+      }
       // 撐過風暴 ≠ 過關:進入「拋約拿入海」結尾(拿 1:12–15)
       this.phase = 'cast'
       this.capsize = 0

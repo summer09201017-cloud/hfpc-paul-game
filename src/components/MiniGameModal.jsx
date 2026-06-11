@@ -180,6 +180,9 @@ export default function MiniGameModal({ minigame, onComplete }) {
       // 沒覆寫時:第 1 關用通用「起點 → 終點 ⛵」(同一跑酷引擎被任何旅程重用);
       // 其他關(如 4=曠野→尼尼微)傳 undefined,讓引擎用該關自己的預設(LEVELx.hud,嵌入契約)。
       hudLabels: minigame.hudLabels || (level === 1 ? { start: '起點', goal: '終點 ⛵' } : undefined),
+      // 第二關結尾「拋約拿入海」只屬於約拿的故事：站點設 cast:false（保羅的海路闖關站）
+      // 則撐過風暴即直接過關；約拿之旅的暴風雨站不設，維持拋約拿結尾。
+      stormCast: minigame.cast,
       onComplete: (result) => onComplete(result),
     })
     gameRef.current = game
