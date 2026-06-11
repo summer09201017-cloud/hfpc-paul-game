@@ -19,7 +19,8 @@ export default defineConfig({
         theme_color: '#2e86ab',
         background_color: '#cfe3e8',
         display: 'standalone',
-        orientation: 'any',
+        // 跟約拿引擎一致：手機一律橫式（iOS 不支援網頁全螢幕 API，靠「加入主畫面」+ 這裡的 landscape 達成）
+        orientation: 'landscape',
         start_url: './',
         scope: './',
         icons: [

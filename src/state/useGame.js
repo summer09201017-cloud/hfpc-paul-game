@@ -7,6 +7,7 @@ import regionMapPaul2 from '../data/region-map2.json'
 import regionMapJonah from '../data/region-map-jonah.json'
 import * as engine from '../core/engine'
 import { sound } from '../audio/sound'
+import { enterImmersive } from '../immersive'
 
 // 可選旅程：roll-and-move 外框可掛多條旅程，各自帶內容(journey)＋底圖(map)。
 // nextKey：這條旅程走完後可「接續」的下一段（宣教接力——帶著福音點數與裝備繼續）。
@@ -59,6 +60,7 @@ export function useGame() {
     clearAll()
     const chosen = JOURNEYS.find((j) => j.key === journeyKey) || JOURNEYS[0]
     setActiveKey(chosen.key)
+    enterImmersive() // 手機/平板：點「開始旅程」的手勢中進全螢幕+鎖橫向（桌機不打擾）
     sound.unlock() // 由使用者點擊觸發，喚醒音訊
     sound.startBgm()
     setGame(engine.createGame(playerConfigs, chosen.journey))
@@ -144,6 +146,7 @@ export function useGame() {
     if (!next) return
     clearAll()
     setActiveKey(next.key)
+    enterImmersive() // 接續下一段旅程也是使用者手勢，保持全螢幕+橫向
     sound.unlock()
     sound.startBgm()
     const carryConfigs = game.players.map((p) => ({

@@ -695,6 +695,46 @@ body {
   width: 100%;
 }
 
+/* ---- 手機直向：提示轉成橫向（只在觸控裝置的直向時蓋住畫面；跟約拿引擎同款）---- */
+.rotate-hint {
+  display: none;
+}
+@media (orientation: portrait) and (pointer: coarse) {
+  .rotate-hint {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background: #15384d; /* 保羅主題深海藍 */
+    color: #eaf4ff;
+    text-align: center;
+    padding: 24px;
+    font-size: 21px;
+    line-height: 1.7;
+  }
+  .rotate-emoji {
+    font-size: 72px;
+    animation: rotateHint 1.8s ease-in-out infinite;
+  }
+  .rotate-hint span {
+    color: #9cc3dc;
+    font-size: 15px;
+  }
+}
+@keyframes rotateHint {
+  0%,
+  100% {
+    transform: rotate(-12deg);
+  }
+  50% {
+    transform: rotate(78deg);
+  }
+}
+
 /* ---- 嵌入小遊戲的卡片流程（第 3/5/6 關：禱告卡 / 對話卡 / 反思卡，EmbedUI 畫的）---- */
 .minigame__card {
   position: absolute;
