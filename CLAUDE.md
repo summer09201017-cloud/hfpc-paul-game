@@ -68,7 +68,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 ## Adding a new journey
 
-**Multi-journey is now wired.** `useGame.js` holds a `JOURNEYS` array — currently `paul` (journey1, 20 tiles), `paul2` (journey2, Paul's 2nd journey into Europe, 12 tiles), and `jonah` (journey-jonah). `SetupScreen` shows a journey picker. To add another (e.g. journey3 / 海路到羅馬):
+**Multi-journey is now wired.** `useGame.js` holds a `JOURNEYS` array — currently `paul` (journey1, 20 tiles), `paul2` (journey2, into Europe, 20 tiles), `paul3` (journey3, Ephesus years → Jerusalem, 20 tiles), and `jonah` (journey-jonah, 20 tiles). Each entry can carry `nextKey` (宣教接力: finishing a journey offers "continue to the next one", carrying name/points/gifts; companions reset to the new journey's `startCompanions`). `SetupScreen` shows a journey picker. To add another (e.g. journey4 / 海路到羅馬):
 1. Create `src/data/journeyN.json` (copy an existing one; edit content — see [[roll-and-move-game]]).
 2. Add its cities (real `lat`/`lon`) as a new `buildRegion({...})` call in `gen-map.mjs` (each region has its own bounds + ISO country set + output `region-mapN.json`), then `npm run gen:map` — this writes `x`/`y` back and emits the coastline.
 3. Add `{ key, journey, map }` to `JOURNEYS` in `useGame.js`.
@@ -78,7 +78,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 ## Embedded mini-games (`src/minigames/`)
 
-A station can trigger a real-time 2D mini-game by carrying a `minigame: { level, mode?, winPoints, label?, how?, hudLabels? }` field (decoupled from `type`, like quiz/card; the dedicated tile uses `type: "challenge"`). `src/minigames/jonah/` is a **copy of the `約拿闖關` (Jonah) arcade engine** (vanilla Canvas, zero deps) driven in **embed mode**: `new Game(canvas, { ui, embed: true, level, mode, hudLabels, onComplete })` — `embed` skips the title screen + suppresses fullscreen/orientation takeover, and the level-finish paths call `onComplete({ won, score, level })` instead of the Jonah overlay. `Game.destroy()` stops the loop, removes listeners (`Input.detach()`), and stops its audio.
+A station can trigger a real-time 2D mini-game by carrying a `minigame: { level, mode?, winPoints, label?, how?, hudLabels?, cast? }` field (`cast: false` on Paul's sea-challenge stations skips the storm level's「拋約拿入海」ending — that beat belongs only to the Jonah story; the engine option is `opts.stormCast`) (decoupled from `type`, like quiz/card; the dedicated tile uses `type: "challenge"`). `src/minigames/jonah/` is a **copy of the `約拿闖關` (Jonah) arcade engine** (vanilla Canvas, zero deps) driven in **embed mode**: `new Game(canvas, { ui, embed: true, level, mode, hudLabels, onComplete })` — `embed` skips the title screen + suppresses fullscreen/orientation takeover, and the level-finish paths call `onComplete({ won, score, level })` instead of the Jonah overlay. `Game.destroy()` stops the loop, removes listeners (`Input.detach()`), and stops its audio.
 
 **All six Jonah levels are embeddable (2026-06-10), in two classes:**
 - **Levels 1/2/4 (pure-Canvas)** — parkour / storm / desert-run: pass the no-op `NullUI` Proxy as `ui`.
