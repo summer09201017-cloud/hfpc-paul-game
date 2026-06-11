@@ -1,9 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import journey1 from '../data/journey1.json'
 import journey2 from '../data/journey2.json'
+import journey3 from '../data/journey3.json'
 import journeyJonah from '../data/journey-jonah.json'
 import regionMapPaul from '../data/region-map.json'
 import regionMapPaul2 from '../data/region-map2.json'
+import regionMapPaul3 from '../data/region-map3.json'
 import regionMapJonah from '../data/region-map-jonah.json'
 import * as engine from '../core/engine'
 import { sound } from '../audio/sound'
@@ -13,7 +15,8 @@ import { enterImmersive } from '../immersive'
 // nextKey：這條旅程走完後可「接續」的下一段（宣教接力——帶著福音點數與裝備繼續）。
 const JOURNEYS = [
   { key: 'paul', journey: journey1, map: regionMapPaul, nextKey: 'paul2' },
-  { key: 'paul2', journey: journey2, map: regionMapPaul2, nextKey: null }, // 之後接 journey3（第三次旅程）
+  { key: 'paul2', journey: journey2, map: regionMapPaul2, nextKey: 'paul3' },
+  { key: 'paul3', journey: journey3, map: regionMapPaul3, nextKey: null }, // 之後接「海路到羅馬」（徒 27–28）
   { key: 'jonah', journey: journeyJonah, map: regionMapJonah, nextKey: null },
 ]
 

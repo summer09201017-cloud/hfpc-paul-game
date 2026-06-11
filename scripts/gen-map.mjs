@@ -246,6 +246,50 @@ buildRegion({
 })
 
 // ===========================================================================
+// 第三次宣教旅程（愛琴海兩岸 + 南下耶路撒冷）——以弗所三年是中心；
+// 回程沿岸南下：米利都 → 推羅 → 該撒利亞 → 耶路撒冷（框比第二次更往南）。
+// 以弗所時期的事件站（推喇奴/奇事/士基瓦/焚書/暴動）沿出城往北的路線展開
+// （同 journey1 把卡站擺在路段上的慣例——是「時期中的事件點」，不是假城市）。
+// ===========================================================================
+buildRegion({
+  label: '第三次旅程',
+  bounds: { lonMin: 21.5, lonMax: 37.5, latMin: 30.8, latMax: 42.0 },
+  iso: ['GRC', 'TUR', 'SYR', 'LBN', 'CYP', 'CYN', 'ISR', 'PSE', 'JOR', 'EGY', 'BGR', 'MKD', 'ALB'],
+  journeyFile: 'journey3.json',
+  mapFile: 'region-map3.json',
+  labels: [
+    { t: '馬其頓', lat: 41.4, lon: 23.4, kind: 'region' },
+    { t: '亞該亞（希臘）', lat: 38.4, lon: 21.9, kind: 'region' },
+    { t: '亞細亞（以弗所一帶）', lat: 39.2, lon: 29.6, kind: 'region' },
+    { t: '愛　琴　海', lat: 38.0, lon: 25.1, kind: 'sea' },
+    { t: '地　中　海', lat: 33.6, lon: 28.5, kind: 'sea' },
+    { t: '猶太地', lat: 31.3, lon: 34.6, kind: 'region' },
+  ],
+  cities: {
+    antioch3_start:   { lat: 36.20, lon: 36.16 }, // 敘利亞安提阿（出發）
+    galatia_phrygia3: { lat: 38.70, lon: 31.20 }, // 加拉太、弗呂家（堅固門徒，途中區域）
+    highland_road:    { lat: 38.75, lon: 29.30 }, // 經過上邊一帶（高原闖關站）
+    ephesus_disciples:{ lat: 37.94, lon: 27.34 }, // 以弗所（十二門徒受聖靈）
+    tyrannus_hall:    { lat: 38.30, lon: 27.05 }, // 推喇奴學房（以弗所時期事件點）
+    ephesus_chance:   { lat: 38.68, lon: 26.75 }, // 非常的奇事（機會卡）
+    sceva_sons:       { lat: 39.05, lon: 26.45 }, // 士基瓦七子
+    burn_books:       { lat: 39.42, lon: 26.10 }, // 焚燒邪書
+    demetrius_riot:   { lat: 39.80, lon: 25.70 }, // 底米丟暴動（命運卡）
+    macedonia3:       { lat: 40.80, lon: 24.60 }, // 走遍馬其頓（海路抵達）
+    greece_romans:    { lat: 37.91, lon: 22.88 }, // 希臘三個月（哥林多，寫羅馬書）
+    philippi_luke:    { lat: 41.01, lon: 24.29 }, // 回到腓立比（路加加入）
+    troas_eutychus:   { lat: 39.78, lon: 26.16 }, // 特羅亞（猶推古）
+    assos_walk:       { lat: 39.49, lon: 26.60 }, // 步行往亞朔（機會卡）
+    sea_dash:         { lat: 38.30, lon: 26.20 }, // 趕路的海程（闖關站，基阿/撒摩海域）
+    miletus_farewell: { lat: 37.53, lon: 27.28 }, // 米利都（以弗所長老道別）
+    tyre_kneel:       { lat: 33.27, lon: 35.20 }, // 推羅（岸邊跪禱）
+    caesarea_agabus:  { lat: 32.50, lon: 34.89 }, // 該撒利亞（亞迦布預言）
+    jerusalem_road3:  { lat: 32.10, lon: 35.05 }, // 上耶路撒冷的路（命運卡）
+    jerusalem3_end:   { lat: 31.78, lon: 35.23 }, // 耶路撒冷（終點）
+  },
+})
+
+// ===========================================================================
 // 約拿宣教之旅（真實地理版）——東地中海岸 → 美索不達米亞。
 //   教學重點：約拿被召去「東邊」的尼尼微（地圖最右、底格里斯河畔），卻往「西邊」
 //   逃出海（往他施／Tarshish，遠在地中海西端、出圖外，用箭頭示意）；大魚之後再

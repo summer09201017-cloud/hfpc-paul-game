@@ -20,6 +20,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const JOURNEYS = [
   ['第一次旅程', '../src/data/journey1.json'],
   ['第二次旅程', '../src/data/journey2.json'],
+  ['第三次旅程', '../src/data/journey3.json'],
   ['約拿旅程', '../src/data/journey-jonah.json'],
 ].map(([name, p]) => ({ name, board: JSON.parse(readFileSync(join(__dirname, p), 'utf-8')) }))
 
