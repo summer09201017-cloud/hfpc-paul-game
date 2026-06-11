@@ -4,22 +4,31 @@ import { VIEW, GROUND_Y } from './config.js'
 // 障礙間距會依當前速度動態調整,保證一定跳得過去(公平性)。
 
 const OBSTACLES = ['📦', '🛢️', '🪵', '🧺', '🪜']
+const OBSTACLES_DESERT = ['🪨', '🌵', '🪵', '🏺'] // 第四關曠野:石頭/荊棘/枯木/破罐
 
 // 小敵人(馬力歐式):從右邊爬過來,可跳過或踩扁。crawl=自身向左爬行速度。
-const ENEMIES = [
-  { emoji: '🐍', w: 38, h: 26, size: 38, crawl: 75 }, // 蛇
-  { emoji: '🦀', w: 34, h: 28, size: 34, crawl: 60 }, // 螃蟹
-  { emoji: '🐀', w: 34, h: 26, size: 34, crawl: 95 }, // 老鼠
-]
+// 依主題換陣容:港口(L1)蛇/螃蟹/老鼠;曠野(L4)蛇/蠍子。
+const ENEMIES = {
+  harbor: [
+    { emoji: '🐍', w: 38, h: 26, size: 38, crawl: 75 }, // 蛇
+    { emoji: '🦀', w: 34, h: 28, size: 34, crawl: 60 }, // 螃蟹
+    { emoji: '🐀', w: 34, h: 26, size: 34, crawl: 95 }, // 老鼠
+  ],
+  desert: [
+    { emoji: '🐍', w: 38, h: 26, size: 38, crawl: 80 }, // 蛇
+    { emoji: '🦂', w: 36, h: 26, size: 36, crawl: 90 }, // 蠍子
+  ],
+}
 
 // 空中寶物:跳起來收集。
-//   value = 分數;kind 'points'=加分 / 'life'=補一條命;weight = 相對出現機率(越大越常見)。
+//   value = 分數;kind 'points'=加分 / 'life'=補一條命 / 'boost'=短暫衝刺;weight = 相對出現機率(越大越常見)。
 const TREASURES = [
   { emoji: '🪙', kind: 'points', value: 1, weight: 50, r: 16, size: 30 }, // 船價(最常見)
   { emoji: '🏺', kind: 'points', value: 3, weight: 22, r: 17, size: 32 }, // 陶罐
   { emoji: '📜', kind: 'points', value: 5, weight: 14, r: 17, size: 30 }, // 經卷
   { emoji: '🕊️', kind: 'points', value: 10, weight: 8, r: 17, size: 32 }, // 鴿子(約拿之名)
-  { emoji: '❤️', kind: 'life', value: 0, weight: 6, r: 16, size: 30 }, // 補一條命
+  { emoji: '❤️', kind: 'life', value: 0, weight: 8, r: 16, size: 30 }, // 補一條命(滿血折算 3 分)
+  { emoji: '⚡', kind: 'boost', value: 0, weight: 7, r: 16, size: 30 }, // 衝刺:短暫跑更快(config.BOOST)
 ]
 const TREASURE_WEIGHT = TREASURES.reduce((s, t) => s + t.weight, 0)
 
@@ -39,6 +48,7 @@ function pickTreasure() {
 
 export class Spawner {
   constructor() {
+    this.theme = 'harbor' // 'harbor'(L1 港口) / 'desert'(L4 曠野);由 game 在開關時設定
     this.reset()
   }
 
@@ -55,10 +65,32 @@ export class Spawner {
     this.nextEnemyGap = 1400
     this.distSinceNpc = 0
     this.nextNpcGap = 1500 // 第一個 NPC 較早出現,讓玩家很快遇到
+    this.distBackfill = 0 // 回頭收集船價時,往後走累計的距離(從左邊生成寶物用)
   }
 
-  update(dt, speed, distanceTraveled, goalDistance, enemiesOn = false) {
+  // needFare = 船價還不夠且可回頭(漫步 / 闖關回頭收集):往後走時從「左邊」生成寶物,
+  //            修正「回頭結果整路空空、沒船價可撿」的死局(終點前 1000px 不生成 + 舊寶物已出畫面被回收)。
+  update(dt, speed, distanceTraveled, goalDistance, enemiesOn = false, npcsOn = enemiesOn, needFare = false) {
     const dx = speed * dt
+
+    // ---- 回頭收集船價:往後走(dx<0)時,寶物改從畫面左側進場 ----
+    if (needFare && dx < 0) {
+      this.distBackfill += -dx
+      if (this.distBackfill >= 460) {
+        this.distBackfill = 0
+        const t = pickTreasure()
+        this.treasures.push({
+          x: -60, // 從左邊進場(往後走時世界向右捲,它會迎面而來)
+          y: GROUND_Y - rand(55, 135),
+          r: t.r,
+          size: t.size,
+          emoji: t.emoji,
+          kind: t.kind,
+          value: t.value,
+          taken: false,
+        })
+      }
+    }
 
     // 接近終點時不再生成障礙,留一段乾淨跑道讓約拿跑向船
     const spawning = distanceTraveled < goalDistance - 1000
@@ -72,11 +104,12 @@ export class Spawner {
       this.nextObstacleGap = rand(minGap, minGap + 300)
       const w = rand(34, 48)
       const h = rand(34, 52)
+      const pool = this.theme === 'desert' ? OBSTACLES_DESERT : OBSTACLES
       this.obstacles.push({
         x: VIEW.W + 60,
         w,
         h,
-        emoji: OBSTACLES[Math.floor(rand(0, OBSTACLES.length))],
+        emoji: pool[Math.floor(rand(0, pool.length))],
         size: Math.max(w, h) + 10,
       })
     }
@@ -99,13 +132,14 @@ export class Spawner {
       })
     }
 
-    // ---- 小敵人(目前只在漫步模式)----
+    // ---- 小敵人(漫步模式;第四關曠野連闖關模式也有 🐍🦂)----
     if (enemiesOn) {
       this.distSinceEnemy += dx
       if (spawning && this.distSinceEnemy >= this.nextEnemyGap) {
         this.distSinceEnemy = 0
         this.nextEnemyGap = rand(1200, 2200)
-        const e = ENEMIES[Math.floor(rand(0, ENEMIES.length))]
+        const pool = ENEMIES[this.theme] || ENEMIES.harbor
+        const e = pool[Math.floor(rand(0, pool.length))]
         this.enemies.push({
           x: VIEW.W + 60,
           w: e.w,
@@ -118,8 +152,8 @@ export class Spawner {
       }
     }
 
-    // ---- NPC(只在漫步模式;走近觸發聖經問答,沒有時間壓力)----
-    if (enemiesOn) {
+    // ---- NPC(只在第一關漫步模式;走近觸發聖經問答,沒有時間壓力)----
+    if (npcsOn) {
       this.distSinceNpc += dx
       if (spawning && this.distSinceNpc >= this.nextNpcGap) {
         this.distSinceNpc = 0

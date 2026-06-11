@@ -1,4 +1,4 @@
-import { VIEW, GROUND_Y, RUN, WALK, PLAYER, LIVES, INVULN_TIME, FARE, FISH, NINEVEH, PREACH, GOURD } from './config.js'
+import { VIEW, GROUND_Y, RUN, WALK, PLAYER, LIVES, INVULN_TIME, FARE, FISH, NINEVEH, PREACH, GOURD, BOOST, SPRINT } from './config.js'
 import { Player } from './player.js'
 import { Spawner } from './spawner.js'
 import { Renderer } from './renderer.js'
@@ -99,6 +99,9 @@ export class Game {
     this.knockbackLeft = 0 // 漫步模式被敵人撞到後,還要往後退的距離
     this.collectingFare = false // 闖關到船邊但船價不足 → 暫時可自由移動回頭收集
     this.shortFare = false // 在船邊但船價不足(HUD 提示用)
+    this.boostLeft = 0 // 撿到 ⚡ 後的衝刺剩餘秒數(config.BOOST)
+    this.sprintHold = 0 // 按住(螢幕/→)累計秒數;超過 SPRINT.holdDelay = 主動衝刺
+    this.sprinting = false // 主動衝刺中(renderer 畫速度線用)
     this.answeredCorrect = new Set() // 這趟已答對的題目索引,不再出給 NPC
   }
 
@@ -128,6 +131,7 @@ export class Game {
     this._enterImmersive()
     this.level = 1
     this.mode = mode === 'walk' ? 'walk' : 'run'
+    this.spawner.theme = 'harbor' // 港口主題:障礙 📦🛢️…、敵人 🐍🦀🐀
     this._resetRun()
     // 進度條地名:外層(保羅)有注入就用注入的,否則用第一關預設(嵌入契約)
     this.hudLabels = this._hudOverride || { ...LEVEL1.hud }
@@ -144,6 +148,7 @@ export class Game {
     this._enterImmersive()
     this.level = 4
     this.mode = mode === 'walk' ? 'walk' : 'run'
+    this.spawner.theme = 'desert' // 曠野主題:障礙 🪨🌵…、敵人 🐍🦂(闖關模式也會出)
     this._resetRun()
     this.goalDistance = NINEVEH.goalDistance
     this.fareEnabled = false // 往尼尼微是順服,不是買船票:走到城門即過關
@@ -254,11 +259,23 @@ export class Game {
     const tapped = this.input.consumeTap()
     let wantJump = this.input.consumeJump()
 
+    // 衝刺(撿到 ⚡):剩餘時間遞減;進行中速度乘上倍率
+    if (this.boostLeft > 0) this.boostLeft = Math.max(0, this.boostLeft - dt)
+    const boostMult = this.boostLeft > 0 ? BOOST.mult : 1
+
+    // 主動衝刺(闖關):手指按住螢幕不放 / 按住 →,超過 holdDelay 秒就持續加速。
+    // 輕點(很快放開)仍是跳,不會誤觸;與 ⚡ 同時只取較大倍率,不疊乘。
+    const holding = this.input.pointerDown || this.input.right
+    this.sprintHold = holding ? (this.sprintHold || 0) + dt : 0
+    this.sprinting =
+      this.mode === 'run' && !this.collectingFare && this.sprintHold >= SPRINT.holdDelay
+    const speedMult = Math.max(boostMult, this.sprinting ? SPRINT.mult : 1)
+
     if (this.mode === 'run' && !this.collectingFare) {
-      // 闖關:點畫面任意處(非暫停區)= 跳;世界自動向前並加速
+      // 闖關:點畫面任意處(非暫停區)= 跳;世界自動向前並加速;按住不放=衝刺
       if (press) wantJump = true
       const k = Math.min(1, this.distance / RUN.rampDistance)
-      this.speed = RUN.startSpeed + (RUN.maxSpeed - RUN.startSpeed) * k
+      this.speed = (RUN.startSpeed + (RUN.maxSpeed - RUN.startSpeed) * k) * speedMult
     } else {
       // 漫步,或「闖關到船邊船價不足、暫時自由移動回頭收集」
       // 漫步:按住 →/畫面右半 = 前進,←/畫面左半 = 後退,輕點 = 跳;無時間壓力
@@ -272,7 +289,8 @@ export class Game {
           this.input.right || (this.input.pointerDown && this.input.pointerX >= half)
         const backward =
           this.input.left || (this.input.pointerDown && this.input.pointerX < half)
-        this.speed = forward ? WALK.speed : backward ? -WALK.speed : 0
+        // 衝刺只加快前進(後退不加速)
+        this.speed = forward ? WALK.speed * boostMult : backward ? -WALK.speed : 0
       }
     }
 
@@ -291,7 +309,13 @@ export class Game {
     this.player.update(dt)
     // NPC 長者問答只在第一關(題庫是約拿書 1–2 章);第四關漫步不出長者。
     const npcsOn = this.mode === 'walk' && this.level === 1
-    this.spawner.update(dt, this.speed, this.distance, this.goalDistance, this.mode === 'walk', npcsOn)
+    // 敵人:漫步模式都有;第四關曠野連闖關模式也有(🐍🦂,撞到扣命、踩扁加分)
+    const enemiesOn = this.mode === 'walk' || this.level === 4
+    // 回頭收集船價中(船價不足且可後退):往後走時從左邊補生寶物,不會回頭撲空
+    const fareNeed = this.mode === 'walk' ? FARE.walk : FARE.run
+    const needFare =
+      this.fareEnabled && this.coinsCollected < fareNeed && (this.mode === 'walk' || this.collectingFare)
+    this.spawner.update(dt, this.speed, this.distance, this.goalDistance, enemiesOn, npcsOn, needFare)
 
     // 漫步模式:走近 NPC(碼頭長者)就觸發聖經問答——沒有時間壓力,適合停下來作答。
     // (退後途中 knockbackLeft>0 時不觸發,避免答錯被退回後立刻又被同一位問。)
@@ -363,6 +387,10 @@ export class Game {
             if (this.player.lives < LIVES) this.player.lives += 1
             else this.coinsCollected += 3
             Audio.sfx('treasure', { life: true })
+          } else if (c.kind === 'boost') {
+            // 閃電:短暫衝刺(重複撿到就重新計時)
+            this.boostLeft = BOOST.duration
+            Audio.sfx('treasure', { value: 10 })
           } else {
             this.coinsCollected += c.value
             Audio.sfx('treasure', { value: c.value })
