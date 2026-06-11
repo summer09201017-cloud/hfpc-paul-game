@@ -224,26 +224,48 @@ body {
     font-size: 1.02rem;
   }
   .app__main {
-    grid-template-columns: minmax(0, 1fr) clamp(200px, 34vw, 300px);
+    /* 地圖約占 8 成（牧師需求）；右欄下限 168px 確保骰子/玩家卡按得到 */
+    grid-template-columns: minmax(0, 1fr) clamp(168px, 21vw, 210px);
     align-items: stretch;
     align-content: stretch;
     min-height: 0;
     overflow: hidden;
-    gap: 0.5rem;
-    padding: 0.4rem 0.5rem;
+    gap: 0.45rem;
+    padding: 0.4rem 0.45rem;
   }
   .app__board {
     min-height: 0;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    padding: 0.35rem;
   }
-  /* aspect-ratio 容器改由「高度」決定大小（max-* 會互相轉換，比例不變形） */
+  /* 地圖「填滿」整個左欄（cover）：比例交給 useZoomPan 的 base 倍率維持
+     （場景永遠是正確地圖比例、至少蓋滿容器、超出部分可拖曳平移）。 */
   .app__board .board {
-    width: auto;
+    aspect-ratio: auto;
+    width: 100%;
     height: 100%;
-    max-width: 100%;
-    max-height: 100%;
+    max-width: none;
+    max-height: none;
+  }
+  /* 右欄緊湊化：骰子小一點、卡片字小一點，20% 寬也好按好讀 */
+  .app__side .dice {
+    padding: 0.55rem;
+  }
+  .app__side .dice__turn {
+    font-size: 0.92rem;
+    margin-bottom: 0.35rem;
+  }
+  .app__side .die3d-stage {
+    --die: 3.1rem;
+  }
+  .app__side .dice__die {
+    margin-bottom: 0.45rem;
+  }
+  .app__side .playercard {
+    padding: 0.5rem 0.6rem;
+  }
+  .app__side .playercard__score-num {
+    font-size: 1.35rem;
   }
   .app__side {
     min-height: 0;
@@ -271,7 +293,7 @@ body {
 .board {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3; /* 會被 JS 以真實地圖長寬比覆蓋 */
+  aspect-ratio: var(--map-aspect, 1.322); /* 由 Board.jsx 以 CSS 變數帶入真實地圖長寬比 */
   border-radius: 14px;
   overflow: hidden;
 }
@@ -1184,6 +1206,11 @@ body {
   border-radius: 18px;
   padding: clamp(0.8rem, 2vw, 1.2rem);
   width: min(92vw, 880px);
+  /* 小高度螢幕（手機橫向全螢幕）：彈窗不可超出視口，否則下方被切掉看不到 */
+  max-height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   box-shadow: var(--shadow);
   animation: pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3);
 }
@@ -1209,6 +1236,11 @@ body {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
+  /* 手機橫向：16:9 舞台若比螢幕高會被切掉下方 ~20% → 以視口高度反推上限，
+     寬度由 aspect-ratio 自動縮回（min/max 約束會互相轉換），置中。 */
+  max-height: calc(100dvh - 5.4rem);
+  max-width: calc((100dvh - 5.4rem) * 16 / 9);
+  margin: 0 auto;
   border-radius: 12px;
   overflow: hidden;
   background: #0b2a3a;

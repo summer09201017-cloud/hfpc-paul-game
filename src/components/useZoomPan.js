@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from 'react'
+import { useRef, useState, useCallback, useEffect, useLayoutEffect } from 'react'
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 
@@ -8,12 +8,20 @@ const MIN = 1
 const MAX = 2.5
 const STEP = 0.25 // ＋／－、滾輪每次變動 25%
 
-// 地圖縮放 / 平移。回傳要掛到「裁切容器」的 ref、指標事件處理器、目前 transform，
-// 以及 +／－／重設 與目前百分比。座標系：transform-origin 0 0；平移會被夾住。
-// 所有數值都會做有限值檢查與夾限，避免 NaN／越界導致整塊地圖跑出畫面而空白。
-export function useZoomPan() {
+// 地圖縮放 / 平移。回傳要掛到「裁切容器」的 ref、指標事件處理器、目前縮放/位移，
+// 以及 +／－／重設 與目前百分比。平移會被夾住；所有數值做有限值檢查，避免 NaN 導致地圖消失。
+//
+// cover 模式（傳入 aspect = 地圖真實寬高比）：
+//   容器不必等比例——hook 量測容器，算出「蓋滿容器所需」的場景基準倍率 bw/bh
+//   （場景永遠維持地圖比例、至少填滿容器，超出的部分可平移）。
+//   桌機的容器本身已鎖定等比例 → bw≈bh≈1，行為與從前相同；
+//   手機橫向讓地圖填滿整個左欄（牧師需求：地圖約占 80%），不變形、可拖曳。
+export function useZoomPan({ aspect = 0 } = {}) {
   const ref = useRef(null)
   const [tf, setTf] = useState({ s: 1, x: 0, y: 0 })
+  const [base, setBase] = useState({ bw: 1, bh: 1 })
+  const baseRef = useRef(base)
+  baseRef.current = base
   const drag = useRef(null)
   const pinch = useRef(null)
   const pointers = useRef(new Map())
@@ -23,14 +31,39 @@ export function useZoomPan() {
     return el ? { w: el.clientWidth, h: el.clientHeight } : { w: 0, h: 0 }
   }
 
-  // 正規化：scale 夾在 [MIN,MAX]、平移夾在可視範圍內，且全部保證是有限數。
+  // 正規化：scale 夾在 [MIN,MAX]、平移夾在「場景蓋滿容器」的範圍內，且全部保證是有限數。
   const norm = (s, x, y) => {
     s = clamp(Number.isFinite(s) ? s : 1, MIN, MAX)
     const { w, h } = dims()
-    x = clamp(Number.isFinite(x) ? x : 0, -(s - 1) * w, 0)
-    y = clamp(Number.isFinite(y) ? y : 0, -(s - 1) * h, 0)
+    const { bw, bh } = baseRef.current
+    x = clamp(Number.isFinite(x) ? x : 0, Math.min(0, -(s * bw - 1) * w), 0)
+    y = clamp(Number.isFinite(y) ? y : 0, Math.min(0, -(s * bh - 1) * h), 0)
     return { s: Math.round(s * 1000) / 1000, x: Math.round(x), y: Math.round(y) }
   }
+
+  // 量測容器 → 算 cover 基準倍率（bw/bh ≥ 1，其中一軸為 1）；容器尺寸變了就重夾平移。
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el || !Number.isFinite(aspect) || aspect <= 0) return
+    const compute = () => {
+      const w = el.clientWidth
+      const h = el.clientHeight
+      if (!w || !h) return
+      const contA = w / h
+      const next =
+        contA > aspect
+          ? { bw: 1, bh: Math.max(1, contA / aspect) } // 容器比地圖寬 → 寬填滿、高超出
+          : { bw: Math.max(1, aspect / contA), bh: 1 } // 容器比地圖高 → 高填滿、寬超出
+      baseRef.current = next
+      setBase(next)
+      setTf((t) => norm(t.s, t.x, t.y))
+    }
+    compute()
+    const ro = new ResizeObserver(compute)
+    ro.observe(el)
+    return () => ro.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aspect])
 
   // 以容器內座標 (px,py) 為定點，縮放到 ns（該點縮放前後位置不變）。
   const zoomAt = useCallback((px, py, ns) => {
@@ -69,7 +102,9 @@ export function useZoomPan() {
   const onPointerDown = useCallback((e) => {
     // 點在縮放控制鈕上時，不啟動平移／不擷取指標（否則按鈕 onClick 會被吃掉）。
     if (e.target?.closest?.('.board__zoom')) return
-    ref.current?.setPointerCapture?.(e.pointerId)
+    try {
+      ref.current?.setPointerCapture?.(e.pointerId)
+    } catch {}
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     if (pointers.current.size === 2) {
       const [a, b] = [...pointers.current.values()]
@@ -117,7 +152,7 @@ export function useZoomPan() {
 
   const zoomIn = useCallback(() => step(1), [step])
   const zoomOut = useCallback(() => step(-1), [step])
-  const reset = useCallback(() => setTf({ s: 1, x: 0, y: 0 }), [])
+  const reset = useCallback(() => setTf((t) => norm(1, 0, 0)), [])
 
   // 滑桿／輸入框：直接設定百分比（朝畫面中心縮放）；非法值忽略。
   const setPercent = useCallback(
@@ -135,12 +170,14 @@ export function useZoomPan() {
 
   return {
     ref,
-    // ⚠ 不再回傳 transform scale：手機高 DPR 下「transform 放大」會產生超過 GPU
-    //   紋理上限的合成層 → 整個畫面變白。改由 Board 以「實際版面放大」呈現
-    //   （scene 的 width/height = scale×100%、left/top = x/y px——純排版繪製、可分塊上色）。
+    // ⚠ 不用 transform scale：手機/PC 高 DPR 下「transform 放大」會產生超過 GPU
+    //   紋理上限的合成層 → 整個畫面變白。改由 Board 以「實際版面放大」呈現：
+    //   scene 的 width/height = scale×base×100%、left/top = x/y px（純排版繪製、可分塊上色）。
     x: t.x,
     y: t.y,
     scale: t.s,
+    baseW: base.bw, // cover 基準倍率（桌機等比例容器≈1；手機橫向填滿左欄時其中一軸 >1）
+    baseH: base.bh,
     percent: Math.round(t.s * 100),
     minPercent: Math.round(MIN * 100),
     maxPercent: Math.round(MAX * 100),

@@ -35,26 +35,29 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
   // 算出每個玩家在自己那一格裡是第幾個（用來錯開棋子）。
   const seatAtStation = {}
 
-  const zp = useZoomPan({ min: 1, max: 4 })
+  const aspect = (map && map.aspect) || 1.322
+  const zp = useZoomPan({ aspect })
 
   return (
     <div
       className="board"
       ref={zp.ref}
-      style={{ aspectRatio: (map && map.aspect) || 1.322, touchAction: 'none' }}
+      style={{ '--map-aspect': aspect, touchAction: 'none' }}
       {...zp.handlers}
     >
       {/* 可縮放 / 平移的整個地圖場景（地圖、路線、城市、棋子一起縮放）。
           用「實際版面放大」(width/height %) 而非 transform scale——
-          手機高 DPR 下 transform 放大會產生超過 GPU 上限的合成層，整個畫面變白。 */}
+          手機/PC 高 DPR 下 transform 放大會產生超過 GPU 上限的合成層，整個畫面變白。
+          base 倍率讓場景以「正確地圖比例」蓋滿容器（cover）：桌機等比例容器≈1 不變；
+          手機橫向地圖填滿整個左欄（約占 8 成），不變形、可拖曳平移。 */}
       <div
         className="board__scene"
         style={{
-          width: `${zp.scale * 100}%`,
-          height: `${zp.scale * 100}%`,
+          width: `${zp.scale * zp.baseW * 100}%`,
+          height: `${zp.scale * zp.baseH * 100}%`,
           left: `${zp.x}px`,
           top: `${zp.y}px`,
-          cursor: zp.scale > 1 ? 'grab' : 'default',
+          cursor: zp.scale > 1 || zp.baseW > 1.01 || zp.baseH > 1.01 ? 'grab' : 'default',
         }}
       >
         <MapBackground map={map} />
