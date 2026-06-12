@@ -5,14 +5,14 @@
 // Catches: duplicate ids, missing required fields per item type, quiz
 // answerIndex out of range, unknown effect keys (typos), bad ranges.
 //
-// Usage:   node validate.mjs path/to/content.json
-//          node validate.mjs            (uses CONFIG.defaultFile)
-// Exit:    0 = clean (warnings allowed), 1 = at least one error.
+// Usage:   node validate.mjs path/to/content.json [more.json ...]
+//          node validate.mjs            (no args = validates ALL src/data/journey*.json)
+// Exit:    0 = clean (warnings allowed), 1 = at least one error in any file.
 //
 // Adapt by editing the CONFIG block below to your project's field names and
 // effect vocabulary. Defaults match 保羅大富翁 (journey1.json).
 // ===========================================================================
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 
 // ---------------------------------------------------------------- CONFIG ----
 const CONFIG = {
@@ -57,7 +57,17 @@ const CONFIG = {
 }
 // ------------------------------------------------------------ END CONFIG ----
 
-const file = process.argv[2] || CONFIG.defaultFile
+// 無參數時自動驗證 src/data/ 下所有 journey*.json(未來新增旅程也自動涵蓋,CI 同受惠)。
+const argFiles = process.argv.slice(2)
+const FILES = argFiles.length
+  ? argFiles
+  : readdirSync('src/data')
+      .filter((f) => /^journey.*\.json$/i.test(f))
+      .sort()
+      .map((f) => 'src/data/' + f)
+
+// 整個單檔驗證流程包成函式(內文保持原縮排以便看 diff);回傳 true=該檔乾淨。
+function validateFile(file) {
 const errors = []
 const warnings = []
 const err = (m) => errors.push(m)
@@ -68,7 +78,7 @@ try {
   data = JSON.parse(readFileSync(file, 'utf-8'))
 } catch (e) {
   console.error(`✗ Cannot read/parse ${file}: ${e.message}`)
-  process.exit(1)
+  return false
 }
 
 // Resolve the items array: honor CONFIG, else auto-detect a common name.
@@ -227,7 +237,16 @@ if (warnings.length) {
 if (errors.length) {
   console.log(`\n✗ ${errors.length} error(s):`)
   errors.forEach((e) => console.log('   - ' + e))
-  console.log('')
+  return false
+}
+console.log(warnings.length ? '✓ No errors (warnings above).' : '✓ All checks passed.')
+return true
+}
+
+let allOk = true
+for (const f of FILES) if (!validateFile(f)) allOk = false
+if (!allOk) {
+  console.log('\n✗ 有內容檔未通過驗證(見上方錯誤)。\n')
   process.exit(1)
 }
-console.log(warnings.length ? '\n✓ No errors (warnings above).\n' : '\n✓ All checks passed.\n')
+console.log(`\n✓ ${FILES.length} 個內容檔全部通過。\n`)
