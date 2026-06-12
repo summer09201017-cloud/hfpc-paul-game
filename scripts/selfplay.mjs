@@ -21,6 +21,7 @@ const JOURNEYS = [
   ['第一次旅程', '../src/data/journey1.json'],
   ['第二次旅程', '../src/data/journey2.json'],
   ['第三次旅程', '../src/data/journey3.json'],
+  ['海路到羅馬', '../src/data/journey4.json'],
   ['約拿旅程', '../src/data/journey-jonah.json'],
   ['出埃及記之旅', '../src/data/journey-exodus.json'],
   ['但以理在巴比倫', '../src/data/journey-daniel.json'],

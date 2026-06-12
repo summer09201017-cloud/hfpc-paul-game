@@ -2,12 +2,14 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import journey1 from '../data/journey1.json'
 import journey2 from '../data/journey2.json'
 import journey3 from '../data/journey3.json'
+import journey4 from '../data/journey4.json'
 import journeyJonah from '../data/journey-jonah.json'
 import journeyExodus from '../data/journey-exodus.json'
 import journeyDaniel from '../data/journey-daniel.json'
 import regionMapPaul from '../data/region-map.json'
 import regionMapPaul2 from '../data/region-map2.json'
 import regionMapPaul3 from '../data/region-map3.json'
+import regionMapPaul4 from '../data/region-map4.json'
 import regionMapJonah from '../data/region-map-jonah.json'
 import regionMapExodus from '../data/region-map-exodus.json'
 import regionMapDaniel from '../data/region-map-daniel.json'
@@ -20,7 +22,8 @@ import { enterImmersive } from '../immersive'
 const JOURNEYS = [
   { key: 'paul', journey: journey1, map: regionMapPaul, nextKey: 'paul2' },
   { key: 'paul2', journey: journey2, map: regionMapPaul2, nextKey: 'paul3' },
-  { key: 'paul3', journey: journey3, map: regionMapPaul3, nextKey: null }, // 之後接「海路到羅馬」（徒 27–28）
+  { key: 'paul3', journey: journey3, map: regionMapPaul3, nextKey: 'paul4' },
+  { key: 'paul4', journey: journey4, map: regionMapPaul4, nextKey: null }, // 海路到羅馬（徒 27–28）——宣教接力的終點站
   { key: 'jonah', journey: journeyJonah, map: regionMapJonah, nextKey: null },
   { key: 'exodus', journey: journeyExodus, map: regionMapExodus, nextKey: null }, // 出埃及記（真實地理：尼羅河三角洲→西奈）
   { key: 'daniel', journey: journeyDaniel, map: regionMapDaniel, nextKey: null }, // 但以理（手繪時間軸棋盤，不走 gen-map）
