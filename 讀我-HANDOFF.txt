@@ -124,7 +124,8 @@
   🔜 真正待做(依優先):
   1. 牧者審核 + merge:feat/quiz-ch3-4(約拿題庫)、feat/daniel-exodus(兩條新旅程)、
      以及 journey2 與約拿之旅「2026-06-10 以前草擬」的舊題目卡牌。
-     (題庫送審清單見 docs/題庫送審清單-2026-06-12.html / .md)
+     (題庫送審清單見 docs/題庫送審清單-2026-06-12.html,由
+      scripts/export-quiz-review.mjs 產生,瀏覽器開啟→Ctrl+P 可印)
   2. 真實手機離線實測(兩遊戲):裝一台→關網路→跑一遍(自動檢查全綠,手感要人測)。
   3. 但以理/出埃及從骨架到完整(CP 值排序見 roadmap.md 待做第 0b 項)。
   4. 「海路到羅馬」journey4(徒 27–28):照 add-challenge-station + real-geography-board
