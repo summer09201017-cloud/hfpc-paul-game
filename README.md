@@ -208,7 +208,8 @@ npm run gen:map
 ## 🧪 測試（確保遊戲不會卡死）
 
 ```bash
-npm run test:selfplay   # 純規則引擎自我對戰 1200 場，驗證每場都會正常結束
+npm test                # 一鍵全檢:內容驗證(全部旅程)+ 自我對戰(各 1200 場)+ 煙霧測試
+npm run test:offline    # 再加 build + PWA 離線就緒檢查(上課前、給平板裝機前跑這個)
 npm run test:browser    # 用真實瀏覽器把一整場玩完，抓動畫/算繪錯誤（需先 npm run preview）
 ```
 

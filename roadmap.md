@@ -41,8 +41,19 @@
 
 ---
 
+## 🆕 2026-06-12 進度
+
+- **測試門升級(已併入 main)**:`npm run validate` 無參數時自動驗**全部** `journey*.json`(CI 同步受惠);新增 `scripts/smoke-test.mjs`(src 語法 + 嵌入契約守門 + `--offline` 離線就緒,逐檔檢查 Workbox 預快取);`npm test` = validate+selfplay+煙霧、`npm run test:offline` 44 項全綠。
+- **版本收斂**:06-11 深夜未 commit 的文件最終版已救回(8946d1c);GitHub 是唯一真相,一律在 git 工作樹工作。
+- **機器註記**:HFP 那台(Node 24.14.1)實測 `vite build` 連跑 3 次全部成功——「Node 24 build 地雷」是 agape250 那台的機器特性,非 Node 24 通病。
+- **`feat/rpg-items-batch1` 分支(待牧者審)**:牧師 06-12 道具設計的零引擎改動資料層——三旅程全副軍裝補齊 6 件、journey2 獄中讚美詩/製帳棚、journey3 羅馬公民證/書信羽毛筆、約拿之旅 gifts(禱告卷軸/蓖麻樹蔭)+蟲蟲卡+船票卡。設計總表見 skill `bible-rpg-items`。
+- **新書卷管線 skill ×3**:`bible-journey-planner`(含但以理/出埃及記完成設計稿)、`bible-game-scaffold`、`bible-rpg-items`。
+
+---
+
 ## 🔧 真正待做（依優先序）
 
+0. **牧者審核兩個 feature branch**:本 repo `feat/rpg-items-batch1`(道具)與約拿 repo `feat/quiz-ch3-4`(題庫 3–4 章)——實測滿意才 merge main(main 自動部署)。
 1. **神學 / 題庫審核（最重要）**：`journey2.json`（第二次旅程）與 `journey-jonah.json` 的題目、卡牌，請德義老師 / 牧者依 README 的「題庫審核清單」過目後再正式上線。第二次旅程的題目是 AI 草擬，務必人工把關。
    - **✅ 2026-06-10 部分審核通過（牧者本人）**：當日「新增」的站點題目與卡片文案——含 約拿之旅新 5 站（下約帕的路上/沉入深海/魚腹禱告·仰望/曠野趕路/三日路程的大城）、尼尼微全城悔改與蓖麻樹的功課的補題、第二次旅程新 8 站（敘利亞與基利家/托魯斯山/弗呂家加拉太/尼亞波利/暗妃波里/愛琴海航路/堅革哩/地中海長航）、全副軍裝機會卡（兩條旅程）、同工/頭銜文案。**仍待審**：journey2 與 journey-jonah「原有」的題目卡牌（2026-06-10 之前草擬的部分）。
 2. ~~第三次宣教旅程~~ **✅ 已完成並上線（2026-06-11）**：`journey3.json` 20 站（以弗所三年事件群/推喇奴/士基瓦/焚書/底米丟/羅馬書/猶推古/米利都道別/亞迦布/耶路撒冷）+ 2 闖關站（高原 L4、海程 L2）+ RPG 層；`gen-map.mjs` region3 真實愛琴海地圖；宣教接力 `paul2 → paul3` 已接通；四旅程 selfplay 全綠。**✅ journey3 題目與文案 牧者審核通過（2026-06-11）。**
@@ -65,8 +76,8 @@
 ## 一次跑完所有檢查
 ```bash
 npm install
-npm run validate           # 預設驗 journey1；其他用 node scripts/validate.mjs src/data/journeyX.json
-npm run test:selfplay      # 四條旅程各 1200 場，確認都會正常結束
+npm test                   # validate(全部 journey*.json)+ selfplay(各 1200 場)+ 煙霧測試
+npm run test:offline       # build + dist 離線就緒(Workbox 預快取逐檔檢查)
 npm run build              # 打包；CI 另會跑真實瀏覽器實機測試
 npm run dev                # 本機開發（區網可連，給平板/投影）
 ```
