@@ -1333,3 +1333,27 @@ body {
 .gameover__btn {
   width: 100%;
 }
+
+/* ---- 卡片流程闖關（純 React，src/minigames/cards/）：排序題 UI ---- */
+.minigame__card--pure { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.mgorder__done {
+  margin: 0.3rem 0 0.5rem 1.4rem;
+  color: #1b7a2f;
+  font-weight: 700;
+}
+.mgorder__done li { margin: 0.1rem 0; }
+.mgorder__pool { animation: none; }
+.mgorder__pool:has(.mgcard__choice:active) { animation: none; }
+.mgorder__hint { font-size: 0.88em; color: #666; margin: 0.4rem 0 0; }
+@keyframes mgshake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.mgorder__pool { animation: mgshake 0.25s 1; }
+
+/* 手繪棋盤的裝飾 emoji 標籤（如但以理巴比倫城景） */
+.board__label--deco {
+  font-size: clamp(0.8rem, 1.8vw, 1.3rem);
+  opacity: 0.55;
+}

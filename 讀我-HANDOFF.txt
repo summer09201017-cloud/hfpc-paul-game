@@ -1,7 +1,9 @@
 ============================================================
-讀我 — HANDOFF(給 agape250 那台 PC 的 AI / 開發者)
-更新:2026-06-12(版本收斂+測試門+題庫3-4章+RPG道具第一批+新書卷skill群
-              +但以理/出埃及記兩條旅程骨架→分支 feat/daniel-exodus)
+讀我 — HANDOFF(給 HFPC 那台 PC 的 AI / 開發者)
+更新:2026-06-12 下午(agape250 機完成:但以理/出埃及「骨架→大半完整」——
+  卡片流程闖關 6 關+RPG 道具層+但以理棋盤美化+終局反思 ×2,全在分支
+  feat/daniel-exodus 且 e2e 實機通過;另:rpg-items-batch1 已併 main、
+  題庫送審清單已產出、19 skill 以 plugin 安裝、副本已收斂)
 ============================================================
 
 這個生態系有「兩個上線中的遊戲 + 一套跨專案 skill 庫 + 兩卷新書設計稿」:
@@ -23,9 +25,21 @@
   完整設計稿(六關闖關表/RPG 道具表/開發順序)不在 repo 裡,在 skill:
     claude-skills\bible-journey-planner\references\但以理-設計.md、出埃及記-設計.md
     claude-skills\bible-rpg-items\references\道具庫.md(四卷書道具,含全副軍裝)
-  下一步(CP 值排序)見 roadmap.md「真正待做」第 0 項:
-    審題 → 但以理棋盤美化 → 卡片流程闖關 4 關(金像/牆字/十災/十誡,純 React 卡片,
-    CP 最高) → RPG 道具層(純 JSON) → 反思終局 ×2 → 收集機制換皮(嗎哪/王膳)。
+  ★ 2026-06-12 下午(agape250 機)已把上述「下一步」做掉大半(同一分支):
+    ✅ 卡片流程闖關 6 關:金像之夢排序/牆上的字解碼/十災順序/十誡配對
+       +神掌權終局五幕/會幕榮光終局五幕——新框架 src/minigames/cards/
+       (specs.js 內容+CardGame.jsx 播放器;站點 minigame.cards 指定;
+        在約拿 fork 之外,sync:jonah 不會碰;不會失敗、答錯溫柔重試)
+    ✅ RPG 道具層:但以理 6 裝備+三友+王膳美酒陷阱卡;出埃及 7 裝備
+       +亞倫(起始)/米利暗/約書亞/戶珥+嗎哪生蟲陷阱卡(出16:20)
+    ✅ 但以理棋盤美化:region-map-daniel.json 新增 decor 剪影層
+       (城牆/塔廟/金像柱/空中花園/王宮/河波)+MapBackground 支援 map.decor
+    ✅ e2e 實機通過:scripts/browser-playtest-cards.mjs(卡片感知版,
+       但以理+出埃及整場玩完、零 JS 錯誤);npm test 全綠(六旅程)
+    ✅ 老師解答卷一鍵匯出:scripts/export-quiz-review.mjs(journey JSON
+       + --cards=specs.js 卡片文案一起印)→ docs/題庫送審清單-2026-06-12.html
+    🔜 仍待做:a.牧者審題(最後閘門) f.收集機制換皮(嗎哪/王膳——
+       需約拿引擎 spawner 支援,跟引擎端協調,別在保羅 fork 裡硬改)
 
   1) 保羅大富翁   GitHub: https://github.com/summer09201017-cloud/hfpc-paul-game
         ★ 已上線:https://hfpc-paul-game.netlify.app/(push main 即自動部署)
@@ -114,32 +128,56 @@
      npm run sync:jonah     # 同步約拿引擎
      npm run gen:map        # 動站點經緯度後重生地圖
 
-■ 已完成 vs 真正待做(合併視角,2026-06-12)
-  ✅ 已完成:兩遊戲上線、約拿全書六關、保羅四旅程+宣教接力+輕RPG+3D骰子、
-     全六關嵌入(e2e)、真實地理棋盤、手機橫式全螢幕、縮放白屏根治、
-     測試門(validate全旅程/煙霧/離線就緒/CI)、版本收斂、
-     但以理+出埃及設計稿、三個新書卷 skill、
-     道具第一批(✅ 2026-06-12 下午已併 main,全鏈綠後推送)、題庫全書(分支)、
-     但以理+出埃及旅程骨架(分支 feat/daniel-exodus,六旅程全鏈綠)。
+■ 已完成 vs 真正待做(合併視角,2026-06-12 下午)
+  ✅ 已完成:兩遊戲上線、約拿全書六關、保羅六旅程(四舊+但以理/出埃及)、
+     宣教接力+輕RPG+3D骰子、全六關嵌入(e2e)、真實地理棋盤、手機橫式全螢幕、
+     測試門(validate全旅程/煙霧/離線就緒/CI)、版本收斂(重複解壓副本已刪,zip 保留)、
+     道具第一批(已併 main 並上線)、
+     但以理+出埃及:骨架+卡片闖關6關+RPG層+棋盤美化+終局反思(分支
+     feat/daniel-exodus,npm test 全綠+卡片感知 e2e 兩旅程整場通過)、
+     題庫送審清單(docs/題庫送審清單-2026-06-12.html,含卡片關文案)、
+     19 skill plugin 化(agape250 機:marketplace 固定位置
+     C:\Users\agape250\claude-plugin-marketplace,claude plugin install 完成;
+     HFP 死路徑已修成「GitHub 名+路徑因機器而異」)。
   🔜 真正待做(依優先):
-  1. 牧者審核 + merge:feat/quiz-ch3-4(約拿題庫)、feat/daniel-exodus(兩條新旅程)、
-     以及 journey2 與約拿之旅「2026-06-10 以前草擬」的舊題目卡牌。
-     (題庫送審清單見 docs/題庫送審清單-2026-06-12.html,由
-      scripts/export-quiz-review.mjs 產生,瀏覽器開啟→Ctrl+P 可印)
-  2. 真實手機離線實測(兩遊戲):裝一台→關網路→跑一遍(自動檢查全綠,手感要人測)。
-  3. 但以理/出埃及從骨架到完整(CP 值排序見 roadmap.md 待做第 0b 項)。
-  4. 「海路到羅馬」journey4(徒 27–28):照 add-challenge-station + real-geography-board
-     模式;暴風雨 L2(stormCast:false)是天然必停站;完成後接 paul3 的 nextKey。
-  5. 細部手感微調:全在約拿 config.js(STORM/FISH/NINEVEH/PREACH/GOURD/BOOST/SPRINT)。
+  1. 牧者審核 + merge:feat/daniel-exodus(兩條新旅程,含卡片關文案)、
+     feat/quiz-ch3-4(約拿題庫)、journey2 與約拿之旅 2026-06-10 以前的舊題。
+     送審清單:docs/題庫送審清單-2026-06-12.html(瀏覽器開啟→Ctrl+P 可印)。
+  2. 約拿美術分支 art-kenney-sprites(引擎端,06-12 牧師實測中:七種試過、
+     定案只留木箱+老鼠)→ 牧師說 merge 後,保羅要跑 npm run sync:jonah,
+     並注意 sprites PNG 不在模組圖裡(assets 路徑+sw 預快取)。
+  3. 收集機制換皮(嗎哪/王膳):需約拿引擎 spawner 加權寶物支援——與引擎端
+     協調規格(建議:Game opts 傳 spawn table),不要在保羅 fork 硬改。
+  4. 真實手機離線實測(兩遊戲):裝一台→關網路→跑一遍。
+  5. 「海路到羅馬」journey4(徒 27–28):L2(stormCast:false)天然必停;完成後接
+     paul3 的 nextKey,宣教接力就是完整保羅一生。
+  6. 下一卷書(候選與理由見下方「🆕 下一卷書候選」)。
+
+■ 🆕 下一卷書候選(2026-06-12 評估,按「引擎重用度×故事適配×課堂價值」排序)
+  1. 路得記(短篇,~15 站)——摩押→伯利恆真實地理;「拾穗」就是收集關的
+     天然主題(與嗎哪換皮共用 spawner 規格!);道具:麥穗/外袍/贖業之鞋(得4:7);
+     救贖主題直指基督。小小孩友善,半週可完成。CP 最高。
+  2. 約瑟(創 37–50,~20 站)——多坍→埃及真實地理;兩個解夢卡片關
+     (酒政膳長/法老七年豐年)直接重用 goldImage 排序框架;升降起伏的
+     故事弧(彩衣→坑→監→宰相)天然適合機會/命運卡;饒恕主題(創50:20)。
+  3. 尼希米記(~18 站)——「52 天重建城牆」時間軸棋盤(但以理模式第二例);
+     一手做工一手兵器=平衡關(L2 換皮);參巴拉/多比雅=命運卡;
+     酒政→省長 titles。教會建造主題,適合青少年。
+  4. 以斯帖記(~16 站)——書珊王宮手繪棋盤;普珥(掣籤)與骰子機制天然呼應;
+     筵席卡片流程關;「焉知你得了王后的位分不是為現今的機會嗎」(斯4:14)。
+     幾乎全卡片關=開發最便宜,但地理感最弱。
+  5. 大衛(撒上16–撒下5,~20 站)——伯利恆→曠野→希伯崙;歌利亞甩石關
+     需要新引擎關卡(瞄準/投擲),是六關機制裡第一個要「新寫」的——
+     放在引擎端有空檔時再做。詩篇反思卡資源豐富。
 
 ============================================================
 ■ 🚀 未來功能點子(按「CP 值高→低 × 開發時間短→長」排序,2026-06-12 重排)
    跟牧師確認想做哪個,再開 feature branch 動工。
 ============================================================
 【第一梯隊:半天內、立刻有感】
- 1. 老師「解答卷」一鍵匯出 — 把整條 journey 的題目+正解+經文出處匯成可印
-    的一頁(html→列印或 .docx),牧者審題不必開 JSON。直擊目前最大瓶頸
-    (神學審核)。 ~2-3 小時
+ 1. ~~老師「解答卷」一鍵匯出~~ ✅ 已完成(2026-06-12 下午):
+    scripts/export-quiz-review.mjs(journey JSON+卡片關文案一起匯,
+    可印 HTML)。後續可加 .docx 輸出與「只匯未審核部分」。
  2. 全書通關證書畫面(約拿)— 名字+日期+金句,可截圖可印。 ~2-3 小時
  3. 開場/結束畫面 QR code(保羅)— 投影掃碼,手機直接開線上版。 ~1 小時
  4. 上課前一鍵檢查 .bat — 雙擊跑 npm test + 印「今天可以上課 ✓」
@@ -164,7 +202,12 @@
 【Skill / Tool-Calling 點子】
 16. quiz-authoring skill — 「幫我出某卷書 N 題」→ 依 bible-game-studio 慣例
     產題+自動跑 validator。 ~半天
-17. playtest-bot skill — Playwright 全自動通關找 bug,跨專案化。 ~半天
+17. playtest-bot skill — Playwright 全自動通關找 bug,跨專案化。
+    (半成品已有:scripts/browser-playtest-cards.mjs 會玩卡片關,
+     JOURNEY 環境變數可換旅程;整理成 skill 即可) ~半天
+17b. 卡片關框架再利用 skill — src/minigames/cards/ 的 specs.js+CardGame.jsx
+    模式(排序/配對/五幕反思)寫成 skill,下一卷書(約瑟解夢/以斯帖筵席)
+    直接套。 ~半天
 18. sermon-companion skill — 關卡反思文案+packer-theology → 主日學教案/
     講章大綱(.docx)。 ~半天
 19. verse-accuracy 驗證 — 把和合本經文庫嵌進 validator,交叉比對題目出處,

@@ -88,7 +88,36 @@ function journeyHtml(j, file) {
   return html;
 }
 
-const sections = files.map(f => journeyHtml(JSON.parse(readFileSync(resolve(f), 'utf8')), f)).join('\n');
+// 卡片流程闖關的文案（src/minigames/cards/specs.js）也要過審：--cards=<specs.js 路徑>
+async function cardGamesHtml(specPath) {
+  const { CARD_GAMES } = await import('file://' + resolve(specPath));
+  let html = `<section class="journey"><h1>卡片流程闖關文案</h1>
+  <p class="sub">來源：<code>${esc(specPath)}</code>（金像之夢/牆上的字/十災/十誡/兩個終局反思）</p>
+  <p class="howto">這些是玩家在闖關彈窗裡逐張看到的卡片。✅ 是正解；「依序點選」題列出的就是正確順序。</p>`;
+  for (const [key, g] of Object.entries(CARD_GAMES)) {
+    html += `<h2>${esc(g.title)} <span class="meta">(${esc(key)})</span></h2>`;
+    html += `<div class="card"><div class="q">☐ 開場：${esc(g.intro.kicker)}</div>${g.intro.ref ? `<div class="explain">📖 ${esc(g.intro.ref)}｜${esc(g.intro.line ?? '')}</div>` : ''}<div class="explain">${esc(g.intro.body)}</div></div>`;
+    let n = 0;
+    for (const st of g.steps) {
+      n++;
+      const reveal = st.reveal ? `<div class="explain">📖 ${esc(st.reveal.ref ?? '')}｜${esc(st.reveal.line ?? '')}<br>💡 ${esc(st.reveal.explain ?? '')}</div>` : '';
+      if (st.kind === 'order') {
+        html += `<div class="quiz"><div class="q">☐ 步驟 ${n}（依序點選）：${esc(st.prompt)}</div><ol class="opts">${st.items.map(i => `<li class="ans">✅ ${esc(i)}</li>`).join('')}</ol>${reveal}</div>`;
+      } else if (st.kind === 'question') {
+        html += `<div class="quiz"><div class="q">☐ 步驟 ${n}：${esc(st.q)}</div><ol class="opts">${st.choices.map((c, i) => `<li class="${i === st.answer ? 'ans' : ''}">${i === st.answer ? '✅ ' : ''}${esc(c)}</li>`).join('')}</ol>${reveal}</div>`;
+      } else {
+        html += `<div class="card"><div class="q">☐ 步驟 ${n}（劇情卡）：${esc(st.kicker)}</div><div class="explain">${esc(st.body ?? '')}</div></div>`;
+      }
+    }
+    html += `<div class="card"><div class="q">☐ 結尾：${esc(g.done.kicker)}</div><div class="explain">${esc(g.done.body)}</div></div>`;
+  }
+  html += `</section>`;
+  return html;
+}
+
+const cardsArg = args.find(a => a.startsWith('--cards='));
+let sections = files.map(f => journeyHtml(JSON.parse(readFileSync(resolve(f), 'utf8')), f)).join('\n');
+if (cardsArg) sections += await cardGamesHtml(cardsArg.slice(8));
 const today = new Date().toISOString().slice(0, 10);
 const doc = `<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <title>題庫送審清單 ${today}</title>
