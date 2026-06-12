@@ -290,6 +290,53 @@ buildRegion({
 })
 
 // ===========================================================================
+// 出埃及記之旅（尼羅河三角洲 → 西奈半島）——行程站名出自聖經記載
+// （出 12:37、13:20、14:2、15:22–27、16:1、17:1、19:1）。紅海＝蘇伊士灣，
+// 過紅海段用 arriveBy:"sea" 畫成海路。西奈山取傳統位置（Jebel Musa 一帶）。
+// 注意：但以理（journey-daniel）是手繪時間軸棋盤，「不在」這支腳本裡。
+// ===========================================================================
+buildRegion({
+  label: '出埃及記之旅',
+  bounds: { lonMin: 30.2, lonMax: 35.4, latMin: 27.9, latMax: 31.5 },
+  // 埃及（含西奈半島與兩個海灣的海岸線）、以色列/巴勒斯坦、約旦、沙烏地（亞喀巴灣東岸）
+  iso: ['EGY', 'ISR', 'PSE', 'JOR', 'SAU'],
+  journeyFile: 'journey-exodus.json',
+  mapFile: 'region-map-exodus.json',
+  labels: [
+    { t: '埃及 · 歌珊地', lat: 30.95, lon: 30.85, kind: 'region' },
+    { t: '地　中　海', lat: 31.35, lon: 32.60, kind: 'sea' },
+    { t: '西奈曠野', lat: 29.45, lon: 34.05, kind: 'region' },
+    { t: '紅　海（蘇伊士灣）', lat: 28.95, lon: 32.75, kind: 'sea' },
+    { t: '往迦南地 ⟶', lat: 30.90, lon: 34.80, kind: 'region' },
+    { t: '米甸', lat: 28.30, lon: 35.05, kind: 'region' },
+  ],
+  cities: {
+    goshen_start:     { lat: 30.95, lon: 31.40 }, // 歌珊地（尼羅河三角洲東部，為奴之家）
+    pharaoh_palace:   { lat: 30.70, lon: 31.20 }, // 法老的王宮（容我的百姓去）
+    ten_plagues:      { lat: 30.50, lon: 31.55 }, // 十災的對決
+    passover_night:   { lat: 30.72, lon: 31.78 }, // 逾越節之夜
+    rameses_depart:   { lat: 30.80, lon: 31.98 }, // 蘭塞出發（Pi-Ramesses 一帶）
+    succoth:          { lat: 30.55, lon: 32.10 }, // 疏割（Tell el-Maskhuta 一帶）
+    etham_pillar:     { lat: 30.28, lon: 32.32 }, // 以倘（曠野邊，雲柱火柱）
+    pihahiroth:       { lat: 30.02, lon: 32.48 }, // 比哈希錄（紅海邊，近蘇伊士）
+    red_sea_cross:    { lat: 29.80, lon: 32.58 }, // 過紅海（海中乾地，闖關站）
+    miriam_song:      { lat: 29.55, lon: 32.80 }, // 米利暗之歌（東岸）
+    shur_desert:      { lat: 29.36, lon: 33.00 }, // 書珥曠野（三天無水）
+    marah:            { lat: 29.18, lon: 33.10 }, // 瑪拉（苦水變甜）
+    elim:             { lat: 29.00, lon: 33.18 }, // 以琳（十二股水泉、七十棵棕樹）
+    sin_wilderness:   { lat: 28.82, lon: 33.30 }, // 汛的曠野（發怨言、應許降嗎哪）
+    manna_gather:     { lat: 28.68, lon: 33.45 }, // 撿拾嗎哪（闖關站）
+    rephidim_water:   { lat: 28.58, lon: 33.60 }, // 利非訂（磐石出水）
+    amalek_battle:    { lat: 28.50, lon: 33.74 }, // 亞瑪力之戰（舉手禱告，闖關站）
+    jethro_advice:    { lat: 28.62, lon: 33.88 }, // 葉忒羅獻策
+    sinai_camp:       { lat: 28.48, lon: 33.93 }, // 西奈山下安營（Jebel Musa 一帶）
+    ten_commandments: { lat: 28.56, lon: 34.06 }, // 西奈山 · 十誡（必停）
+    golden_calf:      { lat: 28.42, lon: 34.00 }, // 金牛犢
+    tabernacle_end:   { lat: 28.54, lon: 34.20 }, // 會幕建成 · 神的榮光（終點）
+  },
+})
+
+// ===========================================================================
 // 約拿宣教之旅（真實地理版）——東地中海岸 → 美索不達米亞。
 //   教學重點：約拿被召去「東邊」的尼尼微（地圖最右、底格里斯河畔），卻往「西邊」
 //   逃出海（往他施／Tarshish，遠在地中海西端、出圖外，用箭頭示意）；大魚之後再

@@ -1,9 +1,31 @@
 ============================================================
 讀我 — HANDOFF(給 agape250 那台 PC 的 AI / 開發者)
-更新:2026-06-12(版本收斂+測試門+題庫3-4章+RPG道具第一批+新書卷skill群)
+更新:2026-06-12(版本收斂+測試門+題庫3-4章+RPG道具第一批+新書卷skill群
+              +但以理/出埃及記兩條旅程骨架→分支 feat/daniel-exodus)
 ============================================================
 
 這個生態系有「兩個上線中的遊戲 + 一套跨專案 skill 庫 + 兩卷新書設計稿」:
+
+■ 2026-06-12 但以理+出埃及記旅程骨架(已搶救上 GitHub 分支 feat/daniel-exodus)
+  保羅大富翁新增兩條旅程「骨架」,validate/selfplay/build 全綠:
+    • journey-exodus.json(出埃及記之旅,22 站):歌珊地→十災→逾越節→過紅海(L1 闖關
+      mustStop)→米利暗之歌→瑪拉/以琳→撿嗎哪(L4 闖關)→磐石出水→舉手禱告(L2 闖關)
+      →葉忒羅→西奈十誡(mustStop 問答)→金牛犢→會幕榮光(終點)。
+      真實地理底圖:gen-map.mjs 新 region「出埃及記之旅」(尼羅河三角洲→西奈半島,
+      region-map-exodus.json),紅海段 arriveBy:"sea"。
+    • journey-daniel.json(但以理在巴比倫,20 站):耶路撒冷被圍→王膳考驗→金像之夢
+      →火窯(L2 闖關 mustStop)→牆上的字→巴比倫陷落→一日三次禱告→獅子坑
+      →七十年的盼望(終點)。
+      ★ 全系列第一個「非地理」棋盤:region-map-daniel.json 是手寫的時間軸底圖
+      (巴比倫城+幼發拉底河,站點 x/y 手排蛇行四列),「不歸 gen-map 管」,可放心手改。
+    • package.json 的 validate 現在一次驗全部六個 journey;selfplay 六旅程各 1200 場。
+    • 兩條新旅程的題目卡牌全是 AI 草擬 → 牧者審核後才正式上線。
+  完整設計稿(六關闖關表/RPG 道具表/開發順序)不在 repo 裡,在 skill:
+    claude-skills\bible-journey-planner\references\但以理-設計.md、出埃及記-設計.md
+    claude-skills\bible-rpg-items\references\道具庫.md(四卷書道具,含全副軍裝)
+  下一步(CP 值排序)見 roadmap.md「真正待做」第 0 項:
+    審題 → 但以理棋盤美化 → 卡片流程闖關 4 關(金像/牆字/十災/十誡,純 React 卡片,
+    CP 最高) → RPG 道具層(純 JSON) → 反思終局 ×2 → 收集機制換皮(嗎哪/王膳)。
 
   1) 保羅大富翁   GitHub: https://github.com/summer09201017-cloud/hfpc-paul-game
         ★ 已上線:https://hfpc-paul-game.netlify.app/(push main 即自動部署)
@@ -96,14 +118,18 @@
   ✅ 已完成:兩遊戲上線、約拿全書六關、保羅四旅程+宣教接力+輕RPG+3D骰子、
      全六關嵌入(e2e)、真實地理棋盤、手機橫式全螢幕、縮放白屏根治、
      測試門(validate全旅程/煙霧/離線就緒/CI)、版本收斂、
-     但以理+出埃及設計稿、三個新書卷 skill、道具第一批(分支)、題庫全書(分支)。
+     但以理+出埃及設計稿、三個新書卷 skill、
+     道具第一批(✅ 2026-06-12 下午已併 main,全鏈綠後推送)、題庫全書(分支)、
+     但以理+出埃及旅程骨架(分支 feat/daniel-exodus,六旅程全鏈綠)。
   🔜 真正待做(依優先):
-  1. 牧者審核 + merge:feat/quiz-ch3-4(約拿題庫)、feat/rpg-items-batch1(道具)、
+  1. 牧者審核 + merge:feat/quiz-ch3-4(約拿題庫)、feat/daniel-exodus(兩條新旅程)、
      以及 journey2 與約拿之旅「2026-06-10 以前草擬」的舊題目卡牌。
+     (題庫送審清單見 docs/題庫送審清單-2026-06-12.html / .md)
   2. 真實手機離線實測(兩遊戲):裝一台→關網路→跑一遍(自動檢查全綠,手感要人測)。
-  3. 「海路到羅馬」journey4(徒 27–28):照 add-challenge-station + real-geography-board
+  3. 但以理/出埃及從骨架到完整(CP 值排序見 roadmap.md 待做第 0b 項)。
+  4. 「海路到羅馬」journey4(徒 27–28):照 add-challenge-station + real-geography-board
      模式;暴風雨 L2(stormCast:false)是天然必停站;完成後接 paul3 的 nextKey。
-  4. 細部手感微調:全在約拿 config.js(STORM/FISH/NINEVEH/PREACH/GOURD/BOOST/SPRINT)。
+  5. 細部手感微調:全在約拿 config.js(STORM/FISH/NINEVEH/PREACH/GOURD/BOOST/SPRINT)。
 
 ============================================================
 ■ 🚀 未來功能點子(按「CP 值高→低 × 開發時間短→長」排序,2026-06-12 重排)
@@ -128,10 +154,11 @@
 10. 老師模式/講解暫停 + 大字無障礙。 ~半天
 11. 「海路到羅馬」journey4。 ~1 天(見上面待做 #3)
 【第三梯隊:2 天以上、大型高回報】
-12. 但以理 闖關+大富翁+RPG — 設計稿已完成!套 bible-journey-planner(設計)
-    → bible-game-scaffold(開專案)→ bible-rpg-items(道具)。 ~1 週
-13. 出埃及記 同上(設計稿已完成)。 ~1 週
-14. 真實美術 PNG sprite sheet(美術來源是瓶頸;renderer 已隔離好)。 ~2-3 天+美術
+12. 但以理 闖關+大富翁+RPG — ★ 旅程骨架已完成(2026-06-12,分支 feat/daniel-exodus);
+    後續(審題→棋盤美化→卡片流程關→RPG 層→反思終局)見 roadmap.md 待做第 0b 項。
+13. 出埃及記 同上(骨架已完成,同一分支)。
+14. 真實美術 PNG sprite sheet(美術來源是瓶頸;renderer 已隔離好;
+    CC0 素材包+Gemini 產圖工具見「美術素材-CC0-2026-06-12」資料夾)。 ~2-3 天+美術
 15. 多人連線房間(WebRTC/WS,需後端)。 ~1 週+
 【Skill / Tool-Calling 點子】
 16. quiz-authoring skill — 「幫我出某卷書 N 題」→ 依 bible-game-studio 慣例
