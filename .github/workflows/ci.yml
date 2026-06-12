@@ -25,11 +25,14 @@ jobs:
       - name: 安裝套件
         run: npm ci
 
-      - name: 驗證遊戲內容（journey1.json）
+      - name: 驗證遊戲內容（全部 journey*.json）
         run: npm run validate
 
       - name: 純引擎自我對戰（1~4 人 × 300 種子）
         run: npm run test:selfplay
+
+      - name: 煙霧測試（語法 + 嵌入契約）
+        run: node scripts/smoke-test.mjs
 
       - name: 打包（確認可正常 build）
         run: npm run build

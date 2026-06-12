@@ -11,7 +11,9 @@
     "gen:icons": "node scripts/gen-icons.mjs",
     "gen:map": "node scripts/gen-map.mjs",
     "sync:jonah": "node scripts/sync-jonah-engine.mjs",
-    "validate": "node scripts/validate.mjs src/data/journey1.json",
+    "validate": "node scripts/validate.mjs",
+    "test": "npm run validate && npm run test:selfplay && node scripts/smoke-test.mjs",
+    "test:offline": "node scripts/smoke-test.mjs --offline",
     "test:selfplay": "node scripts/selfplay.mjs",
     "test:browser": "node scripts/browser-playtest.mjs"
   },
