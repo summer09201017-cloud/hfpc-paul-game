@@ -68,11 +68,15 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 ## Adding a new journey
 
-**Multi-journey is now wired.** `useGame.js` holds a `JOURNEYS` array — currently `paul` (journey1, 20 tiles), `paul2` (journey2, into Europe, 20 tiles), `paul3` (journey3, Ephesus years → Jerusalem, 20 tiles), and `jonah` (journey-jonah, 20 tiles). Each entry can carry `nextKey` (宣教接力: finishing a journey offers "continue to the next one", carrying name/points/gifts; companions reset to the new journey's `startCompanions`). `SetupScreen` shows a journey picker. To add another (e.g. journey4 / 海路到羅馬):
+**Multi-journey is now wired.** `useGame.js` holds a `JOURNEYS` array — currently `paul` (journey1, 20 tiles), `paul2` (journey2, into Europe, 20 tiles), `paul3` (journey3, Ephesus years → Jerusalem, 20 tiles), `jonah` (journey-jonah, 20 tiles), **`exodus` (journey-exodus, 22 tiles, 2026-06-12)** and **`daniel` (journey-daniel, 20 tiles, 2026-06-12)**. Each entry can carry `nextKey` (宣教接力: finishing a journey offers "continue to the next one", carrying name/points/gifts; companions reset to the new journey's `startCompanions`). `SetupScreen` shows a journey picker. To add another (e.g. journey4 / 海路到羅馬):
 1. Create `src/data/journeyN.json` (copy an existing one; edit content — see [[roll-and-move-game]]).
 2. Add its cities (real `lat`/`lon`) as a new `buildRegion({...})` call in `gen-map.mjs` (each region has its own bounds + ISO country set + output `region-mapN.json`), then `npm run gen:map` — this writes `x`/`y` back and emits the coastline.
 3. Add `{ key, journey, map }` to `JOURNEYS` in `useGame.js`.
-4. `npm run test:selfplay` already loops over all journey files — add the new one to its `JOURNEYS` list too.
+4. `npm run test:selfplay` already loops over all journey files — add the new one to its `JOURNEYS` list too. `npm run validate` chains all journey files in package.json — add it there as well.
+
+**⚠️ `daniel` is the one exception to the gen-map rule:** 但以理 90% 的劇情都在巴比倫一座城，so it uses a **hand-drawn "seventy-years timeline" board** — `region-map-daniel.json` is hand-written (NOT a gen-map artifact; edit it freely) and the station `x`/`y` in `journey-daniel.json` are hand-placed (a 4-row serpentine across four dynasties). gen-map skips it entirely (it has no `buildRegion` entry); never run gen:map expecting it to manage daniel. All other journeys (including `exodus`) follow the normal generated-geography rule above.
+
+> **但以理 / 出埃及記的完整遊戲設計**（六關闖關表、RPG 道具表、開發順序）live in the `bible-journey-planner` skill's `references/` (但以理-設計.md / 出埃及記-設計.md); the RPG item vocabulary and per-book item tables live in `bible-rpg-items`. Current state: 旅程骨架 done (stations/quizzes/decks/titles + challenge stations reusing Jonah levels); 待做 = card-flow minigames, RPG gifts layer, reflection finales — see roadmap.md item 0.
 
 > **目前進度（已完成 vs 真正待做）見 `roadmap.md`。** Embedded mini-games live in `src/minigames/` (see [[embed-minigame]]); challenge stations use `type: "challenge"` + `minigame` + optional `mustStop` (see [[add-challenge-station]]).
 

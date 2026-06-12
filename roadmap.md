@@ -1,6 +1,6 @@
 # 🗺️ 保羅大富翁 — 進度藍圖（已完成 vs 真正待做）
 
-> 對齊現況：**2026-06-11**(嵌入引擎已 sync 至最新:衝刺/曠野蛇蠍/拋約拿入海)。GitHub：`summer09201017-cloud/hfpc-paul-game`（branch `main`，CI 全綠）。
+> 對齊現況：**2026-06-12 早**(新增但以理/出埃及記兩條旅程骨架,六旅程全鏈綠)。GitHub：`summer09201017-cloud/hfpc-paul-game`（branch `main`）。
 > 這份是給接手的人 / AI 看的「目前到哪了、接下來做什麼」。技術細節看 `CLAUDE.md`，玩法/編輯看 `README.md`。
 
 ---
@@ -9,8 +9,8 @@
 
 **架構與品質**
 - 純規則引擎 + 可抽換畫面（`core/engine.js` 不碰 React/DOM；隨機值外部注入；單一 `getGameStatus`）。
-- 自我對戰護欄：**4 條旅程 × 1~4 人 × 300 種子 = 每條 1200 場**，全部正常結束。
-- 內容驗證器 `npm run validate`（重複 id、選項越界、effect 拼錯、牌庫規則、座標範圍）。
+- 自我對戰護欄：**6 條旅程 × 1~4 人 × 300 種子 = 每條 1200 場**，全部正常結束。
+- 內容驗證器 `npm run validate`（現在一次驗**全部六個 journey JSON**：重複 id、選項越界、effect 拼錯、牌庫規則、座標範圍）。
 - CI（GitHub Actions）：push/PR 自動跑 validate + selfplay + build + **真實瀏覽器實機玩一整局**；actions 已升 `@v5`（無 Node 20 警告）。
 - 真實地理棋盤：用真經緯度投影海岸線、站點座標自動產生（`gen-map.mjs`，多旅程版）。
 - PWA 可安裝 / 離線；Netlify 部署設定（Node 釘 20）。
@@ -21,6 +21,8 @@
   - 第二次宣教旅程（**20 站**，福音首次進歐洲：腓立比/帖撒羅尼迦/庇哩亞/雅典/哥林多…；含 ⛰️ 翻越托魯斯山、🌊 地中海長航 2 個必停闖關站）。
   - 第三次宣教旅程（**20 站**，2026-06-11 完成且牧者過審：以弗所三年事件群/羅馬書/米利都道別…；含 ⛰️ 高原趕路、🌊 趕路的海程 2 個必停闖關站）。
   - 約拿宣教之旅（**20 站**，約拿書 1–4 章，**6 個必停闖關站＝約拿全六關**）。
+  - **🆕 出埃及記之旅（2026-06-12 骨架完成）**：**22 站**（歌珊地→十災→逾越節→過紅海→嗎哪→西奈十誡→金牛犢→會幕榮光），真實地理底圖（gen-map 新 region：尼羅河三角洲→西奈半島），3 個闖關站（過紅海 L1 mustStop / 撿嗎哪 L4 / 舉手禱告 L2）+ 十誡 mustStop 問答站。**完整六關設計（含卡片流程關）見 skill `bible-journey-planner/references/出埃及記-設計.md`。**
+  - **🆕 但以理在巴比倫（2026-06-12 骨架完成）**：**20 站**（耶路撒冷被圍→王膳考驗→金像之夢→火窯→牆上的字→獅子坑→七十年的盼望），**手繪「七十年時間軸」棋盤**（`region-map-daniel.json` 是手寫的、不走 gen-map——這是全系列第一個非地理棋盤），火窯 L2 mustStop 闖關站。**完整設計見 `bible-journey-planner/references/但以理-設計.md`。**
 - **手機體驗（2026-06-11 晚）**：強制橫式全螢幕（manifest landscape + 直向蓋版 + 手勢全螢幕，見 `force-landscape-pwa` skill）；橫向版面地圖填滿左欄約 8 成（cover 不變形、可平移）、骰子排最上；縮放白屏根治（transform scale → 實際版面放大）；闖關彈窗以視口高度反推上限不再切底。
 - 每城**多題隨機抽**（`quizzes[]`，落格抽一題）。
 - **機會 / 命運卡**：頂層 `decks`、`drawCard` 觸發、**點牌翻牌** UI；規則「每張卡都必須加或減點數」（validate 強制）。
@@ -34,10 +36,11 @@
 - **宣教接力（paul1 → paul2 → paul3 全接通）**：旅程走完，結束畫面可「接續下一段」——名字/福音點數/裝備帶過去、同工換新旅程起點同工（`JOURNEYS.nextKey`；journey4「海路到羅馬」完成後接 `paul3 → paul4`）。
 - **步數透明**：卡片 `move` 效果真的移動棋子（「神安排大魚：前進 2 格」）；必停站/終點提前停下顯示 `moveNote` 說明條（玩家不再誤以為步數和骰子不符是 bug）。結算每筆加分標來源（事件「…」：/機會卡：/劇情：），答錯明確寫「這一題沒有加分」。
 
-**Skill 庫（全域 `~/.claude/skills/`，可跨專案重用）**
+**Skill 庫（全域 `~/.claude/skills/`，可跨專案重用；壓縮檔內附 claude-skills\）**
 - 大富翁三件套：`roll-and-move-game`、`game-content-validator`、`real-geography-board`。
 - 闖關三件套：`embed-minigame`、`add-challenge-station`、`arcade-game-kit`。
-- 系列／品質／交付：`bible-game-studio`（內容神學慣例）、`game-smoke-test`（上課前煙霧測試，約拿 `npm test` 是活範例，可補本專案離線檢查）、`classroom-game-deploy`、`web-launch`、`packer-theology`、`board-game-designer`。
+- 系列／品質／交付：`bible-game-studio`（內容神學慣例）、`game-smoke-test`（上課前煙霧測試，約拿 `npm test` 是活範例，可補本專案離線檢查）、`classroom-game-deploy`、`web-launch`、`packer-theology`、`board-game-designer`、`force-landscape-pwa`。
+- **🆕 新書卷三件套（2026-06-12）**：`bible-journey-planner`（書卷→遊戲五步設計法；**但以理/出埃及記完整設計稿在它的 references/**）、`bible-rpg-items`（輕 RPG 道具/裝備/同伴/頭銜層：設計心法＋四卷書道具庫＋effect 映射表）、`bible-game-scaffold`（設計稿→新專案：加旅程 vs 開新 repo 決策、複製清單、驗證鏈、完工定義）。
 
 ---
 
@@ -53,7 +56,15 @@
 
 ## 🔧 真正待做（依優先序）
 
-0. **牧者審核兩個 feature branch**:本 repo `feat/rpg-items-batch1`(道具)與約拿 repo `feat/quiz-ch3-4`(題庫 3–4 章)——實測滿意才 merge main(main 自動部署)。
+0-1. **牧者審核 feature branch**:本 repo `feat/rpg-items-batch1`(道具,已併入 main 2026-06-12)與約拿 repo `feat/quiz-ch3-4`(題庫 3–4 章)——實測滿意才 merge main(main 自動部署)。
+0-2. **但以理 / 出埃及記：從骨架到完整（2026-06-12 新坑，按 CP 值排序）** —— 骨架（站點/題庫/卡庫/3+1 闖關站/頭銜）已可玩且全鏈綠；設計稿在 `bible-journey-planner` skill 的 references/。接下來：
+   - **a. 題庫神學審核（必要）**：兩條新旅程的題目卡牌全是 AI 草擬，牧者過目後才正式上線。 ~審閱工作
+   - **b. 但以理時間軸棋盤美化**（~半天）：`region-map-daniel.json` 目前是極簡兩岸+河；手繪/向量巴比倫城景（城牆/空中花園/王宮剪影）會讓棋盤活起來。**它是手寫檔，不會被 gen:map 覆蓋，可放心編輯。**
+   - **c. 卡片流程闖關 4 關**（~1 天）：金像之夢排序（但2）、牆上的字解碼（但5）、十災順序（出7–11）、十誡配對（出20）——純 React 卡片（仿 MiniGameModal 的 makeEmbedUI 模式），不用動 Canvas 引擎，CP 值最高的玩法升級。
+   - **d. RPG 道具層**（~半天）：照 `bible-rpg-items/references/道具庫.md` 把 gifts/companions 填進兩個 journey JSON（素菜清水/開窗禱告/三友；羔羊的血/嗎哪罐/亞倫米利暗）——純內容，引擎現成。
+   - **e. 反思終局關 ×2**（~1 天）：神掌權五幕（但7）、會幕榮光五幕（出40），仿約拿 L6 蓖麻樹模式。
+   - **f. 收集機制換皮**（~1 天）：撿嗎哪「多撿生蟲」、王膳考驗「接素菜閃美酒」——重用約拿 spawner 加權寶物系統，規則本身就是講道。
+
 1. **神學 / 題庫審核（最重要）**：`journey2.json`（第二次旅程）與 `journey-jonah.json` 的題目、卡牌，請德義老師 / 牧者依 README 的「題庫審核清單」過目後再正式上線。第二次旅程的題目是 AI 草擬，務必人工把關。
    - **✅ 2026-06-10 部分審核通過（牧者本人）**：當日「新增」的站點題目與卡片文案——含 約拿之旅新 5 站（下約帕的路上/沉入深海/魚腹禱告·仰望/曠野趕路/三日路程的大城）、尼尼微全城悔改與蓖麻樹的功課的補題、第二次旅程新 8 站（敘利亞與基利家/托魯斯山/弗呂家加拉太/尼亞波利/暗妃波里/愛琴海航路/堅革哩/地中海長航）、全副軍裝機會卡（兩條旅程）、同工/頭銜文案。**仍待審**：journey2 與 journey-jonah「原有」的題目卡牌（2026-06-10 之前草擬的部分）。
 2. ~~第三次宣教旅程~~ **✅ 已完成並上線（2026-06-11）**：`journey3.json` 20 站（以弗所三年事件群/推喇奴/士基瓦/焚書/底米丟/羅馬書/猶推古/米利都道別/亞迦布/耶路撒冷）+ 2 闖關站（高原 L4、海程 L2）+ RPG 層；`gen-map.mjs` region3 真實愛琴海地圖；宣教接力 `paul2 → paul3` 已接通；四旅程 selfplay 全綠。**✅ journey3 題目與文案 牧者審核通過（2026-06-11）。**
@@ -76,7 +87,7 @@
 ## 一次跑完所有檢查
 ```bash
 npm install
-npm test                   # validate(全部 journey*.json)+ selfplay(各 1200 場)+ 煙霧測試
+npm test                   # validate(全部 journey*.json,含但以理/出埃及記)+ selfplay(六旅程各 1200 場)+ 煙霧測試
 npm run test:offline       # build + dist 離線就緒(Workbox 預快取逐檔檢查)
 npm run build              # 打包；CI 另會跑真實瀏覽器實機測試
 npm run dev                # 本機開發（區網可連，給平板/投影）

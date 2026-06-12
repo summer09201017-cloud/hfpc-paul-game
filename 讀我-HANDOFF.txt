@@ -1,9 +1,31 @@
 ============================================================
 讀我 — HANDOFF(給 agape250 那台 PC 的 AI / 開發者)
-更新:2026-06-12(版本收斂+測試門+題庫3-4章+RPG道具第一批+新書卷skill群)
+更新:2026-06-12(版本收斂+測試門+題庫3-4章+RPG道具第一批+新書卷skill群
+                 +🆕 但以理/出埃及記兩條旅程骨架,六旅程全鏈綠)
 ============================================================
 
-這個生態系有「兩個上線中的遊戲 + 一套跨專案 skill 庫 + 兩卷新書設計稿」:
+■ 2026-06-12 早最新進度(在 HFP 機器上做的,務必先讀這段)
+  保羅大富翁新增兩條旅程「骨架」,validate/selfplay/build 全綠:
+    • journey-exodus.json(出埃及記之旅,22 站):歌珊地→十災→逾越節→過紅海(L1 闖關
+      mustStop)→米利暗之歌→瑪拉/以琳→撿嗎哪(L4 闖關)→磐石出水→舉手禱告(L2 闖關)
+      →葉忒羅→西奈十誡(mustStop 問答)→金牛犢→會幕榮光(終點)。
+      真實地理底圖:gen-map.mjs 新 region「出埃及記之旅」(尼羅河三角洲→西奈半島,
+      region-map-exodus.json),紅海段 arriveBy:"sea"。
+    • journey-daniel.json(但以理在巴比倫,20 站):耶路撒冷被圍→王膳考驗→金像之夢
+      →火窯(L2 闖關 mustStop)→牆上的字→巴比倫陷落→一日三次禱告→獅子坑
+      →七十年的盼望(終點)。
+      ★ 全系列第一個「非地理」棋盤:region-map-daniel.json 是手寫的時間軸底圖
+      (巴比倫城+幼發拉底河,站點 x/y 手排蛇行四列),「不歸 gen-map 管」,可放心手改。
+    • package.json 的 validate 現在一次驗全部六個 journey;selfplay 六旅程各 1200 場。
+    • 兩條新旅程的題目卡牌全是 AI 草擬 → 牧者審核後才正式上線。
+  完整設計稿(六關闖關表/RPG 道具表/開發順序)不在 repo 裡,在 skill:
+    claude-skills\bible-journey-planner\references\但以理-設計.md、出埃及記-設計.md
+    claude-skills\bible-rpg-items\references\道具庫.md(四卷書道具,含全副軍裝)
+  下一步(CP 值排序)見 roadmap.md「真正待做」第 0 項:
+    審題 → 但以理棋盤美化 → 卡片流程闖關 4 關(金像/牆字/十災/十誡,純 React 卡片,
+    CP 最高) → RPG 道具層(純 JSON) → 反思終局 ×2 → 收集機制換皮(嗎哪/王膳)。
+
+這個生態系有「兩個上線中的遊戲 + 一套跨專案 skill 庫 + 兩卷新書旅程骨架」:
 
   1) 保羅大富翁   GitHub: https://github.com/summer09201017-cloud/hfpc-paul-game
         ★ 已上線:https://hfpc-paul-game.netlify.app/(push main 即自動部署)
@@ -96,14 +118,35 @@
   ✅ 已完成:兩遊戲上線、約拿全書六關、保羅四旅程+宣教接力+輕RPG+3D骰子、
      全六關嵌入(e2e)、真實地理棋盤、手機橫式全螢幕、縮放白屏根治、
      測試門(validate全旅程/煙霧/離線就緒/CI)、版本收斂、
-     但以理+出埃及設計稿、三個新書卷 skill、道具第一批(分支)、題庫全書(分支)。
+     但以理+出埃及設計稿、三個新書卷 skill、道具第一批(已併入 main)、題庫全書(分支)、
+     🆕 但以理+出埃及記兩條旅程「骨架」(站點/題庫/卡庫/闖關站/頭銜,六旅程全鏈綠)。
   🔜 真正待做(依優先):
-  1. 牧者審核 + merge:feat/quiz-ch3-4(約拿題庫)、feat/rpg-items-batch1(道具)、
+  1. 牧者審核 + merge:feat/quiz-ch3-4(約拿題庫)、
+     但以理/出埃及記新旅程題庫(AI 草擬,本分支)、
      以及 journey2 與約拿之旅「2026-06-10 以前草擬」的舊題目卡牌。
-  2. 真實手機離線實測(兩遊戲):裝一台→關網路→跑一遍(自動檢查全綠,手感要人測)。
-  3. 「海路到羅馬」journey4(徒 27–28):照 add-challenge-station + real-geography-board
+  2. 但以理/出埃及記從骨架到完整(CP 值排序,見 roadmap.md 待做第 0-2 項):
+     棋盤美化→卡片流程闖關 4 關→RPG 道具層→反思終局 ×2→收集機制換皮。
+  3. 真實手機離線實測(兩遊戲):裝一台→關網路→跑一遍(自動檢查全綠,手感要人測)。
+  4. 「海路到羅馬」journey4(徒 27–28):照 add-challenge-station + real-geography-board
      模式;暴風雨 L2(stormCast:false)是天然必停站;完成後接 paul3 的 nextKey。
-  4. 細部手感微調:全在約拿 config.js(STORM/FISH/NINEVEH/PREACH/GOURD/BOOST/SPRINT)。
+  5. 細部手感微調:全在約拿 config.js(STORM/FISH/NINEVEH/PREACH/GOURD/BOOST/SPRINT)。
+
+■ 共用的 Skill(裝在 C:\Users\<帳號>\.claude\skills\;壓縮檔內附 claude-skills\)
+  引擎藍圖:arcade-game-kit(即時 Canvas)、roll-and-move-game(擲骰桌遊)、
+            board-game-designer(棋類)
+  內容/系列:bible-game-studio(聖經遊戲慣例)、packer-theology(巴刻神學)
+  跨專案工具:embed-minigame(嵌入小遊戲,含 EmbedUI 卡片轉接器模式)、
+            add-challenge-station(棋盤加站)、game-content-validator(內容驗證)、
+            game-smoke-test(上課前煙霧測試)、real-geography-board(真實地圖棋盤)、
+            classroom-game-deploy(教室部署)、web-launch(一鍵啟動)、
+            force-landscape-pwa(手機強制橫式全螢幕,兩專案都是活範例)
+  🆕 新書卷三件套(2026-06-12,做但以理/出埃及記必讀):
+            bible-journey-planner(書卷→遊戲五步設計法;但以理/出埃及記完整
+              設計稿在它的 references\,不要重新設計!)、
+            bible-rpg-items(輕 RPG 道具/裝備/同伴/頭銜:三原則=道具經文教學/
+              還原劇情的代價/篇幅決定份量;四卷書道具庫+effect 映射表)、
+            bible-game-scaffold(設計稿→新專案:先加旅程後畢業成獨立 repo 的
+              決策表、複製改名清單、驗證鏈、完工定義)
 
 ============================================================
 ■ 🚀 未來功能點子(按「CP 值高→低 × 開發時間短→長」排序,2026-06-12 重排)
@@ -126,20 +169,24 @@
     守三鐵律+selfplay 重跑。 ~1 天
  9. 經文 TTS 朗讀(Web Speech)— 給還不識字的小小孩。 ~半天
 10. 老師模式/講解暫停 + 大字無障礙。 ~半天
-11. 「海路到羅馬」journey4。 ~1 天(見上面待做 #3)
+11. 「海路到羅馬」journey4。 ~1 天(見上面待做 #4)
+12. 宣教護照(保羅)— 配合宣教接力:每走完一條旅程蓋一個「旅程印章」,
+    全蓋滿出總成績單(可截圖);與通關證書(#2)同思路、跨旅程版。 ~半天
 【第三梯隊:2 天以上、大型高回報】
-12. 但以理 闖關+大富翁+RPG — 設計稿已完成!套 bible-journey-planner(設計)
-    → bible-game-scaffold(開專案)→ bible-rpg-items(道具)。 ~1 週
-13. 出埃及記 同上(設計稿已完成)。 ~1 週
+13. ~~但以理 / 出埃及記 闖關+大富翁+RPG~~ → ★ 已動工(2026-06-12):兩條旅程
+    骨架完成且全鏈綠(見最上方「2026-06-12 早最新進度」);後續(審題→棋盤美化
+    →卡片流程關→RPG 層→反思終局→收集換皮)排在 roadmap.md 待做第 0-2 項。
 14. 真實美術 PNG sprite sheet(美術來源是瓶頸;renderer 已隔離好)。 ~2-3 天+美術
 15. 多人連線房間(WebRTC/WS,需後端)。 ~1 週+
+16. 約拿單機版地圖改真實「尼尼微→地中海」經緯度底圖(real-geography-board;
+    保羅的約拿之旅已有真實底圖,此項是約拿單機版的選配)。 ~1 天
 【Skill / Tool-Calling 點子】
-16. quiz-authoring skill — 「幫我出某卷書 N 題」→ 依 bible-game-studio 慣例
+17. quiz-authoring skill — 「幫我出某卷書 N 題」→ 依 bible-game-studio 慣例
     產題+自動跑 validator。 ~半天
-17. playtest-bot skill — Playwright 全自動通關找 bug,跨專案化。 ~半天
-18. sermon-companion skill — 關卡反思文案+packer-theology → 主日學教案/
+18. playtest-bot skill — Playwright 全自動通關找 bug,跨專案化。 ~半天
+19. sermon-companion skill — 關卡反思文案+packer-theology → 主日學教案/
     講章大綱(.docx)。 ~半天
-19. verse-accuracy 驗證 — 把和合本經文庫嵌進 validator,交叉比對題目出處,
+20. verse-accuracy 驗證 — 把和合本經文庫嵌進 validator,交叉比對題目出處,
     半自動神學初篩。 ~1 天
 
 ■ 給 agape250 PC 的注意事項
