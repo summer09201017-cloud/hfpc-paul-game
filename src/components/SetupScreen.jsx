@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import InstallButton from './InstallButton'
 
 export default function SetupScreen({ journeys, onStart }) {
   const [journeyKey, setJourneyKey] = useState(journeys[0].key)
@@ -84,6 +85,8 @@ export default function SetupScreen({ journeys, onStart }) {
         <button className="btn btn--primary setup__start" onClick={start}>
           開始旅程 🚢
         </button>
+
+        <InstallButton />
       </div>
     </div>
   )
