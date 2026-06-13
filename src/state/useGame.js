@@ -19,14 +19,16 @@ import { enterImmersive } from '../immersive'
 
 // 可選旅程：roll-and-move 外框可掛多條旅程，各自帶內容(journey)＋底圖(map)。
 // nextKey：這條旅程走完後可「接續」的下一段（宣教接力——帶著福音點數與裝備繼續）。
+// group：首頁「分類卡片」選單的分組（同 group 的旅程排在同一區，未來新書卷只要掛上 group）。
+// icon：卡片左側的小圖示。
 const JOURNEYS = [
-  { key: 'paul', journey: journey1, map: regionMapPaul, nextKey: 'paul2' },
-  { key: 'paul2', journey: journey2, map: regionMapPaul2, nextKey: 'paul3' },
-  { key: 'paul3', journey: journey3, map: regionMapPaul3, nextKey: 'paul4' },
-  { key: 'paul4', journey: journey4, map: regionMapPaul4, nextKey: null }, // 海路到羅馬（徒 27–28）——宣教接力的終點站
-  { key: 'jonah', journey: journeyJonah, map: regionMapJonah, nextKey: null },
-  { key: 'exodus', journey: journeyExodus, map: regionMapExodus, nextKey: null }, // 出埃及記（真實地理：尼羅河三角洲→西奈）
-  { key: 'daniel', journey: journeyDaniel, map: regionMapDaniel, nextKey: null }, // 但以理（手繪時間軸棋盤，不走 gen-map）
+  { key: 'paul', journey: journey1, map: regionMapPaul, nextKey: 'paul2', group: '使徒保羅的宣教旅程', icon: '🏛️' },
+  { key: 'paul2', journey: journey2, map: regionMapPaul2, nextKey: 'paul3', group: '使徒保羅的宣教旅程', icon: '⛵' },
+  { key: 'paul3', journey: journey3, map: regionMapPaul3, nextKey: 'paul4', group: '使徒保羅的宣教旅程', icon: '🗺️' },
+  { key: 'paul4', journey: journey4, map: regionMapPaul4, nextKey: null, group: '使徒保羅的宣教旅程', icon: '⚓' }, // 海路到羅馬（徒 27–28）——宣教接力的終點站
+  { key: 'jonah', journey: journeyJonah, map: regionMapJonah, nextKey: null, group: '舊約聖經故事', icon: '🐋' },
+  { key: 'exodus', journey: journeyExodus, map: regionMapExodus, nextKey: null, group: '舊約聖經故事', icon: '🔥' }, // 出埃及記（真實地理：尼羅河三角洲→西奈）
+  { key: 'daniel', journey: journeyDaniel, map: regionMapDaniel, nextKey: null, group: '舊約聖經故事', icon: '🦁' }, // 但以理（手繪時間軸棋盤，不走 gen-map）
 ]
 
 const ROLL_MS = 3000 // 跑馬燈轉動時間（3 秒）
@@ -186,6 +188,8 @@ export function useGame() {
       title: j.journey.title,
       subtitle: j.journey.subtitle,
       scoreLabel: j.journey.scoreLabel,
+      group: j.group,
+      icon: j.icon,
     })),
     game,
     phase,

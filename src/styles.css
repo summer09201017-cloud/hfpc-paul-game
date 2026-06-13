@@ -1407,3 +1407,49 @@ body {
   font-size: clamp(0.8rem, 1.8vw, 1.3rem);
   opacity: 0.55;
 }
+
+/* ---- 首頁「分類卡片」旅程選單（取代原本一排 pill；可隨書卷增加而長出新區） ---- */
+.jgroup { margin-bottom: 1rem; }
+.jgroup__title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #8a6d3b;
+  margin: 0.2rem 0 0.5rem;
+  padding-left: 0.1rem;
+  letter-spacing: 0.03em;
+}
+.jgroup__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0.55rem;
+}
+.jcard {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border: 2px solid var(--parchment-dark, #e7d3ad);
+  border-radius: 14px;
+  background: #fffdf7;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.12s, box-shadow 0.12s, transform 0.06s;
+}
+.jcard:hover { border-color: var(--gold, #b9863f); }
+.jcard:active { transform: translateY(1px); }
+.jcard--active {
+  border-color: var(--accent, #2e86ab);
+  box-shadow: 0 0 0 2px var(--accent, #2e86ab) inset;
+  background: #eef7fb;
+}
+.jcard__icon { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
+.jcard__text { display: flex; flex-direction: column; min-width: 0; }
+.jcard__title { font-weight: 800; color: var(--ink, #3a2c1a); }
+.jcard__sub {
+  font-size: 0.78rem;
+  color: #8a7654;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
