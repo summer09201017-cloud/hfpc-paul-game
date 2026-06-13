@@ -11,7 +11,7 @@ export const PHYSICS = {
 export const AIM = {
   minDeg: 16, // 擺動最低角（接近平射）
   maxDeg: 72, // 擺動最高角（高拋）
-  sweepDegPerSec: 46, // 擺動速度（度/秒）；越大越難抓
+  sweepDegPerSec: 44, // 擺動速度（度/秒）（2026-06-13：再難一點——擺速加快 36→44）
 }
 
 export const GROUND_Y = 472 // 地面（石頭落到這條線算落空）
@@ -25,7 +25,7 @@ export const GOLIATH = {
   x: 806, // 站立中心
   topY: 150, // 頭頂
   groundY: GROUND_Y,
-  forehead: { x: 784, y: 150, w: 52, h: 48 }, // 命中區（左上角 x,y + 寬高）
+  forehead: { x: 790, y: 170, w: 34, h: 22 }, // 命中區（左上角 x,y + 寬高）（2026-06-13：縮小+對準弧頂提高難度）
 }
 
 export const RULES = {

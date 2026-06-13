@@ -74,72 +74,187 @@ export class Renderer {
   }
 
   _david(ctx, game) {
-    const { x, y } = DAVID
-    // 身體
-    ctx.fillStyle = '#7a5230'
-    ctx.fillRect(x - 12, y, 24, 70)
-    ctx.fillStyle = '#caa15a'
+    const { x } = DAVID
+    const shoulderY = DAVID.y - 6 // 肩/甩石手樞紐（與物理發射點、瞄準線同高）
+    const hipY = 414
+    const footY = GROUND_Y
+    const skin = '#e8b887'
+    const tunic = '#9c6b3b'
+
+    // 腿
+    ctx.strokeStyle = '#6b4a28'
+    ctx.lineWidth = 9
+    ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(x - 6, hipY); ctx.lineTo(x - 9, footY - 2); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x + 6, hipY); ctx.lineTo(x + 10, footY - 2); ctx.stroke()
+    // 鞋
+    ctx.fillStyle = '#5a3d22'
+    ctx.fillRect(x - 16, footY - 4, 13, 6)
+    ctx.fillRect(x + 4, footY - 4, 13, 6)
+    // 短袍（身體）
+    ctx.fillStyle = tunic
     ctx.beginPath()
-    ctx.arc(x, y - 6, 16, 0, Math.PI * 2) // 頭
+    ctx.moveTo(x - 13, shoulderY + 6)
+    ctx.lineTo(x + 13, shoulderY + 6)
+    ctx.lineTo(x + 16, hipY)
+    ctx.lineTo(x - 16, hipY)
+    ctx.closePath()
     ctx.fill()
-    ctx.font = '22px system-ui'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText('🧒', x, y - 6)
-    // 甩石的機弦：瞄準時畫一條繞動的弦＋石袋
+    // 腰帶
+    ctx.fillStyle = '#5a3d22'
+    ctx.fillRect(x - 16, hipY - 8, 32, 6)
+    // 後手（插在身側）
+    ctx.strokeStyle = skin
+    ctx.lineWidth = 6
+    ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(x - 9, shoulderY + 12); ctx.lineTo(x - 19, shoulderY + 40); ctx.stroke()
+    // 脖子 + 頭
+    const hy = shoulderY - 20
+    ctx.fillStyle = skin
+    ctx.fillRect(x - 4, shoulderY - 8, 8, 8) // 脖子
+    ctx.beginPath(); ctx.arc(x, hy, 15, 0, Math.PI * 2); ctx.fill()
+    // 頭髮
+    ctx.fillStyle = '#3a2716'
+    ctx.beginPath(); ctx.arc(x, hy - 2, 15, Math.PI * 1.02, Math.PI * 2.0); ctx.fill()
+    // 臉（側面朝右、勇敢專注）：眼、眉、嘴
+    ctx.fillStyle = '#2a2a2a'
+    ctx.beginPath(); ctx.arc(x + 6, hy - 1, 1.8, 0, Math.PI * 2); ctx.fill()
+    ctx.beginPath(); ctx.arc(x + 11, hy - 1, 1.8, 0, Math.PI * 2); ctx.fill()
+    ctx.strokeStyle = '#3a2716'
+    ctx.lineWidth = 1.6
+    ctx.beginPath(); ctx.moveTo(x + 3, hy - 6); ctx.lineTo(x + 8, hy - 5); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x + 9, hy - 5); ctx.lineTo(x + 13, hy - 6); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x + 6, hy + 6); ctx.lineTo(x + 12, hy + 6); ctx.stroke() // 堅定小抿嘴
+
+    // 甩石手臂 + 機弦：瞄準時手臂沿角度伸出、末端掛石袋；非瞄準時手收在肩側。
     if (game.state === 'aim') {
       const a = deg2rad(game.aimDeg)
-      const sx = x + Math.cos(a) * 30
-      const sy = y - 6 - Math.sin(a) * 30
+      const hxp = x + Math.cos(a) * 22
+      const hyp = shoulderY - Math.sin(a) * 22
+      ctx.strokeStyle = skin
+      ctx.lineWidth = 6
+      ctx.beginPath(); ctx.moveTo(x + 8, shoulderY + 2); ctx.lineTo(hxp, hyp); ctx.stroke() // 投擲手臂
+      const sx = x + Math.cos(a) * 36
+      const sy = shoulderY - Math.sin(a) * 36
       ctx.strokeStyle = '#5a4326'
       ctx.lineWidth = 2
-      ctx.beginPath()
-      ctx.moveTo(x, y - 6)
-      ctx.lineTo(sx, sy)
-      ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(hxp, hyp); ctx.lineTo(sx, sy); ctx.stroke()
       ctx.fillStyle = '#444'
-      ctx.beginPath()
-      ctx.arc(sx, sy, 5, 0, Math.PI * 2)
-      ctx.fill()
+      ctx.beginPath(); ctx.arc(sx, sy, 5, 0, Math.PI * 2); ctx.fill()
+    } else {
+      ctx.strokeStyle = skin
+      ctx.lineWidth = 6
+      ctx.beginPath(); ctx.moveTo(x + 8, shoulderY + 2); ctx.lineTo(x + 22, shoulderY + 16); ctx.stroke()
     }
+
     ctx.fillStyle = '#3a2c1a'
     ctx.font = 'bold 14px system-ui'
-    ctx.fillText('大衛', x, y + 86)
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('大衛', x, footY + 16)
   }
 
   _goliath(ctx, game) {
     const g = GOLIATH
-    const w = 70
-    const bodyTop = g.topY + 40
-    // 倒下（勝利）時把巨人放平
     const fallen = game.state === 'win'
+    // 頭對齊「額頭命中區」：命中框落在他前額（眼睛上方），玩家瞄哪打哪一致。
+    const foreheadCY = g.forehead.y + g.forehead.h / 2
+    const headY = foreheadCY + 16 // 頭中心（前額在頭的上段）
+    const headR = 27
+    const shoulderY = headY + headR + 10
+    const hipY = 360
+    const footY = g.groundY
+    const skin = '#b59b6e'
+    const armor = '#5b6b57'
+
     ctx.save()
     if (fallen) {
-      ctx.translate(g.x, g.groundY)
+      // 倒下（勝利）：以腳為軸往後倒
+      ctx.translate(g.x, footY)
       ctx.rotate(-Math.PI / 2.1)
-      ctx.translate(-g.x, -g.groundY)
+      ctx.translate(-g.x, -footY)
     }
-    // 身體
-    ctx.fillStyle = '#5b6b57'
-    ctx.fillRect(g.x - w / 2, bodyTop, w, g.groundY - bodyTop)
-    // 盔甲線
+
+    // 腿（粗壯）
+    ctx.strokeStyle = '#3f4a36'
+    ctx.lineWidth = 20
+    ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(g.x - 14, hipY); ctx.lineTo(g.x - 16, footY - 6); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(g.x + 14, hipY); ctx.lineTo(g.x + 16, footY - 6); ctx.stroke()
+    // 腳
+    ctx.fillStyle = '#2f3a28'
+    ctx.fillRect(g.x - 30, footY - 9, 28, 9)
+    ctx.fillRect(g.x + 4, footY - 9, 28, 9)
+    // 持矛手臂後面的矛（撒上 17:7 槍桿如織布的機軸）
+    ctx.strokeStyle = '#6b4a28'
+    ctx.lineWidth = 5
+    ctx.beginPath(); ctx.moveTo(g.x + 52, shoulderY - 40); ctx.lineTo(g.x + 52, footY); ctx.stroke()
+    ctx.fillStyle = '#9aa0a6'
+    ctx.beginPath()
+    ctx.moveTo(g.x + 52, shoulderY - 58)
+    ctx.lineTo(g.x + 45, shoulderY - 40)
+    ctx.lineTo(g.x + 59, shoulderY - 40)
+    ctx.closePath(); ctx.fill()
+    // 鎧甲身體
+    ctx.fillStyle = armor
+    ctx.beginPath()
+    ctx.moveTo(g.x - 35, shoulderY)
+    ctx.lineTo(g.x + 35, shoulderY)
+    ctx.lineTo(g.x + 30, hipY + 8)
+    ctx.lineTo(g.x - 30, hipY + 8)
+    ctx.closePath(); ctx.fill()
+    // 鱗甲線
     ctx.strokeStyle = 'rgba(0,0,0,0.18)'
     ctx.lineWidth = 2
-    for (let yy = bodyTop + 18; yy < g.groundY; yy += 22) {
-      ctx.beginPath()
-      ctx.moveTo(g.x - w / 2, yy)
-      ctx.lineTo(g.x + w / 2, yy)
-      ctx.stroke()
+    for (let yy = shoulderY + 16; yy < hipY; yy += 20) {
+      ctx.beginPath(); ctx.moveTo(g.x - 33, yy); ctx.lineTo(g.x + 33, yy); ctx.stroke()
     }
+    // 手臂
+    ctx.strokeStyle = skin
+    ctx.lineWidth = 13
+    ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(g.x - 31, shoulderY + 6); ctx.lineTo(g.x - 46, shoulderY + 64); ctx.stroke() // 近手垂放
+    ctx.beginPath(); ctx.moveTo(g.x + 31, shoulderY + 6); ctx.lineTo(g.x + 52, shoulderY - 40); ctx.stroke() // 持矛手
+    // 脖子
+    ctx.fillStyle = skin
+    ctx.fillRect(g.x - 11, headY + headR - 6, 22, 20)
     // 頭
-    ctx.fillStyle = '#8a7a5a'
-    ctx.beginPath()
-    ctx.arc(g.x, g.topY + 20, 26, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.font = '30px system-ui'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText(fallen ? '😵' : '😠', g.x, g.topY + 20)
+    ctx.beginPath(); ctx.arc(g.x, headY, headR, 0, Math.PI * 2); ctx.fill()
+    // 鬍子
+    ctx.fillStyle = '#4a3a28'
+    ctx.beginPath(); ctx.arc(g.x, headY + 11, 19, 0.12 * Math.PI, 0.88 * Math.PI); ctx.fill()
+    // 銅盔（撒上 17:5 頭戴銅盔）
+    ctx.fillStyle = '#b08d57'
+    ctx.beginPath(); ctx.arc(g.x, headY - 4, headR + 1, Math.PI * 1.04, Math.PI * 1.96); ctx.fill()
+    ctx.fillRect(g.x - headR - 1, headY - 8, (headR + 1) * 2, 6)
+    // 臉部表情
+    if (!fallen) {
+      // 怒眉（內低外高，兇）
+      ctx.strokeStyle = '#3a2a18'
+      ctx.lineWidth = 3
+      ctx.beginPath(); ctx.moveTo(g.x - 16, headY - 3); ctx.lineTo(g.x - 4, headY + 2); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(g.x + 16, headY - 3); ctx.lineTo(g.x + 4, headY + 2); ctx.stroke()
+      // 眼
+      ctx.fillStyle = '#2a2a2a'
+      ctx.beginPath(); ctx.arc(g.x - 9, headY + 4, 2.6, 0, Math.PI * 2); ctx.fill()
+      ctx.beginPath(); ctx.arc(g.x + 9, headY + 4, 2.6, 0, Math.PI * 2); ctx.fill()
+      // 怒嘴（下彎）
+      ctx.strokeStyle = '#3a2a18'
+      ctx.lineWidth = 2.5
+      ctx.beginPath(); ctx.arc(g.x, headY + 22, 7, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke()
+    } else {
+      // 暈眩：XX 眼 + 張嘴
+      ctx.strokeStyle = '#2a2a2a'
+      ctx.lineWidth = 2.5
+      for (const ex of [-9, 9]) {
+        ctx.beginPath()
+        ctx.moveTo(g.x + ex - 3, headY + 1); ctx.lineTo(g.x + ex + 3, headY + 6)
+        ctx.moveTo(g.x + ex + 3, headY + 1); ctx.lineTo(g.x + ex - 3, headY + 6)
+        ctx.stroke()
+      }
+      ctx.fillStyle = '#3a2a18'
+      ctx.beginPath(); ctx.arc(g.x, headY + 19, 5, 0, Math.PI * 2); ctx.fill()
+    }
     ctx.restore()
 
     // 額頭命中區提示（瞄準時微微發亮，幫小孩知道要打哪）

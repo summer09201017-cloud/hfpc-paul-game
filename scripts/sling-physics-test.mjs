@@ -31,7 +31,9 @@ else if (bandWidth > 40) { console.error(`❌ 命中帶太寬(${bandWidth.toFixe
 const sweepSec = ((AIM.maxDeg - AIM.minDeg) / AIM.sweepDegPerSec)
 const bandSec = bandWidth / AIM.sweepDegPerSec
 console.log(`擺動單程 ${sweepSec.toFixed(2)}s；命中帶停留約 ${bandSec.toFixed(2)}s（放手時機的容錯窗）`)
-if (bandSec < 0.12) { console.error('❌ 容錯窗 <0.12s，手機點按來不及——降 sweepDegPerSec 或放寬命中區'); ok = false }
+// 0.10s ≈ 6 幀，是「手機點按仍抓得到」的硬底線（牧師 2026-06-13 選了偏難設定）；
+// 再低於此就變成靠運氣、小孩會挫折。要更難請改用「縮小命中區」而非再加快擺速。
+if (bandSec < 0.1) { console.error('❌ 容錯窗 <0.10s，手機點按變運氣——已到公平硬底線，別再加快擺速'); ok = false }
 
 if (!ok) process.exit(1)
 console.log('✅ 拋射手感參數合理（有可學會、不過寬的命中帶）')
