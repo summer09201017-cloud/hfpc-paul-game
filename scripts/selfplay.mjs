@@ -22,6 +22,8 @@ const JOURNEYS = [
   ['第二次旅程', '../src/data/journey2.json'],
   ['第三次旅程', '../src/data/journey3.json'],
   ['約拿旅程', '../src/data/journey-jonah.json'],
+  ['出埃及記之旅', '../src/data/journey-exodus.json'],
+  ['但以理在巴比倫', '../src/data/journey-daniel.json'],
 ].map(([name, p]) => ({ name, board: JSON.parse(readFileSync(join(__dirname, p), 'utf-8')) }))
 
 // 簡單可重現的亂數產生器 (mulberry32)，吃一個種子。

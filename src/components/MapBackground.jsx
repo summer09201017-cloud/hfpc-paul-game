@@ -12,12 +12,26 @@ const DEFAULT_LABELS = [
 export default function MapBackground({ map }) {
   const lands = (map && map.lands) || []
   const labels = (map && map.labels) || DEFAULT_LABELS
+  // 裝飾剪影層（手繪棋盤用，例如但以理的巴比倫城景）：每筆 { d, fill?, stroke?, sw?, opacity? }。
+  // gen-map 產生的地理棋盤沒有這個欄位，行為不變。
+  const decor = (map && map.decor) || []
   return (
     <>
       <svg className="board__map" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         <rect x="0" y="0" width="100" height="100" className="board__sea" />
         {lands.map((d, i) => (
           <path key={i} d={d} className="board__land" vectorEffect="non-scaling-stroke" />
+        ))}
+        {decor.map((p, i) => (
+          <path
+            key={`d${i}`}
+            d={p.d}
+            fill={p.fill || 'none'}
+            stroke={p.stroke || 'none'}
+            strokeWidth={p.sw || 1}
+            opacity={p.opacity == null ? 1 : p.opacity}
+            vectorEffect="non-scaling-stroke"
+          />
         ))}
       </svg>
 

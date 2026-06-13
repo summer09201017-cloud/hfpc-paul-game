@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Game } from '../minigames/jonah/game'
+import CardGame from '../minigames/cards/CardGame'
+import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
 
 // 各關的標題與玩法說明（顯示在開始前的提示卡）。
@@ -145,11 +147,14 @@ export default function MiniGameModal({ minigame, onComplete }) {
   const [started, setStarted] = useState(false)
   const [card, setCard] = useState(null) // 3/5/6 卡片流程關目前顯示的卡（null=遊戲畫面）
 
+  // 純 React 卡片流程關（in-repo，src/minigames/cards/）：站點用 minigame.cards 指定規格，
+  // 不啟動 Canvas 引擎（與約拿 fork 無關，sync:jonah 不會碰到）。
+  const cardSpec = minigame.cards ? CARD_GAMES[minigame.cards] : null
   const level = [1, 2, 3, 4, 5, 6].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）
-  // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡的預設）。
+  // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格的預設）。
   const info = {
-    title: minigame.label || LEVELS[level].title,
-    how: minigame.how || LEVELS[level].how,
+    title: minigame.label || (cardSpec ? cardSpec.title : LEVELS[level].title),
+    how: minigame.how || (cardSpec ? cardSpec.how : LEVELS[level].how),
   }
 
   // 卡片按鈕 → 依前綴分派給引擎對應的 handler（嵌入模式下 boot 不註冊 ui 回呼，直接呼叫公開方法）。
@@ -167,6 +172,7 @@ export default function MiniGameModal({ minigame, onComplete }) {
     if (started || gameRef.current) return
     setStarted(true)
     sound.stopBgm() // 暫停保羅背景音樂，避免和小遊戲音效打架
+    if (cardSpec) return // 卡片流程關：純 React，不啟動引擎
     // 1/2/4 純 Canvas 關用空殼 UI；3/5/6 卡片流程關用會畫卡片的 EmbedUI（嵌入契約）。
     const ui = CARD_LEVELS.has(level)
       ? makeEmbedUI(setCard)
@@ -205,7 +211,8 @@ export default function MiniGameModal({ minigame, onComplete }) {
           <span className="minigame__title">{info.title}</span>
         </div>
         <div className="minigame__stage">
-          <canvas ref={canvasRef} className="minigame__canvas" />
+          {!cardSpec && <canvas ref={canvasRef} className="minigame__canvas" />}
+          {started && cardSpec && <CardGame spec={cardSpec} onComplete={onComplete} />}
           {!started && (
             <div className="minigame__intro">
               <p className="minigame__how">{info.how}</p>
