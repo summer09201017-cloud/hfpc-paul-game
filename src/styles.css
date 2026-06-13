@@ -1271,6 +1271,33 @@ body {
   margin: 0;
 }
 
+/* ---------- 卡片奇兵「單獨玩」全螢幕外框（?demo=<key>，兒童營投影用） ---------- */
+.carddemo {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.6rem, 2vw, 1.4rem);
+  background: radial-gradient(120% 90% at 50% -10%, #14384d 0%, #0c2434 55%, #081a26 100%);
+  overflow: auto;
+}
+.carddemo .minigame {
+  width: min(96vw, 920px);
+}
+.carddemo__score {
+  font-size: clamp(1.4rem, 3.6vw, 2.1rem);
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+.carddemo__msg {
+  color: #cfe3e8;
+  font-size: 1.1rem;
+  text-align: center;
+  padding: 2rem;
+}
+
 /* ---------- 結束畫面 ---------- */
 .gameover {
   background: var(--card);
