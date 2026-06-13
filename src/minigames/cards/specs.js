@@ -653,7 +653,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '⚡ 大馬士革路上的大光',
-        scene: { motion: 'flash', cast: ['🧍'] },
+        scene: { motion: 'flash', cast: ['🙇'] },
         q: '大光四面照著掃羅，他仆倒在地，聽見：「掃羅！掃羅！你為什麼逼迫我？」掃羅該怎麼回應？',
         choices: [
           '繼續抵擋，不理會那聲音',
@@ -671,7 +671,7 @@ export const CARD_GAMES = {
       {
         kind: 'order',
         kicker: '🙈 瞎眼的三天',
-        scene: { motion: 'pulse', cast: ['🙈', '🙏'], caption: '三天不吃不喝、禱告' },
+        scene: { motion: 'pulse', cast: ['🧑‍🦯', '🙏'], caption: '掃羅瞎眼三天、不吃不喝禱告' },
         prompt: '把掃羅被攔下、悔改的歷程，由先到後排出來：',
         items: [
           '⚡ 被大光四面照著，仆倒在地',
