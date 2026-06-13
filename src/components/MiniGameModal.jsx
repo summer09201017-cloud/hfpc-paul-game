@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Game } from '../minigames/jonah/game'
+import { Game as SlingGame } from '../minigames/sling/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -150,11 +151,20 @@ export default function MiniGameModal({ minigame, onComplete }) {
   // 純 React 卡片流程關（in-repo，src/minigames/cards/）：站點用 minigame.cards 指定規格，
   // 不啟動 Canvas 引擎（與約拿 fork 無關，sync:jonah 不會碰到）。
   const cardSpec = minigame.cards ? CARD_GAMES[minigame.cards] : null
+  // in-repo 拋射引擎（src/minigames/sling/）：站點用 minigame.engine:'sling' 指定，Canvas 即時關，
+  // 同樣在約拿 fork 之外。未來其他投擲關（擲矛/射箭）也走這條。
+  const isSling = minigame.engine === 'sling'
   const level = [1, 2, 3, 4, 5, 6].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）
-  // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格的預設）。
+  // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 拋射關的預設）。
   const info = {
-    title: minigame.label || (cardSpec ? cardSpec.title : LEVELS[level].title),
-    how: minigame.how || (cardSpec ? cardSpec.how : LEVELS[level].how),
+    title: minigame.label || (cardSpec ? cardSpec.title : isSling ? '🪨 大衛戰歌利亞' : LEVELS[level].title),
+    how:
+      minigame.how ||
+      (cardSpec
+        ? cardSpec.how
+        : isSling
+          ? '瞄準線會上下擺動，看準歌利亞的「額頭」，按空白鍵／點畫面放手甩石！五顆石子內擊中就得勝。'
+          : LEVELS[level].how),
   }
 
   // 卡片按鈕 → 依前綴分派給引擎對應的 handler（嵌入模式下 boot 不註冊 ui 回呼，直接呼叫公開方法）。
@@ -173,6 +183,17 @@ export default function MiniGameModal({ minigame, onComplete }) {
     setStarted(true)
     sound.stopBgm() // 暫停保羅背景音樂，避免和小遊戲音效打架
     if (cardSpec) return // 卡片流程關：純 React，不啟動引擎
+    if (isSling) {
+      // 拋射關：自帶 renderer/input/audio，介面與約拿引擎相同（embed/onComplete/boot/destroy）。
+      const game = new SlingGame(canvasRef.current, {
+        embed: true,
+        winPoints: minigame.winPoints || 5,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
     // 1/2/4 純 Canvas 關用空殼 UI；3/5/6 卡片流程關用會畫卡片的 EmbedUI（嵌入契約）。
     const ui = CARD_LEVELS.has(level)
       ? makeEmbedUI(setCard)
