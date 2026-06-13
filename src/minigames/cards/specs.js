@@ -419,6 +419,7 @@ export const CARD_GAMES = {
     how: '跟著使徒彼得，從約帕的屋頂異象到該撒利亞的客廳——用選擇與排序，看神怎麼把福音帶給外邦人（這一關不會失敗）。',
     intro: {
       kicker: '🕊️ 福音奇兵',
+      scene: { motion: 'rise', cast: ['🙏', '🕊️'] },
       ref: '使徒行傳 10:1-4',
       line: '在該撒利亞有一個人，名叫哥尼流……他是個虔誠人，他和全家都敬畏神，多多賙濟百姓，常常禱告神。',
       body: '哥尼流是個外邦軍官，他的禱告和賙濟達到神面前，蒙了記念。神要他去請使徒彼得來。可是猶太人和外邦人素不來往——所以神同時給了彼得一個異象，要先翻轉他心裡的一道牆。',
@@ -428,6 +429,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🍖 屋頂的異象',
+        scene: { motion: 'drop', cast: ['🍖', '🦎', '🦅'] },
         q: '彼得餓了，恍惚中看見一塊大布降下，裡面有各樣走獸。有聲音三次說：「神所潔淨的，你不可當作俗物。」這異象真正在講什麼？',
         choices: [
           '從今以後可以隨便亂吃東西',
@@ -445,6 +447,7 @@ export const CARD_GAMES = {
       {
         kind: 'order',
         kicker: '👣 彼得順服的腳步',
+        scene: { motion: 'walk', cast: ['🚶', '🚶', '🚶'], target: '🏠' },
         prompt: '聖靈一開口，彼得就一步步順服。把他「順服神」的步驟，由先到後排出來：',
         items: [
           '🤔 心裡正猜疑這異象是什麼意思',
@@ -462,6 +465,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🙇 在哥尼流家門口',
+        scene: { motion: 'lift', cast: ['🧎', '🤝', '🧍'] },
         q: '彼得一進門，哥尼流就俯伏在他腳前拜他。彼得怎麼做？',
         choices: [
           '接受跪拜，顯出使徒的威嚴',
@@ -479,6 +483,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '💡 彼得開口第一句',
+        scene: { motion: 'speak', cast: ['🗣️', '💬'] },
         q: '彼得在滿屋外邦人面前開口，第一句領悟是什麼？',
         choices: [
           '「你們得先成為猶太人才行」',
@@ -496,6 +501,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🔥 彼得還說著話',
+        scene: { motion: 'rise', cast: ['🕊️', '🔥', '🕊️'] },
         q: '彼得正講說耶穌的時候，發生了什麼大事？',
         choices: [
           '滿屋的人都睡著了',
@@ -568,6 +574,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🤫 微小的聲音',
+        scene: { motion: 'cycle', cast: ['🌪️', '🌍', '🔥', '💬'] },
         q: '在何烈山，烈風、地震、大火一個個過去了。耶和華在哪裡？',
         choices: [
           '在大大的烈風中',
@@ -640,6 +647,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '⚡ 大馬士革路上的大光',
+        scene: { motion: 'flash', cast: ['🧍'] },
         q: '大光四面照著掃羅，他仆倒在地，聽見：「掃羅！掃羅！你為什麼逼迫我？」掃羅該怎麼回應？',
         choices: [
           '繼續抵擋，不理會那聲音',
