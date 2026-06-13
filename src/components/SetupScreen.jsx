@@ -1,7 +1,17 @@
 import { useState } from 'react'
 
+// 從網址 ?journey=<key> 預選旅程（給「聖經遊戲總入口」大廳的卡片直接跳這條旅程用）。
+// 沒帶參數、或參數不認得 → 退回第一條，行為與以前完全一樣（向後相容）。
+function initialJourneyKey(journeys) {
+  try {
+    const k = new URLSearchParams(window.location.search).get('journey')
+    if (k && journeys.some((j) => j.key === k)) return k
+  } catch {}
+  return journeys[0].key
+}
+
 export default function SetupScreen({ journeys, onStart }) {
-  const [journeyKey, setJourneyKey] = useState(journeys[0].key)
+  const [journeyKey, setJourneyKey] = useState(() => initialJourneyKey(journeys))
   const [count, setCount] = useState(2)
   const [names, setNames] = useState(['', '', '', ''])
 
