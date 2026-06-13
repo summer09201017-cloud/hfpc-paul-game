@@ -380,3 +380,49 @@ buildRegion({
     gods_mercy:       { lat: 35.75, lon: 42.55 }, // 神憐憫尼尼微（城南）
   },
 })
+
+// ===========================================================================
+// 海路到羅馬（徒 27–28）——整個地中海從東到西：該撒利亞 → 克里特 → 風暴漂流
+//   → 米利大（馬耳他）船難 → 西西里 → 義大利 → 羅馬。風暴與漂流各站＝海面
+//   「途中站」（非城市，照約拿旅程慣例給海面座標，依漂流方向往西排開）。
+// ===========================================================================
+buildRegion({
+  label: '海路到羅馬',
+  bounds: { lonMin: 11.5, lonMax: 36.5, latMin: 31.2, latMax: 43.2 },
+  // 義大利、馬耳他、突尼西亞/利比亞（南岸海岸線）、希臘/阿爾巴尼亞（亞底亞海東岸）、
+  // 土耳其、賽普勒斯、敘利亞、黎巴嫩、以色列/巴勒斯坦、埃及
+  iso: ['ITA', 'MLT', 'TUN', 'LBY', 'GRC', 'ALB', 'MNE', 'HRV', 'TUR', 'CYP', 'CYN', 'SYR', 'LBN', 'ISR', 'PSE', 'EGY'],
+  journeyFile: 'journey4.json',
+  mapFile: 'region-map4.json',
+  labels: [
+    { t: '義大利', lat: 42.6, lon: 13.6, kind: 'region' },
+    { t: '西西里', lat: 37.6, lon: 14.2, kind: 'island' },
+    { t: '米利大（馬耳他）', lat: 35.5, lon: 14.3, kind: 'island-sub' },
+    { t: '克里特', lat: 35.35, lon: 25.1, kind: 'island' },
+    { t: '亞底亞海', lat: 37.8, lon: 18.4, kind: 'sea' },
+    { t: '地　中　海', lat: 33.3, lon: 21.5, kind: 'sea' },
+    { t: '猶太地', lat: 31.9, lon: 35.1, kind: 'region' },
+  ],
+  cities: {
+    caesarea4_start:  { lat: 32.50, lon: 34.89 }, // 該撒利亞（上訴凱撒，出發港）
+    sidon4:           { lat: 33.56, lon: 35.37 }, // 西頓（猶流寬待保羅）
+    myra4:            { lat: 36.26, lon: 29.98 }, // 呂家的每拉（換亞歷山大的運糧船）
+    cnidus_fate:      { lat: 36.55, lon: 27.40 }, // 革尼土對面（命運卡，逆風海路）
+    fair_havens:      { lat: 34.92, lon: 24.75 }, // 佳澳（克里特南岸，保羅的勸告）
+    euroclydon:       { lat: 35.05, lon: 24.30 }, // 友拉革羅狂風（闖關站，克里特外海）
+    cauda4:           { lat: 34.80, lon: 23.65 }, // 高大島（捆綁船底）
+    angel_promise:    { lat: 35.55, lon: 21.20 }, // 天使的應許（漂流海上）
+    midnight_sounding:{ lat: 36.05, lon: 18.80 }, // 十四天的午夜（亞底亞海）
+    sailors_escape:   { lat: 36.10, lon: 17.00 }, // 水手想逃船
+    breaking_bread:   { lat: 35.95, lon: 15.85 }, // 擘餅勸食（機會卡，天將亮）
+    shipwreck:        { lat: 35.70, lon: 15.05 }, // 船擱淺了（將近米利大）
+    malta_welcome:    { lat: 35.88, lon: 14.40 }, // 米利大島（土人接待、毒蛇無害）
+    publius_heal:     { lat: 36.18, lon: 14.18 }, // 部百流的田產（全島得醫治；稍偏西北避免重疊）
+    syracuse4:        { lat: 37.07, lon: 15.29 }, // 敘拉古（西西里，停泊三日）
+    rhegium4:         { lat: 38.11, lon: 15.65 }, // 利基翁（義大利靴尖）
+    puteoli:          { lat: 40.83, lon: 14.12 }, // 部丟利（遇見弟兄，羅馬外港）
+    appian_way:       { lat: 41.20, lon: 13.45 }, // 亞比烏大道（闖關站，最後的陸路）
+    three_taverns:    { lat: 41.52, lon: 12.72 }, // 三館（弟兄來迎，放心壯膽）
+    rome_end:         { lat: 41.89, lon: 12.49 }, // 羅馬（放膽傳講神國，並沒有人禁止）
+  },
+})
