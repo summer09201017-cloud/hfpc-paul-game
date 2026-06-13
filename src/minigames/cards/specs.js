@@ -447,7 +447,7 @@ export const CARD_GAMES = {
       {
         kind: 'order',
         kicker: '👣 彼得順服的腳步',
-        scene: { motion: 'walk', cast: ['🧔', '🚶', '🚶', '🚶', '🚶'], target: '🏠' },
+        scene: { motion: 'walk', cast: ['🧔', '🚶', '🚶', '🚶'], target: '🏠' },
         prompt: '聖靈一開口，彼得就一步步順服。把他「順服神」的步驟，由先到後排出來：',
         items: [
           '🤔 心裡正猜疑這異象是什麼意思',
