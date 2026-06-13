@@ -101,7 +101,8 @@ export default function CardGame({ spec, onComplete }) {
   // 題目子狀態：'ask'（作答中）/ 'wrong'（答錯提示）/ 'reveal'（看解答）
   const [sub, setSub] = useState('ask')
   const [score, setScore] = useState(0)
-  const [firstTry, setFirstTry] = useState(true)
+  const [wrongs, setWrongs] = useState(0) // 本題答錯次數(算分:第一次答對最高分)
+  const maxScore = (spec.steps ? spec.steps.length : 0) * 3 // 滿分 = 每題 3 分
 
   const stepIdx = typeof stage === 'number' ? stage : -1
   const step = stepIdx >= 0 ? spec.steps[stepIdx] : null
@@ -109,23 +110,24 @@ export default function CardGame({ spec, onComplete }) {
 
   const nextStep = () => {
     setSub('ask')
-    setFirstTry(true)
+    setWrongs(0)
     if (stepIdx + 1 < spec.steps.length) setStage(stepIdx + 1)
     else setStage('done')
   }
 
   const answer = (i) => {
     if (i === step.answer) {
-      if (firstTry) setScore((s) => s + 1)
+      // 第一次答對 3 分、第二次 2 分、第三次以後 1 分(答對都有分,沒人會 0 分挫折)
+      setScore((s) => s + Math.max(1, 3 - wrongs))
       setSub('reveal')
     } else {
-      setFirstTry(false)
+      setWrongs((w) => w + 1)
       setSub('wrong')
     }
   }
 
   const orderDone = (clean) => {
-    if (clean) setScore((s) => s + 1)
+    setScore((s) => s + (clean ? 3 : 2)) // 一次排對 3 分;中途點錯 2 分
     setSub('reveal')
   }
 
@@ -150,10 +152,20 @@ export default function CardGame({ spec, onComplete }) {
     )
   } else if (stage === 'done') {
     const c = spec.done
+    const vRef = c.ref || (spec.intro && spec.intro.ref)
+    const vLine = c.line || (spec.intro && spec.intro.line)
     body = (
       <>
+        <div className="mgcard__win">🏆 得勝！</div>
+        <Scene scene={c.scene || { motion: 'rise', cast: ['🎉', '✨', '🎉'] }} />
+        <div className="mgcard__finalscore">⭐ 得分 {score} / {maxScore}</div>
+        {vRef && vLine && (
+          <div className="mgcard__verse mgcard__verse--win">
+            <span className="mgcard__ref">{vRef}</span>
+            {vLine}
+          </div>
+        )}
         <div className="mgcard__kicker mgcard__kicker--reveal">{c.kicker}</div>
-        <Scene scene={c.scene || { motion: 'rise', cast: ['✨', '🎉', '✨'] }} />
         <p className="mgcard__body">{c.body}</p>
         <button
           className="btn btn--primary mgcard__btn"
@@ -252,6 +264,9 @@ export default function CardGame({ spec, onComplete }) {
   return (
     <div className="minigame__card minigame__card--pure" data-kind="cardgame">
       <div className="mgcard mgcard--anim" key={String(stage) + '-' + sub}>
+        {(typeof stage === 'number' || stage === 'done') && (
+          <div className="mgcard__score" aria-label="目前得分">⭐ {score}</div>
+        )}
         {body}
       </div>
     </div>
