@@ -33,6 +33,7 @@ function Scene({ scene }) {
         ))}
       </div>
       {scene.target && <span className="scene__target">{scene.target}</span>}
+      {scene.caption && <div className="scene__caption">{scene.caption}</div>}
     </div>
   )
 }

@@ -907,17 +907,29 @@ body {
 /* emoji 小劇場舞台 */
 .scene {
   position: relative;
-  height: 66px;
+  height: 104px;
   margin: 0.25rem 0 0.55rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 2.9rem;
   overflow: hidden;
 }
-.scene__cast { display: flex; gap: 0.3rem; }
-.scene__actor { display: inline-block; }
-.scene__target { position: absolute; right: 9%; font-size: 2.3rem; }
+.scene__cast { display: flex; gap: 0.4rem; }
+.scene__actor { display: inline-block; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25)); }
+.scene__target { position: absolute; right: 8%; font-size: 3.2rem; }
+.scene__caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #6b4d12;
+  animation: captionIn 0.5s ease both;
+  animation-delay: 0.35s;
+}
+@keyframes captionIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* walk：一行人從左邊走向右邊的 target（如 🏠） */
 .scene--walk { justify-content: flex-start; padding-left: 4%; }
@@ -940,9 +952,12 @@ body {
 .scene--rise .scene__actor { animation: sceneRise 1.9s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 0.25s); }
 @keyframes sceneRise { 0% { transform: translateY(9px); opacity: 0.4; } 50% { transform: translateY(-9px); opacity: 1; } 100% { transform: translateY(9px); opacity: 0.4; } }
 
-/* lift：跪著的被扶起來（彼得扶起哥尼流） */
-.scene--lift .scene__actor { animation: sceneLift 2.2s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 0.18s); }
-@keyframes sceneLift { 0%, 100% { transform: translateY(7px) rotate(-6deg); } 50% { transform: translateY(-6px) rotate(0); } }
+/* lift：彼得扶起跪下的哥尼流——跪的人起身、兩人交換位置（你起來，我也是人） */
+.scene--lift .scene__cast { gap: 1.6rem; }
+.scene--lift .scene__actor:nth-child(1) { animation: liftSwapA 2.8s ease-in-out infinite; }
+.scene--lift .scene__actor:nth-child(2) { animation: liftSwapB 2.8s ease-in-out infinite; }
+@keyframes liftSwapA { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(2.7em); } }
+@keyframes liftSwapB { 0% { transform: translateX(0) translateY(9px) rotate(-12deg); } 50% { transform: translateX(-2.7em) translateY(-2px) rotate(0); } 100% { transform: translateX(0) translateY(9px) rotate(-12deg); } }
 
 /* cycle：依序顯示一個個 emoji（烈風→地震→火→微聲） */
 .scene--cycle .scene__cast { position: relative; width: 3rem; height: 2.4rem; }
@@ -970,7 +985,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .mgcard--anim, .mgcard__choice, .mgcard__btn,
-  .scene__cast, .scene__actor, .scene__target,
+  .scene__cast, .scene__actor, .scene__target, .scene__caption,
   .scene--flash::after, .scene__sparkles span { animation: none !important; }
   .scene--cycle .scene__actor { position: static; opacity: 1; transform: none; }
   .scene--cycle .scene__actor:not(:first-child) { display: none; }

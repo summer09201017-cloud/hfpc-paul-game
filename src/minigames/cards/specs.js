@@ -429,7 +429,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🍖 屋頂的異象',
-        scene: { motion: 'drop', cast: ['🍖', '🦎', '🦅'] },
+        scene: { motion: 'drop', cast: ['🍖', '🦎', '🦅', '🐍', '🐑'] },
         q: '彼得餓了，恍惚中看見一塊大布降下，裡面有各樣走獸。有聲音三次說：「神所潔淨的，你不可當作俗物。」這異象真正在講什麼？',
         choices: [
           '從今以後可以隨便亂吃東西',
@@ -447,7 +447,7 @@ export const CARD_GAMES = {
       {
         kind: 'order',
         kicker: '👣 彼得順服的腳步',
-        scene: { motion: 'walk', cast: ['🚶', '🚶', '🚶'], target: '🏠' },
+        scene: { motion: 'walk', cast: ['🧔', '🚶', '🚶', '🚶', '🚶'], target: '🏠' },
         prompt: '聖靈一開口，彼得就一步步順服。把他「順服神」的步驟，由先到後排出來：',
         items: [
           '🤔 心裡正猜疑這異象是什麼意思',
@@ -465,7 +465,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🙇 在哥尼流家門口',
-        scene: { motion: 'lift', cast: ['🧎', '🤝', '🧍'] },
+        scene: { motion: 'lift', cast: ['🧍', '🧎'], caption: '「你起來，我也是人」' },
         q: '彼得一進門，哥尼流就俯伏在他腳前拜他。彼得怎麼做？',
         choices: [
           '接受跪拜，顯出使徒的威嚴',
@@ -483,7 +483,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '💡 彼得開口第一句',
-        scene: { motion: 'speak', cast: ['🗣️', '💬'] },
+        scene: { motion: 'speak', cast: ['🧔', '💬'], caption: '「神是不偏待人」' },
         q: '彼得在滿屋外邦人面前開口，第一句領悟是什麼？',
         choices: [
           '「你們得先成為猶太人才行」',
@@ -501,7 +501,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🔥 彼得還說著話',
-        scene: { motion: 'rise', cast: ['🕊️', '🔥', '🕊️'] },
+        scene: { motion: 'rise', cast: ['🕊️', '🔥', '🕊️', '🔥', '🕊️'] },
         q: '彼得正講說耶穌的時候，發生了什麼大事？',
         choices: [
           '滿屋的人都睡著了',
