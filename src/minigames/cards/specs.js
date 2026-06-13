@@ -419,7 +419,7 @@ export const CARD_GAMES = {
     how: '跟著使徒彼得，從約帕的屋頂異象到該撒利亞的客廳——用選擇與排序，看神怎麼把福音帶給外邦人（這一關不會失敗）。',
     intro: {
       kicker: '🕊️ 福音奇兵',
-      scene: { motion: 'rise', cast: ['🙏', '🕊️'] },
+      scene: { motion: 'rise', cast: ['💂', '🙏', '🕊️'], caption: '軍官哥尼流禱告' },
       ref: '使徒行傳 10:1-4',
       line: '在該撒利亞有一個人，名叫哥尼流……他是個虔誠人，他和全家都敬畏神，多多賙濟百姓，常常禱告神。',
       body: '哥尼流是個外邦軍官，他的禱告和賙濟達到神面前，蒙了記念。神要他去請使徒彼得來。可是猶太人和外邦人素不來往——所以神同時給了彼得一個異象，要先翻轉他心裡的一道牆。',
@@ -531,6 +531,7 @@ export const CARD_GAMES = {
     how: '陪伴剛打完勝仗卻灰心想放棄的先知以利亞——用選擇與排序，看神怎麼溫柔地把一個灰心的人重新扶起來（這一關不會失敗）。',
     intro: {
       kicker: '🌅 盼望奇兵',
+      scene: { motion: 'pulse', cast: ['🌳', '😞'], caption: '以利亞逃到曠野、灰心求死' },
       ref: '列王紀上 19:4',
       line: '他自己在曠野走了一日的路程，來到一棵羅騰樹下，就坐在那裡求死，說：「耶和華啊，罷了！求你取我的性命。」',
       body: '以利亞剛在迦密山大大得勝，卻被王后耶洗別威脅，嚇得逃命、灰心，甚至求死。最剛強的先知，也會跌到谷底。神要怎麼對待一個想放棄的人呢？',
@@ -540,6 +541,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🌳 羅騰樹下的低谷',
+        scene: { motion: 'pulse', cast: ['😴', '🌳'] },
         q: '以利亞累得求死：「罷了，求你取我的性命。」神第一步怎麼回應他？',
         choices: [
           '責備他：「你怎麼這麼軟弱？」',
@@ -557,6 +559,7 @@ export const CARD_GAMES = {
       {
         kind: 'order',
         kicker: '🍞 恢復的次序',
+        scene: { motion: 'rise', cast: ['👼', '🍞', '💧'], caption: '天使送餅送水' },
         prompt: '神是一步一步把以利亞恢復過來的。把恢復的步驟，由先到後排出來：',
         items: [
           '😴 躺在羅騰樹下，睡著了',
@@ -592,6 +595,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🙏 你不是孤單的',
+        scene: { motion: 'rise', cast: ['🧍', '🧍', '🧍', '🧍'], caption: '還有七千人未曾屈膝' },
         q: '以利亞覺得「只剩下我一個人」。神怎麼告訴他？',
         choices: [
           '「對，真的只剩你一個了」',
@@ -609,6 +613,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🌅 重新得力',
+        scene: { motion: 'rise', cast: ['🌅', '💪', '🧥'], caption: '重領使命、得著同伴以利沙' },
         q: '神怎樣讓灰心的以利亞重新得力？',
         choices: [
           '把他罵醒',
@@ -638,6 +643,7 @@ export const CARD_GAMES = {
     how: '看最兇猛的逼迫者掃羅，如何在一道大光中被神攔下、悔改，成為傳福音的保羅——用選擇與排序，經歷一個人 180 度的逆轉（這一關不會失敗）。',
     intro: {
       kicker: '💡 大光奇兵',
+      scene: { motion: 'walk', cast: ['😠', '🚶', '🚶'], target: '🏙️', caption: '掃羅往大馬士革抓基督徒' },
       ref: '使徒行傳 9:1-2',
       line: '掃羅仍然向主的門徒口吐威嚇兇殺的話……要把信奉這道的人……都帶到耶路撒冷。',
       body: '掃羅是教會最兇猛的逼迫者，正往大馬士革去抓基督徒。沒有人會想到——神要在他作惡的路上親自攔下他，把這個最不可能信的人，變成最重要的使徒。',
@@ -665,6 +671,7 @@ export const CARD_GAMES = {
       {
         kind: 'order',
         kicker: '🙈 瞎眼的三天',
+        scene: { motion: 'pulse', cast: ['🙈', '🙏'], caption: '三天不吃不喝、禱告' },
         prompt: '把掃羅被攔下、悔改的歷程，由先到後排出來：',
         items: [
           '⚡ 被大光四面照著，仆倒在地',
@@ -682,6 +689,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '😨 亞拿尼亞的掙扎',
+        scene: { motion: 'pulse', cast: ['😨', '🤲'], caption: '害怕,卻順服去按手' },
         q: '神要門徒亞拿尼亞去為掃羅（逼迫者）按手。亞拿尼亞起初怎麼反應？',
         choices: [
           '一口答應，高高興興就去',
@@ -699,6 +707,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '👁️ 復明與受洗',
+        scene: { motion: 'rise', cast: ['👁️', '💧', '✨'], caption: '鱗片掉下、復明受洗' },
         q: '亞拿尼亞按手在掃羅身上之後，發生了什麼事？',
         choices: [
           '掃羅還是什麼都看不見',
@@ -716,6 +725,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🔄 徹底的逆轉',
+        scene: { motion: 'rise', cast: ['😇', '✝️', '✨'], caption: '逼迫者變成使徒保羅' },
         q: '這位曾經逼迫教會的掃羅，後來成了什麼樣的人？',
         choices: [
           '一個安靜度日的普通人',

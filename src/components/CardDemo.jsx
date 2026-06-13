@@ -24,8 +24,18 @@ export default function CardDemo({ specKey }) {
     setRunKey((k) => k + 1)
   }
 
+  const toggleFullscreen = () => {
+    try {
+      if (document.fullscreenElement) document.exitFullscreen()
+      else document.documentElement.requestFullscreen()
+    } catch {}
+  }
+
   return (
     <div className="carddemo">
+      <button className="carddemo__fs" onClick={toggleFullscreen} aria-label="全螢幕" title="全螢幕">
+        ⛶
+      </button>
       <div className="minigame minigame--demo">
         <div className="minigame__head">
           <span className="minigame__kind">逆轉奇兵</span>
