@@ -1,7 +1,18 @@
 # 🗺️ 保羅大富翁 — 進度藍圖（已完成 vs 真正待做）
 
-> 對齊現況：**2026-06-12 早**(新增但以理/出埃及記兩條旅程骨架,六旅程全鏈綠)。GitHub：`summer09201017-cloud/hfpc-paul-game`（branch `main`）。
-> 這份是給接手的人 / AI 看的「目前到哪了、接下來做什麼」。技術細節看 `CLAUDE.md`，玩法/編輯看 `README.md`。
+> 對齊現況：**2026-06-13 晚**。GitHub：`summer09201017-cloud/hfpc-paul-game`（branch `main`）。
+> 這份是給接手的人 / AI 看的「目前到哪了、接下來做什麼」。技術細節看 `CLAUDE.md`，玩法/編輯看 `README.md`，
+> **完整跨機交接看 `讀我-HANDOFF.txt` 最上方「2026-06-13 晚」整段**（含分支表＋部署閘）。
+
+> ### 📌 現況速覽（2026-06-13 晚）
+> - **線上 main = 七條旅程**（保羅 1/2/3/4 + 約拿 + 出埃及 + 但以理；牧者已審、已部署）。
+> - **總入口大廳上線**：https://hfpc-bible-games.netlify.app （獨立 repo，卡片連各遊戲）。
+> - **四條已驗證、待併 main 的分支**（使用者明示暫不重部署保羅站）：
+>   `feat/deeplink-preselect`（?journey= 預選，大廳深連結要它）、
+>   `feat/mobile-install-and-zoomfix`（手機放大全白修正＋安裝鈕）、
+>   `feat/journey-picker-cards`（首頁分類卡片）、
+>   `feat/david-sling`（大衛甩石**拋射引擎**，可重用、尚未接成旅程）。
+> - 乾淨併序：deeplink → mobile → picker；david-sling 獨立。
 
 ---
 

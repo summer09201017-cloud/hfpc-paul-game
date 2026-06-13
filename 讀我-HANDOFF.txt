@@ -1,13 +1,45 @@
 ============================================================
-讀我 — HANDOFF(給 agape250 那台 PC 的 AI / 開發者)
-更新:2026-06-13 早(HFP 機完成:★ 牧者審核通過,三條新旅程已 merge main 上線——
-  但以理/出埃及(feat/daniel-exodus 3bbac4f)+海路到羅馬(feat/journey4-rome
-  da8132f)。線上版現為「七條旅程」,宣教接力 paul1→2→3→4 完整保羅一生。
-  測試證據:validate 七檔+selfplay 七旅程×1200+煙霧 23 項+離線就緒 45 項全綠。
-  ★ 本日新增「評估結論與五步計畫」見文末 2026-06-13 段,接手請先讀那段!)
+讀我 — HANDOFF(給 HFPC 那台 PC 的 AI / 開發者)
+更新:2026-06-13 晚(agape250 機完成,接手請先讀正下方「2026-06-13 晚」整段!)
+  本日早上:牧者審核通過,但以理/出埃及/海路到羅馬三旅程已 merge main 上線(七旅程)。
+  本日晚上(agape250 機,以下全在「分支上、未併 main、未重部署保羅」):
+   ① 總入口大廳「聖經闖關大富翁遊戲」上線 https://hfpc-bible-games.netlify.app(獨立 repo)
+   ② 手機「地圖放大全白」修好 + 「安裝到手機」按鈕(分支 feat/mobile-install-and-zoomfix)
+   ③ 首頁旅程選單改「分類卡片」(分支 feat/journey-picker-cards)
+   ④ 大廳卡片要的 ?journey= 深連結(分支 feat/deeplink-preselect)
+   ⑤ 大衛甩石「拋射引擎」(分支 feat/david-sling)+ 新 skill projectile-minigame
 ============================================================
 
-這個生態系有「兩個上線中的遊戲 + 一套跨專案 skill 庫 + 兩卷新書設計稿」:
+■ ★ 2026-06-13 晚(agape250 機):大廳上線 + 四條待併分支 + 拋射引擎 ★ 接手先讀這段
+  ── 總入口大廳(另一個 session 做的,獨立專案,我不碰)─────────────────
+  • Live: https://hfpc-bible-games.netlify.app  GitHub: summer09201017-cloud/hfpc-bible-games
+  • 靜態卡片牆,5 張卡連到各遊戲:約拿動作版→約拿站;其餘→保羅站的 ?journey=jonah/paul/daniel/exodus。
+  • push main 自動部署(Netlify Linux CI 已實證可跑 no-bundler build)。
+
+  ── 我(保羅這側)推了「4 條分支,全部已驗證、未併 main、未重部署」────────
+  ┌ 分支 ─────────────────────────┬ 內容 ─────────────────────────────┬ 相依/備註 ┐
+  │ feat/deeplink-preselect          │ ?journey=<key> 預選旅程(1 檔+11行,向後相容) │ 從 main 切,獨立。★大廳卡片要這條併 main 重部署後才會「直接預選」(現在點過去會落在保羅選單,手選即可) │
+  │ feat/mobile-install-and-zoomfix  │ 手機放大全白修正(依容器×DPR 反推安全最大倍率,場景裝置像素≤4096)+ 安裝鈕 + 2 支驗證腳本 │ 從 main 切,獨立。另一個 session 做、我交叉驗證+補腳本 │
+  │ feat/journey-picker-cards        │ 首頁分類卡片(JOURNEYS 掛 group/icon 自動長卡)│ 疊在 mobile 上(含同段深連結);乾淨併序 deeplink→mobile→picker │
+  │ feat/david-sling                 │ 大衛甩石「拋射引擎」src/minigames/sling/(可重用、嵌入契約、人形角色)+ projectile-minigame skill │ 從 main 切,獨立。尚未接成旅程站點,?demo=sling 預覽 │
+  └──────────────────────────────┴──────────────────────────────────┴──────────┘
+
+  ⚠ 部署閘:使用者 2026-06-13 明示「暫不重部署保羅站」(對外正式站+當時有他人本地改動編輯中)。
+     → 要讓大廳深連結生效,順序:確認可動了 → 併 feat/deeplink-preselect 進 main →
+       Netlify 自動重部署 → 逐張點線上大廳卡片確認跳對旅程。其餘分支照「牧師實測→併」節奏。
+
+  ── 大衛甩石(feat/david-sling)細節 ───────────────────────────────
+  • 可重用「拋射肌肉」:src/minigames/sling/{config,projectile(純函式),game,renderer,input,audio,content}.js
+    ——未來投擲關(擲矛/射箭/基甸/耶利哥)都吃 projectile.js。在約拿 fork 之外,sync:jonah 不碰。
+  • 玩法:瞄準角度自動上下擺、固定力道、按空白/點畫面放手、重力拋物線打歌利亞額頭命中區;5 顆石子;
+    命中得勝、全失不得分但不卡關。角色已畫成人形(大衛勇敢/歌利亞銅盔鎧甲持矛怒臉、命中倒下暈眩)。
+  • 手感:難度=容錯窗(秒)=命中帶寬÷擺速;目前 5°÷44=0.11s(牧師兩次要求加難,已近公平底線 0.10s≈6幀)。
+    要更難「縮命中區」勿再加擺速。調手感只動 config.js。
+  • 預覽:npm run dev → /?demo=sling(SlingDemo)。接成旅程站點:minigame:{ engine:'sling', winPoints, label }。
+  • 驗證:scripts/sling-physics-test.mjs(純物理,斷言命中帶/容錯窗)、sling-smoke-check.mjs(實機在命中帶放手必中、走完 win、零錯誤)。
+  • 新 skill:claude-skills\projectile-minigame(跨專案拋射闖關藍圖,大衛為活範例)。
+
+這個生態系有「兩個上線中的遊戲 + 一個總入口大廳 + 一套跨專案 skill 庫 + 兩卷新書設計稿」:
 
 ■ 2026-06-12 但以理+出埃及記旅程骨架(已搶救上 GitHub 分支 feat/daniel-exodus)
   保羅大富翁新增兩條旅程「骨架」,validate/selfplay/build 全綠:
@@ -174,9 +206,10 @@
   4. 以斯帖記(~16 站)——書珊王宮手繪棋盤;普珥(掣籤)與骰子機制天然呼應;
      筵席卡片流程關;「焉知你得了王后的位分不是為現今的機會嗎」(斯4:14)。
      幾乎全卡片關=開發最便宜,但地理感最弱。
-  5. 大衛(撒上16–撒下5,~20 站)——伯利恆→曠野→希伯崙;歌利亞甩石關
-     需要新引擎關卡(瞄準/投擲),是六關機制裡第一個要「新寫」的——
-     放在引擎端有空檔時再做。詩篇反思卡資源豐富。
+  5. 大衛(撒上16–撒下5,~20 站)——伯利恆→曠野→希伯崙;★ 歌利亞甩石的「拋射引擎」
+     已做完(2026-06-13,feat/david-sling,src/minigames/sling/,可重用+人形角色+手感可調)。
+     剩下:大衛「旅程」本身(站點/題庫/真實地理棋盤/RPG 道具/把甩石接成站點 minigame:{engine:'sling'})。
+     詩篇反思卡資源豐富。這條從「最貴(要新引擎)」變成「引擎已備、剩內容」。
 
 ============================================================
 ■ 🚀 未來功能點子(按「CP 值高→低 × 開發時間短→長」排序,2026-06-12 重排)
@@ -207,9 +240,14 @@
 14. 真實美術 PNG sprite sheet(美術來源是瓶頸;renderer 已隔離好;
     CC0 素材包+Gemini 產圖工具見「美術素材-CC0-2026-06-12」資料夾)。 ~2-3 天+美術
 15. 多人連線房間(WebRTC/WS,需後端)。 ~1 週+
-【Skill / Tool-Calling 點子】
+【Skill / Tool-Calling 點子（✅=已做）】
+ ✅ projectile-minigame skill(2026-06-13)——跨專案「瞄準+拋射」闖關藍圖(純函式物理+
+    嵌入契約+人形角色+容錯窗公式);大衛甩石為活範例,未來擲矛/射箭/基甸/耶利哥都套。
+ ✅ pwa-install-button skill(2026-06-13,另一 session)——任何 PWA 加「安裝到手機」鈕。
 16. quiz-authoring skill — 「幫我出某卷書 N 題」→ 依 bible-game-studio 慣例
-    產題+自動跑 validator。 ~半天
+    產題+自動跑 validator。 ~半天 ★ 直擊最大瓶頸(牧者審題),CP 高
+20. classroom-hub skill — 把「靜態入口大廳(卡片牆+?journey= 深連結+localStorage 計分)」
+    寫成跨專案 skill;hfpc-bible-games 是活範例。 ~半天
 17. playtest-bot skill — Playwright 全自動通關找 bug,跨專案化。
     (半成品已有:scripts/browser-playtest-cards.mjs 會玩卡片關,
      JOURNEY 環境變數可換旅程;整理成 skill 即可) ~半天
