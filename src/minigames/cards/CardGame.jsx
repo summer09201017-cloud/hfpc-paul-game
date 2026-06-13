@@ -166,8 +166,9 @@ export default function CardGame({ spec, onComplete }) {
   } else if (sub === 'wrong') {
     body = (
       <>
-        <div className="mgcard__kicker mgcard__kicker--tryagain">再想想～</div>
-        <p className="mgcard__body">還差一點點！再讀一次題目，想想經文怎麼說，然後再選一次。</p>
+        <Scene scene={{ motion: 'pulse', cast: ['🤔', '📖'] }} />
+        <div className="mgcard__kicker mgcard__kicker--tryagain">🤔 再想想～</div>
+        <p className="mgcard__body">還差一點點！再讀一次題目，想想經文怎麼說 📖，然後再選一次。</p>
         <button className="btn btn--primary mgcard__btn" onClick={() => setSub('ask')}>
           再試一次
         </button>
@@ -239,6 +240,7 @@ export default function CardGame({ spec, onComplete }) {
               style={{ '--i': i }}
               onClick={() => answer(i)}
             >
+              <span className="mgcard__num">{['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣'][i] || '▶️'}</span>
               {c}
             </button>
           ))}

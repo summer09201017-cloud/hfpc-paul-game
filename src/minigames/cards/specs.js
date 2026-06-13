@@ -465,7 +465,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🙇 在哥尼流家門口',
-        scene: { motion: 'lift', cast: ['🧍', '🧎'], caption: '「你起來，我也是人」' },
+        scene: { motion: 'lift', cast: ['🧍', '🙇'], caption: '「你起來，我也是人」' },
         q: '彼得一進門，哥尼流就俯伏在他腳前拜他。彼得怎麼做？',
         choices: [
           '接受跪拜，顯出使徒的威嚴',

@@ -886,6 +886,7 @@ body {
 .mgcard__choice {
   width: 100%;
 }
+.mgcard__num { margin-right: 0.4rem; }
 .mgcard__btn {
   margin-top: 0.6rem;
   min-width: 60%;
@@ -894,30 +895,31 @@ body {
 /* ====== 卡片關動畫：進場 + emoji 小劇場（兒童營投影用；尊重 reduced-motion） ====== */
 .mgcard--anim {
   position: relative;
-  animation: cardIn 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* 從下方慢慢往上升(更慢、行程更長) */
+  animation: cardIn 1.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(40px) scale(0.97); }
+  from { opacity: 0; transform: translateY(120px) scale(0.96); }
   to { opacity: 1; transform: none; }
 }
 /* 選項 / 按鈕緩緩依序滑入(慢一點、看得清楚) */
-.mgcard__choice { animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(220ms + var(--i, 0) * 120ms); }
-.mgcard__btn { animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: 260ms; }
+.mgcard__choice { animation: cardIn 1s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: calc(320ms + var(--i, 0) * 160ms); }
+.mgcard__btn { animation: cardIn 1s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: 360ms; }
 
 /* emoji 小劇場舞台 */
 .scene {
   position: relative;
-  height: 128px;
+  height: 144px;
   margin: 0.3rem 0 0.6rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3.6rem;
+  font-size: 4.4rem;
   overflow: hidden;
 }
-.scene__cast { display: flex; gap: 0.5rem; }
+.scene__cast { display: flex; gap: 0.55rem; }
 .scene__actor { display: inline-block; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.28)); }
-.scene__target { position: absolute; right: 7%; font-size: 4rem; }
+.scene__target { position: absolute; right: 7%; font-size: 4.8rem; }
 .scene__caption {
   position: absolute;
   left: 0;
@@ -955,10 +957,11 @@ body {
 /* lift：彼得扶起跪下的哥尼流——🧍固定在左、🧎固定在右、不交換位置、靠近一點；
    右邊跪著的原地被扶起(上下),左邊站著的微微伸手。（你起來，我也是人） */
 .scene--lift .scene__cast { gap: 0.3rem; }
-.scene--lift .scene__actor:nth-child(1) { animation: liftReach 2.4s ease-in-out infinite; }
-.scene--lift .scene__actor:nth-child(2) { animation: liftRise 2.4s ease-in-out infinite; }
-@keyframes liftReach { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px) rotate(-4deg); } }
-@keyframes liftRise { 0%, 100% { transform: translateY(8px) rotate(-10deg); } 50% { transform: translateY(-3px) rotate(0); } }
+/* 🧍 彼得鏡射 = 臉朝右,並向右邊伸手扶人;🙇 哥尼流俯伏在地、被扶起 */
+.scene--lift .scene__actor:nth-child(1) { animation: liftReach 2.4s ease-in-out infinite; transform-origin: bottom center; }
+.scene--lift .scene__actor:nth-child(2) { animation: liftRise 2.4s ease-in-out infinite; transform-origin: bottom center; }
+@keyframes liftReach { 0%, 100% { transform: scaleX(-1) translateY(0) rotate(0); } 50% { transform: scaleX(-1) translateY(-2px) rotate(10deg); } }
+@keyframes liftRise { 0%, 100% { transform: translateY(10px) scale(0.9); } 50% { transform: translateY(-2px) scale(1); } }
 
 /* cycle：依序顯示一個個 emoji（烈風→地震→火→微聲） */
 .scene--cycle .scene__cast { position: relative; width: 3rem; height: 2.4rem; }
@@ -1421,8 +1424,8 @@ body {
 .carddemo .mgcard__choice { font-size: clamp(1.15rem, 2.6vw, 1.8rem); padding: 0.7rem 1.1rem; }
 .carddemo .mgcard__btn { font-size: clamp(1.15rem, 2.6vw, 1.7rem); padding: 0.7rem 1.4rem; }
 .carddemo .minigame__how { font-size: clamp(1.2rem, 2.8vw, 1.9rem); max-width: 40rem; }
-.carddemo .scene { height: clamp(130px, 18vh, 240px); font-size: clamp(3.6rem, 8vw, 6rem); }
-.carddemo .scene__target { font-size: clamp(4rem, 9vw, 6.6rem); }
+.carddemo .scene { height: clamp(150px, 20vh, 280px); font-size: clamp(4.4rem, 9.5vw, 7.2rem); }
+.carddemo .scene__target { font-size: clamp(4.8rem, 10.5vw, 7.8rem); }
 .carddemo .scene__caption { font-size: clamp(1.1rem, 2.4vw, 1.7rem); }
 /* 全螢幕鈕(右上角) */
 .carddemo__fs {
