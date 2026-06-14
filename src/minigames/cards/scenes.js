@@ -652,3 +652,117 @@ function kingdomRest(ctx, w, h, t) { // 第4/5幕:國度賜給聖民,得享安�
   for (let i = 0; i < 5; i++) person(ctx, w * 0.2 + i * (w * 0.15), gy, k * 0.95, { robe: colors[i], head: 'turban', arms: 'up', face: 'joy' })
 }
 export const DANIEL = { goldStatue, goldStone, wallHand, wallWord, beasts, throne, sonofman, kingdomRest }
+
+// ===================== 出埃及記 =====================
+function cloud(ctx, x, y, k, s = 1) {
+  ctx.fillStyle = 'rgba(245,245,250,0.95)'
+  for (const [dx, dy, r] of [[0, 0, 22], [-18, 4, 15], [18, 4, 16], [-6, -10, 14], [10, -8, 13]]) { ctx.beginPath(); ctx.arc(x + dx * s * k, y + dy * s * k, r * s * k, 0, TAU); ctx.fill() }
+}
+function pyramid(ctx, x, gy, k, w2) { ctx.fillStyle = '#caa86a'; ctx.beginPath(); ctx.moveTo(x - w2 * k, gy); ctx.lineTo(x, gy - w2 * 0.8 * k); ctx.lineTo(x + w2 * k, gy); ctx.closePath(); ctx.fill() }
+
+// 十災(出 7–11):尼羅河變血、蛙災,昏天黑地
+function plagues(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.66
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#3a3038'); g.addColorStop(1, '#6a4a44'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  pyramid(ctx, w * 0.78, gy, k, 60); pyramid(ctx, w * 0.9, gy, k, 44)
+  // 變血的尼羅河
+  const r = ctx.createLinearGradient(0, gy, 0, h); r.addColorStop(0, '#a52a2a'); r.addColorStop(1, '#6a1818'); ctx.fillStyle = r; ctx.fillRect(0, gy, w, h - gy)
+  ctx.strokeStyle = 'rgba(60,10,10,0.5)'; ctx.lineWidth = 2 * k
+  for (let i = 0; i < 5; i++) { const yy = gy + 14 * k + i * 16 * k; ctx.beginPath(); for (let x = 0; x <= w; x += 16) { const yo = yy + Math.sin(x * 0.05 + t * 2 + i) * 4 * k; x ? ctx.lineTo(x, yo) : ctx.moveTo(x, yo) } ctx.stroke() }
+  // 跳動的蛙
+  ctx.fillStyle = '#4a7a3a'
+  for (let i = 0; i < 7; i++) { const bx = (i * 150 + 40) % w; const by = gy - 6 * k - Math.abs(Math.sin(t * 3 + i)) * 22 * k; ctx.beginPath(); ctx.ellipse(bx, by, 8 * k, 6 * k, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#2c1810'; ctx.fillRect(bx - 3 * k, by - 4 * k, 1.6 * k, 1.6 * k); ctx.fillRect(bx + 1.4 * k, by - 4 * k, 1.6 * k, 1.6 * k); ctx.fillStyle = '#4a7a3a' }
+}
+// 逾越節之夜(出 12):門楣門框塗血,滅命者越過
+function passover(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.88
+  ctx.fillStyle = '#1e2138'; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = 'rgba(255,250,210,0.9)'; ctx.beginPath(); ctx.arc(w * 0.82, h * 0.2, 18 * k, 0, TAU); ctx.fill() // 月
+  ctx.fillStyle = '#3a3448'; ctx.fillRect(0, gy, w, h - gy)
+  // 房子 + 門
+  ctx.fillStyle = '#5a4a3a'; ctx.fillRect(w * 0.3, gy - 110 * k, w * 0.4, 110 * k)
+  ctx.fillStyle = '#2e2418'; ctx.fillRect(w * 0.44, gy - 70 * k, w * 0.12, 70 * k) // 門洞
+  // 門楣門框的血
+  ctx.fillStyle = '#a52a2a'
+  ctx.fillRect(w * 0.43, gy - 74 * k, w * 0.14, 5 * k) // 門楣
+  ctx.fillRect(w * 0.435, gy - 74 * k, 5 * k, 70 * k); ctx.fillRect(w * 0.555 - 5 * k, gy - 74 * k, 5 * k, 70 * k) // 兩門框
+  // 越過的滅命者陰影
+  const sx = (t * 90) % (w + 200) - 100
+  ctx.fillStyle = 'rgba(10,10,20,0.5)'; ctx.beginPath(); ctx.ellipse(sx, h * 0.16, 60 * k, 16 * k, 0, 0, TAU); ctx.fill()
+  // 逾越節羔羊
+  ctx.fillStyle = '#f0ece0'; ctx.beginPath(); ctx.ellipse(w * 0.2, gy - 8 * k, 14 * k, 9 * k, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(w * 0.2 - 14 * k, gy - 12 * k, 6 * k, 0, TAU); ctx.fill()
+}
+// 西奈山(出 19–20):山頂煙火雷電,摩西上山,百姓在山下
+function sinai(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#3a3a52'); g.addColorStop(1, '#8a7a6a'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#5a5048'; ctx.beginPath(); ctx.moveTo(w * 0.2, gy); ctx.lineTo(w * 0.5, h * 0.12); ctx.lineTo(w * 0.82, gy); ctx.closePath(); ctx.fill()
+  // 山頂煙 + 火 + 雷
+  cloud(ctx, w * 0.5, h * 0.13, k, 1.4)
+  flame(ctx, w * 0.48, h * 0.16, k, t, 1); flame(ctx, w * 0.53, h * 0.16, k, t, 2)
+  if (Math.sin(t * 3) > 0.5) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5 * k; ctx.beginPath(); ctx.moveTo(w * 0.5, h * 0.2); ctx.lineTo(w * 0.46, h * 0.3); ctx.lineTo(w * 0.52, h * 0.32); ctx.lineTo(w * 0.48, h * 0.42); ctx.stroke() }
+  ctx.fillStyle = '#5a4a3a'; ctx.fillRect(0, gy, w, h - gy)
+  person(ctx, w * 0.42, h * 0.52, k * 0.7, { robe: '#caa05a', head: 'turban', beard: true, face: 'awe' }) // 摩西上山
+  const colors = ['#3a6a9c', '#a8553a', '#6a8a52', '#8a6a9c']
+  for (let i = 0; i < 4; i++) person(ctx, w * 0.16 + i * 26 * k, gy, k * 0.8, { robe: colors[i], head: 'turban', face: 'awe' })
+}
+// 兩塊法版(出 20)
+function tablets(ctx, w, h, t) {
+  const k = h / 240, cx = w * 0.5, cy = h * 0.46
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#6a6a86'); g.addColorStop(1, '#aca6b6'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  const gl = ctx.createRadialGradient(cx, cy, 0, cx, cy, 110 * k); gl.addColorStop(0, `rgba(255,250,210,${0.4 + Math.sin(t * 2) * 0.12})`); gl.addColorStop(1, 'rgba(255,250,210,0)')
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(cx, cy, 110 * k, 0, TAU); ctx.fill()
+  const tab = (x) => { ctx.fillStyle = '#d8d0c0'; ctx.beginPath(); ctx.moveTo(x - 34 * k, cy + 50 * k); ctx.lineTo(x - 34 * k, cy - 40 * k); ctx.quadraticCurveTo(x - 34 * k, cy - 56 * k, x, cy - 56 * k); ctx.quadraticCurveTo(x + 34 * k, cy - 56 * k, x + 34 * k, cy - 40 * k); ctx.lineTo(x + 34 * k, cy + 50 * k); ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#8a8276'; ctx.lineWidth = 2 * k; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(x - 24 * k, cy - 34 * k + i * 16 * k); ctx.lineTo(x + 24 * k, cy - 34 * k + i * 16 * k); ctx.stroke() } }
+  tab(cx - 40 * k); tab(cx + 40 * k)
+}
+// 會幕榮光五幕(出 32–34、40)
+function goldcalf(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#5a4a3a'); g.addColorStop(1, '#8a6a4a'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#6a5440'; ctx.fillRect(0, gy, w, h - gy)
+  ctx.fillStyle = '#8a6a44'; ctx.fillRect(w * 0.46, gy - 24 * k, 30 * k, 24 * k) // 壇座
+  ctx.fillStyle = '#e8c23a'; ctx.beginPath(); ctx.ellipse(w * 0.5, gy - 36 * k, 18 * k, 12 * k, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(w * 0.66, gy - 42 * k, 6 * k, 0, TAU); ctx.fill(); ctx.fillRect(w * 0.62, gy - 50 * k, 3 * k, 6 * k); ctx.fillRect(w * 0.66, gy - 50 * k, 3 * k, 6 * k) // 金牛犢
+  const colors = ['#a8553a', '#6a8a52', '#8a6a9c']
+  for (let i = 0; i < 3; i++) person(ctx, w * 0.2 + i * 30 * k, gy, k * 0.9, { robe: colors[i], head: 'turban', arms: 'up', face: 'neutral' })
+}
+function intercede(ctx, w, h, t) { // 摩西代求
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#6a6a8c'); g.addColorStop(1, '#bcb4c4'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  rays(ctx, w, h, t, w * 0.5, 0.7)
+  ctx.fillStyle = '#7a6a5a'; ctx.fillRect(0, gy, w, h - gy)
+  person(ctx, w * 0.5, gy, k * 1.25, { robe: '#caa05a', head: 'turban', beard: true, arms: 'up', face: 'awe' })
+}
+function glory(ctx, w, h, t) { // 磐石穴中,神的榮耀經過
+  const k = h / 240, gy = h * 0.86
+  ctx.fillStyle = '#4a4438'; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#3a352c'; ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(0, h * 0.3); ctx.lineTo(w * 0.4, h * 0.5); ctx.lineTo(w * 0.4, h); ctx.closePath(); ctx.fill() // 磐石
+  person(ctx, w * 0.22, gy, k * 0.95, { robe: '#caa05a', head: 'turban', beard: true, face: 'awe' })
+  // 經過的榮耀(由右向左掃過的強光)
+  const sx = w * 0.9 - ((t * 60) % (w * 0.7))
+  const gl = ctx.createRadialGradient(sx, h * 0.42, 0, sx, h * 0.42, 80 * k); gl.addColorStop(0, `rgba(255,250,215,0.95)`); gl.addColorStop(1, 'rgba(255,250,215,0)')
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(sx, h * 0.42, 90 * k, 0, TAU); ctx.fill()
+}
+function tabernacle(ctx, w, h, t) { // 會幕建成
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#cfe0e8'); g.addColorStop(1, '#e8dcc0'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#c2a878'; ctx.fillRect(0, gy, w, h - gy)
+  // 圍幔
+  ctx.strokeStyle = '#d8c39a'; ctx.lineWidth = 3 * k; ctx.strokeRect(w * 0.28, gy - 56 * k, w * 0.44, 56 * k)
+  // 帳幕(條紋罩棚)
+  ctx.fillStyle = '#7a5a8c'; ctx.fillRect(w * 0.42, gy - 76 * k, w * 0.16, 40 * k)
+  ctx.fillStyle = '#b94a4a'; for (let i = 0; i < 4; i++) ctx.fillRect(w * 0.42, gy - 76 * k + i * 10 * k, w * 0.16, 4 * k)
+  ctx.fillStyle = '#caa05a'; ctx.fillRect(w * 0.34, gy - 18 * k, 14 * k, 18 * k) // 銅祭壇
+}
+function gloryfill(ctx, w, h, t) { // 榮光充滿會幕
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#f7e9b0'); g.addColorStop(1, '#f0d59a'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#bda072'; ctx.fillRect(0, gy, w, h - gy)
+  ctx.fillStyle = '#7a5a8c'; ctx.fillRect(w * 0.42, gy - 76 * k, w * 0.16, 40 * k)
+  ctx.fillStyle = '#b94a4a'; for (let i = 0; i < 4; i++) ctx.fillRect(w * 0.42, gy - 76 * k + i * 10 * k, w * 0.16, 4 * k)
+  // 降下充滿的雲柱榮光
+  cloud(ctx, w * 0.5, gy - 110 * k + Math.sin(t * 1.5) * 6 * k, k, 1.6)
+  const gl = ctx.createRadialGradient(w * 0.5, gy - 70 * k, 0, w * 0.5, gy - 70 * k, 90 * k); gl.addColorStop(0, `rgba(255,250,210,${0.6 + Math.sin(t * 2) * 0.2})`); gl.addColorStop(1, 'rgba(255,250,210,0)')
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(w * 0.5, gy - 70 * k, 90 * k, 0, TAU); ctx.fill()
+  rays(ctx, w, h, t, w * 0.5, 0.8)
+}
+export const EXODUS = { plagues, passover, sinai, tablets, goldcalf, intercede, glory, tabernacle, gloryfill }

@@ -210,6 +210,7 @@ export const CARD_GAMES = {
   // ===================== 出埃及記 · 闖關1 十災的對決（出 7–12） =====================
   tenPlagues: {
     title: '🐸 十災的對決',
+    canvas: 'plagues', // 預設場景:尼羅河變血 + 蛙災
     how: '十災一災比一災重，擊打埃及的假神。把十災「由先到後」依序點出來，再想想這場對決的意義（這一關不會失敗）。',
     intro: {
       kicker: '🐸 十災的對決',
@@ -245,6 +246,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🩸 第十災之夜',
+        scene: { canvas: 'passover', caption: '門框門楣塗血,滅命者越過' },
         q: '擊殺長子的那一夜，以色列人的家靠什麼得保護？',
         choices: ['緊鎖的門閂', '門框和門楣上羔羊的血', '屋頂上的記號', '整夜的守望'],
         answer: 1,
@@ -257,6 +259,7 @@ export const CARD_GAMES = {
     ],
     done: {
       kicker: '✓ 容我的百姓去！',
+      scene: { canvas: 'passover', caption: '逾越節之夜,神的救贖' },
       body: '當夜法老召了摩西、亞倫來，說：「起來！連你們帶以色列人，從我民中出去。」（出 12:31）四百三十年的為奴歲月，在這一夜結束了。',
       btn: '🎉 出埃及！',
     },
@@ -265,9 +268,11 @@ export const CARD_GAMES = {
   // ===================== 出埃及記 · 闖關5 西奈山十誡（出 20） =====================
   tenCommandments: {
     title: '📜 西奈山 · 十誡',
+    canvas: 'tablets', // 預設場景:兩塊法版
     how: '先聽十誡開頭的救恩宣告，再用生活情境配配看「這是哪一條誡命？」（這一關不會失敗）。',
     intro: {
       kicker: '📜 西奈山 · 十誡',
+      scene: { canvas: 'sinai', caption: '西奈全山冒煙、雷轟閃電' },
       ref: '出埃及記 19:18',
       line: '西奈全山冒煙，因為耶和華在火中降於山上……遍山大大地震動。',
       body: '雷轟、閃電、密雲、角聲——神親口吩咐十條誡命。這是立約的時刻，每個人都要在山下站立領受。',
@@ -345,6 +350,7 @@ export const CARD_GAMES = {
   // ===================== 出埃及記 · 闖關6 會幕榮光（終局反思，出 32–34、40） =====================
   exodusFinale: {
     title: '⛺ 會幕榮光 · 五幕',
+    canvas: 'glory', // 預設場景:神的榮耀經過(幕3/intro/done)
     how: '看五幕：金牛犢之悲、摩西代求、求祢顯出榮耀、會幕建成、榮光充滿——每幕回答一個反思題（這一關不會失敗）。',
     intro: {
       kicker: '⛺ 會幕榮光 · 終局五幕',
@@ -357,6 +363,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '第 1 幕 · 金牛犢之悲',
+        scene: { canvas: 'goldcalf', caption: '百姓造金牛犢敬拜' },
         q: '摩西在山上遲延不下來，百姓做了什麼？',
         choices: ['安靜等候四十天', '鑄了一隻金牛犢說「這是領你出埃及的神」', '派約書亞上山找摩西', '收拾行李回埃及'],
         answer: 1,
@@ -369,6 +376,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '第 2 幕 · 摩西代求',
+        scene: { canvas: 'intercede', caption: '摩西為百姓代求' },
         q: '神的怒氣發作，摩西在山上做了什麼？',
         choices: ['同意神除滅百姓', '懇求耶和華，提起神對亞伯拉罕、以撒、以色列起的誓', '默默下山不說話', '為自己求一個更大的國'],
         answer: 1,
@@ -393,6 +401,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '第 4 幕 · 會幕建成',
+        scene: { canvas: 'tabernacle', caption: '照樣式把會幕建成' },
         q: '會幕的一切工程做完，是照著什麼做成的？',
         choices: ['摩西自己的設計', '耶和華所吩咐摩西的一切（山上指示的樣式）', '埃及神廟的圖樣', '百姓投票的結果'],
         answer: 1,
@@ -405,6 +414,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '第 5 幕 · 榮光充滿',
+        scene: { canvas: 'gloryfill', caption: '雲彩遮蓋、榮光充滿會幕' },
         q: '會幕立起來之後，什麼充滿了帳幕？',
         choices: ['馨香的煙', '耶和華的榮光', '百姓的歌聲', '獻祭的牛羊'],
         answer: 1,
