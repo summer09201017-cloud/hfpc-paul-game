@@ -1,4 +1,4 @@
-import { VIEW, GROUND_Y, PLAYER, RUN, STORM, FARE, FISH, PREACH, GOURD } from './config.js'
+import { VIEW, GROUND_Y, PLAYER, RUN, STORM, FARE, FISH, PREACH, GOURD, MOSES, REDSEA, JEHOSHAPHAT, BALAAM } from './config.js'
 
 // 所有畫面繪製集中在這裡。背景用 Canvas 圖形畫,角色/物件用 emoji 當圖示
 // (零美術檔即可運行,日後可換成真圖)。採邏輯解析度 960×540,等比縮放置中。
@@ -51,6 +51,26 @@ export class Renderer {
     // 第二關「暴風雨」是另一個畫面
     if (game.level === 2) {
       this._drawStorm(game)
+      return
+    }
+    // 戰爭闖關原型「摩西舉手」(出 17)也是另一個畫面
+    if (game.level === 7) {
+      this._drawMoses(game)
+      return
+    }
+    // 戰爭闖關原型「紅海奔逃」(出 14)也是另一個畫面
+    if (game.level === 8) {
+      this._drawRedSea(game)
+      return
+    }
+    // 戰爭闖關原型「聖歌奇兵 · 約沙法」(代下 20)也是另一個畫面
+    if (game.level === 9) {
+      this._drawJehoshaphat(game)
+      return
+    }
+    // 戰爭闖關原型「反轉奇兵 · 巴蘭的驢」(民 22)也是另一個畫面
+    if (game.level === 10) {
+      this._drawBalaam(game)
       return
     }
     // 第三關「大魚肚內」也是另一個畫面
@@ -544,6 +564,976 @@ export class Renderer {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'bottom'
     ctx.fillText('順著亮起的箭頭按 ← → (或點畫面左右兩側) 扶正船身', VIEW.W / 2, VIEW.H - 14)
+  }
+
+  // 戰爭闖關原型「摩西舉手之戰」(出 17:8–13)畫面:
+  //   山頂的摩西(雙手依 armDrop 高舉/垂下,手握神的杖)、左右的亞倫與戶珥(扶手時舉起內側手 + 光暈)、
+  //   山下的谷中戰場(以色列 vs 亞瑪力,前線隨 defeat 推移)、太陽=計時(從高空走到地平=日落=過關)、
+  //   上方兩條 HUD(手的力量 / 戰況)+ 亞倫戶珥可用度條 + 提示文字。山下小兵用色塊火柴人(驗證關不細雕)。
+  _drawMoses(game) {
+    const ctx = this.ctx
+    const m = game.moses
+    const prog = Math.min(1, m.survival / MOSES.duration)
+    const t = m.time
+
+    // ---- 天空:從清晨藍 → 黃昏橙紅(隨日落進度)----
+    const lerp = (a, b, k) => a + (b - a) * k
+    const mix = (c1, c2, k) => `rgb(${Math.round(lerp(c1[0], c2[0], k))},${Math.round(lerp(c1[1], c2[1], k))},${Math.round(lerp(c1[2], c2[2], k))})`
+    const sky = ctx.createLinearGradient(0, 0, 0, VIEW.H)
+    sky.addColorStop(0, mix([120, 180, 222], [60, 38, 78], prog)) // 高空
+    sky.addColorStop(0.55, mix([180, 214, 240], [214, 110, 70], prog))
+    sky.addColorStop(1, mix([226, 240, 250], [250, 186, 120], prog)) // 近地平
+    ctx.fillStyle = sky
+    ctx.fillRect(0, 0, VIEW.W, VIEW.H)
+
+    // ---- 太陽 = 計時:從左上走到右側地平線(日落) ----
+    const sunX = lerp(VIEW.W * 0.16, VIEW.W * 0.84, prog)
+    const horizonY = GROUND_Y - 40
+    const sunY = lerp(VIEW.H * 0.16, horizonY, prog)
+    const halo = ctx.createRadialGradient(sunX, sunY, 8, sunX, sunY, 110)
+    halo.addColorStop(0, mix([255, 244, 210], [255, 210, 150], prog).replace('rgb', 'rgba').replace(')', ',0.95)'))
+    halo.addColorStop(1, 'rgba(255,230,180,0)')
+    ctx.fillStyle = halo
+    ctx.fillRect(sunX - 110, sunY - 110, 220, 220)
+    ctx.fillStyle = mix([255, 248, 224], [255, 188, 120], prog)
+    ctx.beginPath()
+    ctx.arc(sunX, sunY, 30, 0, Math.PI * 2)
+    ctx.fill()
+
+    // ---- 遠山(視差,暖色剪影)----
+    ctx.fillStyle = mix([150, 170, 150], [120, 80, 90], prog)
+    ctx.beginPath()
+    ctx.moveTo(0, horizonY)
+    for (let x = 0; x <= VIEW.W; x += 30) {
+      const y = horizonY - 30 - Math.sin(x * 0.008 + 1) * 26 - Math.sin(x * 0.02) * 10
+      ctx.lineTo(x, y)
+    }
+    ctx.lineTo(VIEW.W, horizonY)
+    ctx.closePath()
+    ctx.fill()
+
+    // ---- 谷中戰場(地面 + 兩軍 + 前線隨 defeat 推移) ----
+    ctx.fillStyle = mix([196, 168, 110], [150, 96, 70], prog)
+    ctx.fillRect(0, horizonY, VIEW.W, VIEW.H - horizonY)
+    // 前線 x:defeat 大 → 戰線被推向以色列(左);defeat 小 → 推向亞瑪力(右)
+    const frontX = lerp(VIEW.W * 0.30, VIEW.W * 0.70, 1 - m.defeat)
+    const soldiersY = horizonY + 30
+    // 一排小兵(色塊火柴人)
+    const army = (x0, x1, color, n) => {
+      ctx.fillStyle = color
+      for (let i = 0; i < n; i++) {
+        const x = lerp(x0, x1, n === 1 ? 0.5 : i / (n - 1))
+        const bob = Math.sin(t * 6 + i * 1.7) * 2
+        ctx.fillRect(x - 3, soldiersY - 18 + bob, 6, 18) // 身
+        ctx.beginPath()
+        ctx.arc(x, soldiersY - 22 + bob, 4, 0, Math.PI * 2) // 頭
+        ctx.fill()
+        // 兵器(小斜線)
+        ctx.strokeStyle = color
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.moveTo(x + (x0 < x1 ? 4 : -4), soldiersY - 16 + bob)
+        ctx.lineTo(x + (x0 < x1 ? 12 : -12), soldiersY - 28 + bob)
+        ctx.stroke()
+      }
+    }
+    const ISRAEL = '#3a5a8c' // 以色列=藍
+    const AMALEK = '#9c3b3b' // 亞瑪力=紅
+    army(VIEW.W * 0.06, frontX - 26, ISRAEL, 6) // 以色列(藍,左,朝右)
+    army(VIEW.W * 0.94, frontX + 26, AMALEK, 6) // 亞瑪力(紅,右,朝左)
+
+    // 兩軍標籤(顏色↔是誰,讓人一看就懂):左藍=以色列、右紅=亞瑪力
+    ctx.font = '700 18px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.textBaseline = 'bottom'
+    const tag = (label, color, cx) => {
+      const w = ctx.measureText(label).width + 26
+      ctx.fillStyle = 'rgba(255,255,255,0.82)'
+      roundRect(ctx, cx - w / 2, soldiersY - 56, w, 26, 8)
+      ctx.fill()
+      ctx.fillStyle = color
+      ctx.beginPath()
+      ctx.arc(cx - w / 2 + 13, soldiersY - 43, 6, 0, Math.PI * 2) // 色點
+      ctx.fill()
+      ctx.textAlign = 'left'
+      ctx.fillText(label, cx - w / 2 + 24, soldiersY - 37)
+    }
+    tag('以色列', ISRAEL, VIEW.W * 0.17)
+    tag('亞瑪力', AMALEK, VIEW.W * 0.83)
+
+    // 交擊火花(在前線,隨 flash 閃)
+    if (m.flash > 0.05) {
+      ctx.fillStyle = `rgba(255,236,170,${m.flash})`
+      for (let i = 0; i < 5; i++) {
+        const fx = frontX + (Math.sin(i * 2.3 + t * 9) * 18)
+        const fy = soldiersY - 14 + Math.cos(i * 1.9 + t * 7) * 8
+        ctx.beginPath()
+        ctx.arc(fx, fy, 2.5 + m.flash * 2, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    // ---- 山頂(摩西站立的高處,畫面右中)----
+    const hillX = VIEW.W * 0.5
+    const hillTopY = horizonY - 90
+    ctx.fillStyle = mix([170, 146, 96], [120, 80, 64], prog)
+    ctx.beginPath()
+    ctx.moveTo(hillX - 150, horizonY + 4)
+    ctx.quadraticCurveTo(hillX - 60, hillTopY + 6, hillX, hillTopY)
+    ctx.quadraticCurveTo(hillX + 60, hillTopY + 6, hillX + 150, horizonY + 4)
+    ctx.closePath()
+    ctx.fill()
+    // 摩西坐的石頭(17:12「搬石頭來…他就坐在上面」)——手很沉時更明顯
+    ctx.fillStyle = 'rgba(90,70,50,0.9)'
+    ctx.fillRect(hillX - 16, hillTopY + 2, 32, 12)
+
+    // ---- 亞倫、戶珥(山頂左右),扶手時舉起內側手 + 光暈 ----
+    const helperFootY = hillTopY + 2
+    this._helper(hillX - 40, helperFootY, m.supporting, false, prog) // 亞倫(左,朝右扶)
+    this._helper(hillX + 40, helperFootY, m.supporting, true, prog) // 戶珥(右,朝左扶)
+
+    // ---- 摩西(雙手依 armDrop 高舉/垂下,手握杖)----
+    this._moses(hillX, hillTopY, m.armDrop, m.supporting, t)
+
+    // ---- HUD:兩條狀態條 + 可用度 + 太陽計時提示 ----
+    this._mosesHud(game, m, prog)
+  }
+
+  // 戰爭闖關「紅海奔逃」(出 14:13–28):兩道水牆立在左右(以橫向側視=上下兩道),
+  // 中間是分開的乾海床;站住等候→海分開→過海床(跳礁石、法老追兵在後)→海合攏淹追兵。
+  _drawRedSea(game) {
+    const ctx = this.ctx
+    const r = game.redsea
+    const t = r.time
+    const W = VIEW.W, H = VIEW.H
+    const lerp = (a, b, k) => a + (b - a) * k
+    const open = r.seaOpen() // 0=海未開 .. 1=全開
+    const closing = r.phase === 'closing'
+
+    // ── 破曉天空(戲劇性的暗藍 → 暖光地平)──
+    const sky = ctx.createLinearGradient(0, 0, 0, H)
+    sky.addColorStop(0, '#16243f')
+    sky.addColorStop(0.6, '#27496c')
+    sky.addColorStop(1, '#7d8fa6')
+    ctx.fillStyle = sky
+    ctx.fillRect(0, 0, W, H)
+
+    // 兩道水牆的內緣(open 越大、走廊越寬;closing 時 open→0、牆合攏)
+    const skyTop = 54
+    const topWallBot = lerp(GROUND_Y - 18, skyTop + 30, open) // 上水牆的下緣
+    const botWallTop = lerp(GROUND_Y + 26, H - 22, open) // 下水牆的上緣
+
+    // ── 乾海床走廊(走廊內:上半霧氣、下半濕沙;摩西向海伸杖,海中出現乾地)──
+    const corr = ctx.createLinearGradient(0, topWallBot, 0, botWallTop)
+    corr.addColorStop(0, '#bfe0ea') // 走廊深處的水霧光
+    corr.addColorStop(0.55, '#d9c69a') // 漸到濕沙
+    corr.addColorStop(1, '#b9a06e')
+    ctx.fillStyle = corr
+    ctx.fillRect(0, topWallBot, W, Math.max(0, botWallTop - topWallBot))
+
+    // 海床濕沙(玩家腳下):沙紋 + 捲動的礁石/陷坑
+    if (botWallTop > GROUND_Y) {
+      ctx.fillStyle = '#c2a874'
+      ctx.fillRect(0, GROUND_Y, W, botWallTop - GROUND_Y)
+      ctx.strokeStyle = 'rgba(120,92,52,0.35)'
+      ctx.lineWidth = 2
+      for (let k = 0; k < 3; k++) {
+        const yy = GROUND_Y + 10 + k * 14
+        ctx.beginPath()
+        for (let x = 0; x <= W; x += 18) {
+          const off = Math.sin(x * 0.05 + r.dist * 0.01 + k) * 2
+          if (x === 0) ctx.moveTo(x, yy + off)
+          else ctx.lineTo(x, yy + off)
+        }
+        ctx.stroke()
+      }
+    }
+
+    // 礁石(只在過海床階段畫;依世界距離換算螢幕 x)
+    if (r.phase === 'cross' || closing) {
+      for (const h of r.hazards) {
+        const sx = PLAYER.x + (h.x - r.dist)
+        if (sx < -40 || sx > W + 40) continue
+        this._emoji('🪨', sx, GROUND_Y + 6, 34)
+      }
+    }
+
+    // ── 一道水牆的繪製(fromTop=true 從上垂下、波在下緣;false 從下升起、波在上緣)──
+    const drawWall = (edgeY, fromTop) => {
+      const grad = fromTop
+        ? ctx.createLinearGradient(0, skyTop, 0, edgeY)
+        : ctx.createLinearGradient(0, edgeY, 0, H)
+      grad.addColorStop(0, fromTop ? '#0c3458' : '#1f6f9e')
+      grad.addColorStop(1, fromTop ? '#1f6f9e' : '#0c3458')
+      const wave = (x) => Math.sin(x * 0.025 + t * 3 * (fromTop ? 1 : -1)) * 9 + Math.sin(x * 0.06 - t * 2) * 4
+      ctx.fillStyle = grad
+      ctx.beginPath()
+      ctx.moveTo(0, fromTop ? skyTop : H)
+      ctx.lineTo(W, fromTop ? skyTop : H)
+      for (let x = W; x >= 0; x -= 14) ctx.lineTo(x, edgeY + wave(x))
+      ctx.closePath()
+      ctx.fill()
+      // 牆面垂直水流條紋
+      ctx.strokeStyle = 'rgba(255,255,255,0.09)'
+      ctx.lineWidth = 2
+      for (let i = 0; i < W; i += 44) {
+        const sx = i + ((t * 26) % 44)
+        ctx.beginPath()
+        ctx.moveTo(sx, fromTop ? skyTop : edgeY)
+        ctx.lineTo(sx, fromTop ? edgeY : H)
+        ctx.stroke()
+      }
+      // 浪邊白沫
+      ctx.strokeStyle = 'rgba(228,244,252,0.75)'
+      ctx.lineWidth = 3
+      ctx.beginPath()
+      for (let x = 0; x <= W; x += 14) {
+        const y = edgeY + wave(x)
+        if (x === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+      }
+      ctx.stroke()
+    }
+    drawWall(topWallBot, true) // 上水牆
+    drawWall(botWallTop, false) // 下水牆
+
+    // ── 法老的追兵(戰車,在玩家身後左側;lead 越小越逼近、越大)──
+    if (r.phase === 'cross' || r.phase === 'stand') {
+      const near = 1 - Math.max(0, Math.min(1, r.lead / REDSEA.chaseGapMax)) // 0=遠 .. 1=逼近
+      const baseX = PLAYER.x - 80 - lerp(230, 30, near)
+      for (let i = 0; i < 3; i++) {
+        const cx = baseX - i * 46
+        if (cx < -50) continue
+        this._chariot(cx, GROUND_Y + 4, t + i, 0.92 + near * 0.16)
+      }
+      // 「法老追兵」旗標(在最前一輛上方)
+      if (baseX > -10) this._banner(baseX, GROUND_Y - 92, '法老追兵', '#8a2f2f')
+    }
+
+    // ── 以色列人(向先知奔跑;closing 時已奔到對岸右側)──
+    const p = game.player
+    const runnerX = closing ? lerp(PLAYER.x, W - 130, Math.min(1, r.closeT / REDSEA.closeTime)) : PLAYER.x
+    const moving = r.phase === 'cross'
+    this._prophet(runnerX, p.y, moving ? r.dist * 0.05 : 0, !p.onGround, false)
+    this._banner(runnerX, p.y - 96, '以色列', '#3a5a8c')
+
+    // ── closing:海牆合攏的大水花,淹沒追兵 ──
+    if (closing) {
+      const k = Math.min(1, r.closeT / REDSEA.closeTime)
+      ctx.fillStyle = `rgba(225,244,252,${0.5 * (1 - Math.abs(k - 0.5) * 2)})`
+      for (let i = 0; i < 40; i++) {
+        const fx = (i * 53 + t * 120) % W
+        const fy = lerp(topWallBot, botWallTop, (i % 7) / 7) + Math.sin(i + t * 6) * 14
+        ctx.beginPath()
+        ctx.arc(fx, fy, 3 + (i % 3) * 2, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    // ── HUD + 階段提示 ──
+    this._redseaHud(game, r)
+  }
+
+  // 單輛戰車(法老追兵):馬 emoji + 車身 + 兩輪 + 兵與長矛。s=縮放。
+  _chariot(x, footY, t, s) {
+    const ctx = this.ctx
+    ctx.save()
+    ctx.translate(x, footY)
+    ctx.scale(s, s)
+    // 馬(emoji,面向右)
+    this._emoji('🐎', 16, 6, 40)
+    // 車身
+    ctx.fillStyle = '#5a3a22'
+    roundRect(ctx, -22, -26, 30, 18, 4)
+    ctx.fill()
+    // 兩輪(轉動)
+    ctx.strokeStyle = '#3a2614'
+    ctx.lineWidth = 3
+    for (const wx of [-16, -2]) {
+      ctx.beginPath()
+      ctx.arc(wx, -6, 9, 0, Math.PI * 2)
+      ctx.stroke()
+      const a = t * 6
+      ctx.beginPath()
+      ctx.moveTo(wx + Math.cos(a) * 9, -6 + Math.sin(a) * 9)
+      ctx.lineTo(wx - Math.cos(a) * 9, -6 - Math.sin(a) * 9)
+      ctx.moveTo(wx + Math.cos(a + 1.57) * 9, -6 + Math.sin(a + 1.57) * 9)
+      ctx.lineTo(wx - Math.cos(a + 1.57) * 9, -6 - Math.sin(a + 1.57) * 9)
+      ctx.stroke()
+    }
+    // 兵(紅袍火柴人)+ 長矛
+    ctx.fillStyle = '#9c3b3b'
+    ctx.fillRect(-12, -46, 6, 22)
+    ctx.beginPath()
+    ctx.arc(-9, -50, 5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.strokeStyle = '#caa83a'
+    ctx.lineWidth = 2.5
+    ctx.beginPath()
+    ctx.moveTo(-4, -52)
+    ctx.lineTo(14, -64)
+    ctx.stroke()
+    ctx.restore()
+  }
+
+  // 紅海關的 HUD:過海進度條(走 hudLabels)+ 與追兵距離條 + 階段提示語。
+  _redseaHud(game, r) {
+    const ctx = this.ctx
+    const barW = 300, barH = 16, bx = (VIEW.W - barW) / 2
+
+    // 過海進度(此岸→對岸),走 hudLabels(嵌入契約,不寫死)
+    const hud = game.hudLabels || { start: '此岸', goal: '對岸 🌊' }
+    const prog = Math.min(1, r.dist / REDSEA.goalDistance)
+    let by = 30
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; roundRect(ctx, bx, by, barW, barH, 8); ctx.fill()
+    ctx.fillStyle = '#2f9ec4'; roundRect(ctx, bx, by, barW * prog, barH, 8); ctx.fill()
+    ctx.fillStyle = '#0f3a52'; ctx.font = '600 15px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.textBaseline = 'bottom'; ctx.textAlign = 'left'; ctx.fillText(hud.start, bx, by - 3)
+    ctx.textAlign = 'right'; ctx.fillText(hud.goal, bx + barW, by - 3)
+
+    // 與追兵的距離(越短越危險,轉紅)
+    by = 70
+    const leadFrac = Math.max(0, Math.min(1, r.lead / REDSEA.chaseGapMax))
+    this._statBar(bx, by, barW, barH, leadFrac, leadFrac < 0.3 ? '#d6533b' : '#caa83a', '🐎 與追兵的距離')
+
+    // 階段提示語(置中大字)
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    const say = (text, sub, color) => {
+      ctx.font = '700 30px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+      const w = ctx.measureText(text).width + 44
+      ctx.fillStyle = 'rgba(8,18,30,0.55)'
+      roundRect(ctx, VIEW.W / 2 - w / 2, 118, w, sub ? 78 : 50, 12); ctx.fill()
+      ctx.fillStyle = color || '#fff'
+      ctx.fillText(text, VIEW.W / 2, 144)
+      if (sub) {
+        ctx.font = '600 17px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+        ctx.fillStyle = 'rgba(255,255,255,0.9)'
+        ctx.fillText(sub, VIEW.W / 2, 174)
+      }
+    }
+    if (r.phase === 'stand') {
+      if (r.canGo()) say('海開了！點擊舉杖，衝過海床 →', '趁海分開、海牆倒下前跑到對岸', '#ffe08a')
+      else if (r.tooEarly > 0) say('不要懼怕，只管站住！', '等耶和華分開紅海（出 14:13）', '#ffd0d0')
+      else say('站住，等候耶和華的救恩', '出 14:13–14', '#cfe8ff')
+    } else if (r.phase === 'closing') {
+      say('水合攏了，淹沒了法老的全軍！', '出 14:28', '#cfe8ff')
+    }
+  }
+
+  // 山頂上的扶手者(亞倫 / 戶珥):站立的簡化人形;supporting 時舉起內側手去扶摩西的手,並亮起光暈。
+  // mirror=true 代表在右邊、面向左。
+  _helper(x, footY, supporting, mirror, prog) {
+    const ctx = this.ctx
+    ctx.save()
+    ctx.translate(x, footY)
+    if (mirror) ctx.scale(-1, 1)
+    const robe = supporting ? '#e9d9a6' : '#cdbd95'
+    const skin = '#dca877'
+    // 腿
+    ctx.strokeStyle = skin
+    ctx.lineWidth = 5
+    ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(-3, -16); ctx.lineTo(-5, 0); ctx.moveTo(3, -16); ctx.lineTo(5, 0); ctx.stroke()
+    // 袍身
+    ctx.fillStyle = robe
+    ctx.beginPath()
+    ctx.moveTo(-9, -38); ctx.lineTo(9, -38); ctx.lineTo(7, -14); ctx.lineTo(-7, -14); ctx.closePath()
+    ctx.fill()
+    // 頭:頭巾(亞倫=藍帶、戶珥=紅褐帶,兩人好分辨)+ 五官 + 短鬍
+    const hy = -44
+    const wrap = mirror ? '#e6dcd2' : '#dfe6df' // 戶珥 / 亞倫
+    const band = mirror ? '#a8623a' : '#3a6ea5' // 戶珥紅褐 / 亞倫藍
+    ctx.fillStyle = wrap
+    ctx.beginPath(); ctx.arc(0, hy, 7, 0, Math.PI * 2); ctx.fill() // 頭巾底
+    ctx.fillStyle = skin
+    ctx.beginPath(); ctx.arc(0, hy + 1.5, 5.4, 0, Math.PI * 2); ctx.fill() // 臉
+    ctx.fillStyle = band
+    ctx.fillRect(-5.8, hy - 3, 11.6, 2.6) // 頭帶
+    ctx.fillStyle = '#5a4326'
+    ctx.beginPath(); ctx.moveTo(-4, hy + 4); ctx.lineTo(4, hy + 4); ctx.lineTo(0, hy + 11); ctx.closePath(); ctx.fill() // 短鬍
+    ctx.fillStyle = '#3a2c1c'
+    ctx.beginPath(); ctx.arc(-2.2, hy + 1, 1, 0, Math.PI * 2); ctx.arc(2.2, hy + 1, 1, 0, Math.PI * 2); ctx.fill() // 眼
+    // 內側手:扶手時往內上方舉(去托摩西的手);否則自然垂著
+    ctx.strokeStyle = robe
+    ctx.lineWidth = 5
+    ctx.beginPath()
+    ctx.moveTo(4, -36)
+    if (supporting) ctx.lineTo(20, -52)
+    else ctx.lineTo(10, -20)
+    ctx.stroke()
+    if (supporting) {
+      ctx.fillStyle = 'rgba(255,236,170,0.5)'
+      ctx.beginPath(); ctx.arc(20, -52, 6, 0, Math.PI * 2); ctx.fill()
+    }
+    ctx.restore()
+  }
+
+  // 山頂的摩西:站立的白袍人形,兩手向上舉杖;armDrop 0=直舉、1=垂到肩側。
+  _moses(x, footY, armDrop, supporting, t) {
+    const ctx = this.ctx
+    const COL = { robe: '#f6f3ec', robeDark: '#dcd5c6', skin: '#e8bb8d', beard: '#cfcfcf', staff: '#8a5a2a', knob: '#6f4720' }
+    // 手累時微微發抖
+    const tremble = armDrop > 0.55 ? Math.sin(t * 22) * armDrop * 2 : 0
+    ctx.save()
+    ctx.translate(x + tremble, footY)
+    // 腿
+    ctx.strokeStyle = COL.skin; ctx.lineWidth = 7; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(-4, -20); ctx.lineTo(-7, 0); ctx.moveTo(4, -20); ctx.lineTo(7, 0); ctx.stroke()
+    // 袍身
+    ctx.fillStyle = COL.robe
+    ctx.beginPath()
+    ctx.moveTo(-11, -50); ctx.lineTo(11, -50); ctx.lineTo(9, -18); ctx.lineTo(-9, -18); ctx.closePath()
+    ctx.fill()
+    ctx.fillStyle = COL.robeDark
+    ctx.beginPath(); ctx.moveTo(2, -50); ctx.lineTo(9, -50); ctx.lineTo(9, -18); ctx.lineTo(3, -18); ctx.closePath(); ctx.fill()
+    // 頭:白髮頭巾 + 五官 + 隨疲勞變化的表情(年長的摩西)
+    const headY = -60
+    const strain = Math.max(0, Math.min(1, (armDrop - 0.4) / 0.6)) // 0=輕鬆 .. 1=快撐不住
+    const WRAP = '#efe9da', BAND = '#9c7a3a', HAIR = '#e8e8e8'
+    // 頭巾後襯(罩住頭頂與兩側,當作頭巾+白髮的底)
+    ctx.fillStyle = WRAP
+    ctx.beginPath(); ctx.arc(0, headY, 9.5, 0, Math.PI * 2); ctx.fill()
+    // 兩側露出的白髮/鬢
+    ctx.fillStyle = HAIR
+    ctx.beginPath(); ctx.ellipse(-8, headY + 2, 2.6, 4, 0, 0, Math.PI * 2); ctx.ellipse(8, headY + 2, 2.6, 4, 0, 0, Math.PI * 2); ctx.fill()
+    // 臉(略低、略小,讓頭巾在上方露出一圈)
+    ctx.fillStyle = COL.skin
+    ctx.beginPath(); ctx.arc(0, headY + 1.5, 7, 0, Math.PI * 2); ctx.fill()
+    // 頭帶(額前的帶子)
+    ctx.fillStyle = BAND
+    ctx.fillRect(-7.5, headY - 3.5, 15, 3)
+    // 白鬍(年長,較長)
+    ctx.fillStyle = HAIR
+    ctx.beginPath(); ctx.moveTo(-6, headY + 5); ctx.lineTo(6, headY + 5); ctx.lineTo(0, headY + 18); ctx.closePath(); ctx.fill()
+    // 眼睛(專注;疲勞時瞇起→用短橫線)
+    ctx.fillStyle = '#3a2c1c'
+    if (strain > 0.55) {
+      ctx.lineWidth = 1.6; ctx.strokeStyle = '#3a2c1c'; ctx.lineCap = 'round'
+      ctx.beginPath(); ctx.moveTo(-4.4, headY + 1); ctx.lineTo(-1.6, headY + 1.6); ctx.moveTo(4.4, headY + 1); ctx.lineTo(1.6, headY + 1.6); ctx.stroke()
+    } else {
+      ctx.beginPath(); ctx.arc(-3, headY + 1, 1.2, 0, Math.PI * 2); ctx.arc(3, headY + 1, 1.2, 0, Math.PI * 2); ctx.fill()
+    }
+    // 眉(疲勞時皺起、內低)
+    ctx.lineWidth = 1.4; ctx.strokeStyle = '#6a5436'; ctx.lineCap = 'round'
+    ctx.beginPath()
+    ctx.moveTo(-5, headY - 1 - (1 - strain) * 0.5); ctx.lineTo(-1.5, headY - 1 + strain * 1.6)
+    ctx.moveTo(5, headY - 1 - (1 - strain) * 0.5); ctx.lineTo(1.5, headY - 1 + strain * 1.6)
+    ctx.stroke()
+    // 嘴(輕鬆=微抿;吃力=張口使勁)
+    ctx.fillStyle = '#7a3b2a'
+    if (strain > 0.5) { ctx.beginPath(); ctx.ellipse(0, headY + 5.5, 1.8, 1.2 + strain, 0, 0, Math.PI * 2); ctx.fill() }
+    else { ctx.lineWidth = 1.4; ctx.strokeStyle = '#7a3b2a'; ctx.beginPath(); ctx.moveTo(-2, headY + 5.5); ctx.lineTo(2, headY + 5.5); ctx.stroke() }
+    // 用力的汗珠(快撐不住時)
+    if (strain > 0.6) {
+      ctx.fillStyle = 'rgba(120,180,230,0.9)'
+      ctx.beginPath(); ctx.arc(7.5, headY + 4 + (t * 30 % 8), 1.6, 0, Math.PI * 2); ctx.fill()
+    }
+
+    // 手臂:肩在 (-9,-48)/(9,-48);舉起角度依 armDrop。
+    // armDrop=0 → 手幾乎直直向上;armDrop=1 → 手垂到約肩側水平。
+    const shoulderY = -48
+    const up = 1 - armDrop // 1=高舉
+    const armLen = 26
+    // 手相對肩的位移:向上(-y)且略向中(舉杖);垂下時向外下垂
+    const dx = 6 + (1 - up) * 10
+    const dy = -armLen * (0.35 + up * 0.65)
+    const lhx = -9 - dx * 0.2, lhy = shoulderY + dy
+    const rhx = 9 + dx * 0.2, rhy = shoulderY + dy
+    ctx.strokeStyle = COL.robe; ctx.lineWidth = 7; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(-9, shoulderY); ctx.lineTo(lhx, lhy); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(9, shoulderY); ctx.lineTo(rhx, rhy); ctx.stroke()
+    // 手(膚色)
+    ctx.fillStyle = COL.skin
+    ctx.beginPath(); ctx.arc(lhx, lhy, 4, 0, Math.PI * 2); ctx.fill()
+    ctx.beginPath(); ctx.arc(rhx, rhy, 4, 0, Math.PI * 2); ctx.fill()
+
+    // 神的杖:橫握在兩手之間,略斜
+    ctx.strokeStyle = COL.staff; ctx.lineWidth = 5; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(lhx - 6, lhy - 4); ctx.lineTo(rhx + 6, rhy + 4); ctx.stroke()
+    ctx.fillStyle = COL.knob
+    ctx.beginPath(); ctx.arc(lhx - 6, lhy - 4, 3.5, 0, Math.PI * 2); ctx.fill()
+
+    // 高舉時手上方一點榮光(舉手就得勝)
+    if (up > 0.55) {
+      ctx.fillStyle = `rgba(255,240,190,${(up - 0.55) * 0.8})`
+      ctx.beginPath(); ctx.arc((lhx + rhx) / 2, (lhy + rhy) / 2 - 8, 10, 0, Math.PI * 2); ctx.fill()
+    }
+    ctx.restore()
+  }
+
+  // 摩西關的 HUD:上方兩條(手的力量 / 戰況)+ 亞倫戶珥可用度 + 太陽計時 + 兩區操作提示。
+  _mosesHud(game, m, prog) {
+    const ctx = this.ctx
+    const barW = 300, barH = 16, bx = (VIEW.W - barW) / 2
+
+    // 進度(日出→日落),走 hudLabels(嵌入契約,不寫死)
+    const hud = game.hudLabels || { start: '日出', goal: '日落得勝 🌄' }
+    let by = 30
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; roundRect(ctx, bx, by, barW, barH, 8); ctx.fill()
+    ctx.fillStyle = '#e8a13a'; roundRect(ctx, bx, by, barW * prog, barH, 8); ctx.fill()
+    ctx.fillStyle = '#5a3a16'; ctx.font = '600 15px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.textBaseline = 'bottom'; ctx.textAlign = 'left'; ctx.fillText(hud.start, bx, by - 3)
+    ctx.textAlign = 'right'; ctx.fillText(hud.goal, bx + barW, by - 3)
+
+    // 手的力量(= 1 - armDrop;越高越好,綠;低於安全線轉紅)
+    const armStrength = 1 - m.armDrop
+    const safe = 1 - MOSES.safeDrop
+    by = 70
+    this._statBar(bx, by, barW, barH, armStrength, armStrength >= safe ? '#2f9e44' : '#d6533b', '🙌 手的力量')
+    // 安全線標記
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(bx + barW * safe - 1, by - 2, 2, barH + 4)
+
+    // 戰況(defeat;越高越危險,紅)
+    by = 104
+    this._statBar(bx, by, barW, barH, m.defeat, '#c0392b', '⚔️ 戰況(亞瑪力)')
+
+    // 亞倫、戶珥可用度(自動扶手;扶手中變亮)
+    by = 138
+    this._statBar(bx, by, barW, barH, m.support, m.supporting ? '#f4c542' : '#caa83a', m.supporting ? '🤝 亞倫、戶珥 扶手中' : '🤝 亞倫、戶珥(手垂下時自動扶)')
+
+    // 提示:扶手中 → 安慰語;否則手快垂下 → 提醒用力舉手
+    if (m.supporting) {
+      ctx.fillStyle = `rgba(70,130,90,${0.55 + 0.35 * Math.abs(Math.sin(m.time * 5))})`
+      ctx.font = '800 24px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.fillText('亞倫、戶珥扶住了摩西的手!', VIEW.W / 2, VIEW.H * 0.46)
+    } else if (m.suggestHelp()) {
+      ctx.fillStyle = `rgba(214,83,59,${0.6 + 0.4 * Math.abs(Math.sin(m.time * 6))})`
+      ctx.font = '800 26px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.fillText('手要垂下了!用力舉手 🙌', VIEW.W / 2, VIEW.H * 0.46)
+    }
+
+    // 操作提示(常駐,單一動作)
+    ctx.font = '700 18px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.textBaseline = 'bottom'
+    ctx.textAlign = 'center'
+    ctx.fillStyle = 'rgba(40,50,64,0.9)'
+    ctx.fillText('按住畫面(或任意方向鍵)= 出力舉手 🙌　·　手垂下時亞倫、戶珥會自動來扶', VIEW.W / 2, VIEW.H - 12)
+  }
+
+  // 一條標籤狀態條(0..1):底白 + 填色 + 左上小標籤
+  _statBar(x, y, w, h, v, color, label) {
+    const ctx = this.ctx
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; roundRect(ctx, x, y, w, h, 8); ctx.fill()
+    ctx.fillStyle = color; roundRect(ctx, x, y, w * Math.max(0, Math.min(1, v)), h, 8); ctx.fill()
+    ctx.fillStyle = '#33485a'; ctx.font = '600 14px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom'; ctx.fillText(label, x, y - 3)
+  }
+
+  // 浮在角色上方的小旗標(標示陣營:以色列 / 敵軍),帶向下小三角指向隊伍。
+  _banner(cx, top, text, color) {
+    const ctx = this.ctx
+    ctx.font = '700 15px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    const w = ctx.measureText(text).width + 20, h = 23, x = cx - w / 2
+    ctx.fillStyle = color; roundRect(ctx, x, top, w, h, 7); ctx.fill()
+    ctx.beginPath(); ctx.moveTo(cx - 6, top + h); ctx.lineTo(cx + 6, top + h); ctx.lineTo(cx, top + h + 8); ctx.closePath(); ctx.fill()
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    ctx.fillText(text, cx, top + h / 2)
+  }
+
+  // 戰爭闖關「聖歌奇兵 · 約沙法」(代下 20):谷中三國聯軍自相殘殺、詩班走在軍前往望樓。
+  _drawJehoshaphat(game) {
+    const ctx = this.ctx
+    const j = game.jehoshaphat
+    const t = j.time
+    const lerp = (a, b, k) => a + (b - a) * k
+    const mix = (c1, c2, k) =>
+      `rgb(${Math.round(lerp(c1[0], c2[0], k))},${Math.round(lerp(c1[1], c2[1], k))},${Math.round(lerp(c1[2], c2[2], k))})`
+    const tri = Math.min(1, j.ambush) // 得勝氣氛(自亂條越滿,天色越光明)
+    const horizonY = GROUND_Y - 30
+
+    // 天空:清晨 → 得勝金光
+    const sky = ctx.createLinearGradient(0, 0, 0, VIEW.H)
+    sky.addColorStop(0, mix([150, 176, 206], [120, 150, 210], tri))
+    sky.addColorStop(0.6, mix([196, 212, 232], [250, 224, 150], tri))
+    sky.addColorStop(1, mix([214, 226, 238], [252, 240, 196], tri))
+    ctx.fillStyle = sky
+    ctx.fillRect(0, 0, VIEW.W, VIEW.H)
+
+    // 遠山
+    ctx.fillStyle = mix([150, 164, 150], [150, 128, 96], tri)
+    ctx.beginPath(); ctx.moveTo(0, horizonY)
+    for (let x = 0; x <= VIEW.W; x += 28) {
+      const y = horizonY - 36 - Math.sin(x * 0.009 + 0.6) * 30 - Math.sin(x * 0.022) * 10
+      ctx.lineTo(x, y)
+    }
+    ctx.lineTo(VIEW.W, horizonY); ctx.closePath(); ctx.fill()
+
+    // 谷地
+    ctx.fillStyle = mix([176, 158, 108], [196, 176, 120], tri)
+    ctx.fillRect(0, horizonY, VIEW.W, VIEW.H - horizonY)
+
+    // 望樓(詩班的目標,右側)
+    const towerX = VIEW.W * 0.9
+    const baseY = horizonY + 18
+    ctx.fillStyle = '#8a7250'; ctx.fillRect(towerX - 16, baseY - 86, 32, 86)
+    ctx.fillStyle = '#6f5a3c'; ctx.fillRect(towerX - 22, baseY - 100, 44, 16)
+    ctx.strokeStyle = '#5a4326'; ctx.lineWidth = 3
+    ctx.beginPath(); ctx.moveTo(towerX, baseY - 100); ctx.lineTo(towerX, baseY - 128); ctx.stroke()
+    ctx.fillStyle = tri > 0.5 ? '#e8b53a' : '#b9a06a'
+    ctx.beginPath(); ctx.moveTo(towerX, baseY - 128); ctx.lineTo(towerX + 20, baseY - 122); ctx.lineTo(towerX, baseY - 116); ctx.closePath(); ctx.fill()
+
+    // 谷中三國聯軍(摩押/亞捫/西珥):自亂條越高,倒下的越多、彼此攻擊
+    const valleyY = horizonY + 42
+    const zones = [
+      { x: VIEW.W * 0.42, c: '#9c3b3b' },
+      { x: VIEW.W * 0.55, c: '#8a5a9c' },
+      { x: VIEW.W * 0.68, c: '#5a7a3a' },
+    ]
+    zones.forEach((z, zi) => {
+      for (let i = 0; i < 4; i++) {
+        const idx = zi * 4 + i
+        const down = idx / 12 < j.ambush
+        const x = z.x + (i - 1.5) * 18
+        ctx.fillStyle = z.c
+        if (down) {
+          ctx.save(); ctx.translate(x, valleyY + 4); ctx.rotate(1.4)
+          ctx.fillRect(-4, -12, 9, 22); ctx.beginPath(); ctx.arc(0, -16, 4.6, 0, Math.PI * 2); ctx.fill(); ctx.restore()
+        } else {
+          const bob = Math.sin(t * 7 + idx) * 2
+          const by = valleyY - 24 + bob
+          ctx.fillRect(x - 4, by, 9, 24)
+          ctx.beginPath(); ctx.arc(x, by - 4, 4.6, 0, Math.PI * 2); ctx.fill()
+          ctx.fillStyle = '#1a1414'; ctx.fillRect(x - 2.6, by - 5.2, 1.7, 1.7); ctx.fillRect(x + 0.9, by - 5.2, 1.7, 1.7) // 兇惡小眼
+          ctx.strokeStyle = '#cfd6df'; ctx.lineWidth = 2.5; ctx.lineCap = 'round' // 互砍的刀
+          ctx.beginPath(); ctx.moveTo(x + 4.5, by + 4); ctx.lineTo(x + 15, by - 11); ctx.stroke()
+        }
+      }
+    })
+    if (j.ambushFlash > 0.05) {
+      ctx.fillStyle = `rgba(255,236,170,${j.ambushFlash})`
+      for (let i = 0; i < 6; i++) {
+        const fx = VIEW.W * 0.55 + Math.sin(i * 2.1 + t * 9) * 80
+        const fy = valleyY - 16 + Math.cos(i * 1.7 + t * 7) * 10
+        ctx.beginPath(); ctx.arc(fx, fy, 2 + j.ambushFlash * 4, 0, Math.PI * 2); ctx.fill()
+      }
+    }
+    // 標示「敵軍三國」——浮在谷中聯軍上方(跟以色列人區隔)
+    this._banner(VIEW.W * 0.55, valleyY - 60, '⚔️ 敵軍:摩押・亞捫・西珥', '#a83232')
+
+    // 詩班(白袍,前排)+ 約沙法(帶冠領唱)+ 後方軍隊,依 advance 走向望樓;讚美時舉手、出音符、放光波
+    const marchX = lerp(VIEW.W * 0.1, VIEW.W * 0.78, j.advance)
+    const choirY = horizonY + 70
+    const praising = j.praise >= JEHOSHAPHAT.advanceThreshold
+    if (j.praise > 0.2) {
+      for (let w = 0; w < 3; w++) {
+        const ph = (t * 0.6 + w / 3) % 1
+        ctx.strokeStyle = `rgba(255,228,140,${(1 - ph) * j.praise * 0.5})`
+        ctx.lineWidth = 2
+        ctx.beginPath(); ctx.arc(marchX + 10, choirY - 16, 20 + ph * 120, -0.7, 0.7); ctx.stroke()
+      }
+    }
+    // —— 以色列人(約沙法的軍隊):放大 + 有表情(讚美→張口歌唱;恐懼→擔憂)——
+    const worried = j.fear > 0.45 && !praising
+    const israelite = (x, kind, s) => {
+      const bob = praising ? Math.sin(t * 6 + x) * 3 * s : 0
+      const cy = choirY + bob
+      const robe = kind === 'soldier' ? '#3a6abf' : kind === 'king' ? '#f4e8c4' : '#f8f5ee'
+      // 袍(梯形)
+      ctx.fillStyle = robe
+      ctx.beginPath(); ctx.moveTo(x - 8 * s, cy); ctx.lineTo(x + 8 * s, cy); ctx.lineTo(x + 5.5 * s, cy - 32 * s); ctx.lineTo(x - 5.5 * s, cy - 32 * s); ctx.closePath(); ctx.fill()
+      if (kind !== 'soldier') { ctx.fillStyle = '#3a6abf'; ctx.fillRect(x - 7 * s, cy - 5 * s, 14 * s, 2.5 * s) } // 藍色衣繸(民15:38 以色列的記號)
+      const hy = cy - 40 * s
+      ctx.fillStyle = '#e8bb8d'; ctx.beginPath(); ctx.arc(x, hy, 7 * s, 0, Math.PI * 2); ctx.fill() // 頭
+      if (kind === 'king') { // 金冠
+        ctx.fillStyle = '#e8b53a'; ctx.beginPath(); ctx.moveTo(x - 8 * s, hy - 4 * s)
+        for (let k = 0; k <= 3; k++) { const px = x - 8 * s + 16 * s * (k / 3); ctx.lineTo(px + 2.6 * s, hy - 12 * s); ctx.lineTo(px + 5.3 * s, hy - 4 * s) }
+        ctx.closePath(); ctx.fill()
+      } else { ctx.fillStyle = kind === 'soldier' ? '#7a5a34' : '#caa05a'; ctx.beginPath(); ctx.arc(x, hy - 1 * s, 7 * s, Math.PI, 0); ctx.fill() } // 頭巾
+      // 臉
+      ctx.fillStyle = '#3a2c22'
+      ctx.beginPath(); ctx.arc(x - 2.6 * s, hy - 0.5 * s, 1.1 * s, 0, Math.PI * 2); ctx.arc(x + 2.6 * s, hy - 0.5 * s, 1.1 * s, 0, Math.PI * 2); ctx.fill()
+      if (praising) { // 張口歌唱
+        ctx.fillStyle = '#7a3b30'; ctx.beginPath(); ctx.ellipse(x, hy + 3.6 * s, 1.8 * s, 2.6 * s, 0, 0, Math.PI * 2); ctx.fill()
+      } else if (worried) { // 擔憂:嘴角下彎 + 八字憂眉
+        ctx.strokeStyle = '#7a3b30'; ctx.lineWidth = 1.3 * s; ctx.lineCap = 'round'
+        ctx.beginPath(); ctx.arc(x, hy + 6 * s, 2.2 * s, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke()
+        ctx.beginPath(); ctx.moveTo(x - 4 * s, hy - 3.6 * s); ctx.lineTo(x - 1.4 * s, hy - 2.4 * s); ctx.moveTo(x + 4 * s, hy - 3.6 * s); ctx.lineTo(x + 1.4 * s, hy - 2.4 * s); ctx.stroke()
+      } else { ctx.strokeStyle = '#7a3b30'; ctx.lineWidth = 1.3 * s; ctx.beginPath(); ctx.moveTo(x - 2 * s, hy + 3.6 * s); ctx.lineTo(x + 2 * s, hy + 3.6 * s); ctx.stroke() }
+      // 手臂(讚美高舉/否則垂下)
+      ctx.strokeStyle = robe; ctx.lineWidth = 4 * s; ctx.lineCap = 'round'; ctx.beginPath()
+      if (praising) { ctx.moveTo(x - 6 * s, cy - 24 * s); ctx.lineTo(x - 12 * s, cy - 38 * s); ctx.moveTo(x + 6 * s, cy - 24 * s); ctx.lineTo(x + 12 * s, cy - 38 * s) }
+      else { ctx.moveTo(x - 6 * s, cy - 24 * s); ctx.lineTo(x - 9 * s, cy - 10 * s); ctx.moveTo(x + 6 * s, cy - 24 * s); ctx.lineTo(x + 9 * s, cy - 10 * s) }
+      ctx.stroke()
+      if (praising && Math.sin(t * 4 + x) > 0.45) this._emoji('🎵', x + 12 * s, cy - 42 * s, 16 * s)
+    }
+    for (let i = 0; i < 5; i++) israelite(marchX - 74 - i * 16, 'soldier', 1.05) // 後排藍袍軍隊
+    israelite(marchX - 50, 'choir', 1.3) // 詩班
+    israelite(marchX - 26, 'choir', 1.35)
+    israelite(marchX, 'king', 1.7) // 約沙法王(領唱)
+    // 標示「以色列」——浮在隊伍上方,和谷中敵軍區隔
+    this._banner(marchX - 22, choirY - 96, '🛡️ 以色列・約沙法的軍隊', '#2f6fc0')
+
+    // 失去一條命的紅閃
+    if (j.lifeFlash > 0.05) { ctx.fillStyle = `rgba(200,60,40,${j.lifeFlash * 0.22})`; ctx.fillRect(0, 0, VIEW.W, VIEW.H) }
+
+    // 「哈利路亞!」讚美字幕(讚美時隨節拍跳出,像投影歌詞——帶全場一起唱;代下 20:21「稱謝耶和華」)
+    if (praising) {
+      const pulse = Math.max(0, Math.sin(((t * 0.62) % 1) * Math.PI)) // 與讚美詩節拍同步的淡入淡出(每約 1.6s 一次)
+      if (pulse > 0.02) {
+        ctx.save()
+        ctx.globalAlpha = pulse
+        ctx.font = `800 ${34 + pulse * 10}px "Noto Sans TC","Microsoft JhengHei",sans-serif`
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+        ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(60,40,10,0.6)'; ctx.strokeText('哈利路亞!', VIEW.W / 2, VIEW.H * 0.3)
+        ctx.fillStyle = '#ffd84a'; ctx.fillText('哈利路亞!', VIEW.W / 2, VIEW.H * 0.3)
+        ctx.restore()
+      }
+    }
+
+    this._jehoshaphatHud(game, j)
+  }
+
+  // 聖歌奇兵 HUD:進度(隱基底→望樓)+ 三條(讚美 / 自亂 / 恐懼)+ 中央提示 + 操作提示。
+  _jehoshaphatHud(game, j) {
+    const ctx = this.ctx
+    const barW = 300, barH = 16, bx = (VIEW.W - barW) / 2
+    const hud = game.hudLabels || { start: '隱基底', goal: '望樓得勝 🏔️' }
+    let by = 30
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; roundRect(ctx, bx, by, barW, barH, 8); ctx.fill()
+    ctx.fillStyle = '#3a8d6b'; roundRect(ctx, bx, by, barW * j.advance, barH, 8); ctx.fill()
+    ctx.fillStyle = '#2a3a2a'; ctx.font = '600 15px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.textBaseline = 'bottom'; ctx.textAlign = 'left'; ctx.fillText(hud.start, bx, by - 3)
+    ctx.textAlign = 'right'; ctx.fillText(hud.goal, bx + barW, by - 3)
+
+    // 命:左上角 3 顆心(失去變空心)——「會輸」的提示
+    for (let i = 0; i < 3; i++) this._emoji(i < (j.lives ?? 3) ? '❤️' : '🤍', 34 + i * 34, 40, 26, 'middle')
+
+    by = 70
+    this._statBar(bx, by, barW, barH, j.praise, j.praise >= JEHOSHAPHAT.advanceThreshold ? '#2f9e44' : '#d6533b', '🎵 讚美值')
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(bx + barW * JEHOSHAPHAT.advanceThreshold - 1, by - 2, 2, barH + 4)
+    by = 104
+    this._statBar(bx, by, barW, barH, j.ambush, '#e8a13a', '⚔️ 敵軍自亂(滿 = 得勝)')
+    by = 138
+    this._statBar(bx, by, barW, barH, j.fear, '#c0392b', '😨 恐懼')
+
+    if (j.lifeFlash > 0.05) {
+      ctx.fillStyle = `rgba(200,60,40,${0.6 + 0.3 * Math.abs(Math.sin(j.time * 9))})`
+      ctx.font = '800 26px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.fillText('💔 詩班一度動搖!重整旗鼓,繼續讚美', VIEW.W / 2, VIEW.H * 0.46)
+    } else if (j.calm > 0.35) {
+      ctx.fillStyle = `rgba(214,83,59,${0.5 + 0.4 * Math.abs(Math.sin(j.time * 6))})`
+      ctx.font = '800 26px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.fillText('不要爭戰,只管站穩——繼續讚美 🎵', VIEW.W / 2, VIEW.H * 0.46)
+    } else if (j.ambush > 0.6) {
+      ctx.fillStyle = `rgba(70,130,90,${0.5 + 0.35 * Math.abs(Math.sin(j.time * 5))})`
+      ctx.font = '800 24px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.fillText('敵軍自相擊殺了!讚美不要停!', VIEW.W / 2, VIEW.H * 0.46)
+    }
+
+    ctx.font = '700 18px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.textBaseline = 'bottom'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(40,50,64,0.9)'
+    ctx.fillText('按住畫面 / 方向鍵 / 空白 = 帶領詩班讚美 🎵　·　你沒有攻擊鍵,打仗的是耶和華', VIEW.W / 2, VIEW.H - 12)
+  }
+
+  // 戰爭闖關「反轉奇兵 · 巴蘭的驢」(民 22):驢上下閃避拔刀的使者,走到底=巴蘭眼開。
+  _drawBalaam(game) {
+    const ctx = this.ctx
+    const b = game.balaam
+    const t = b.time
+    const lerp = (a, c, k) => a + (c - a) * k
+    // 道路帶高度(純視覺;碰撞在正規化空間)。2026-06-14:180→150,路看起來窄一點。
+    const bandBot = VIEW.H - 18
+    const bandTop = bandBot - 150
+    const horizonY = bandTop - 18
+    const yOf = (ny) => lerp(bandTop, bandBot, ny)
+
+    // 天空
+    const sky = ctx.createLinearGradient(0, 0, 0, VIEW.H)
+    sky.addColorStop(0, '#9ec4e0'); sky.addColorStop(1, '#dfe7ee')
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, VIEW.W, VIEW.H)
+    // 遠山
+    ctx.fillStyle = '#b8a06a'; ctx.beginPath(); ctx.moveTo(0, horizonY)
+    for (let x = 0; x <= VIEW.W; x += 34) { const y = horizonY - 24 - Math.sin(x * 0.01) * 20; ctx.lineTo(x, y) }
+    ctx.lineTo(VIEW.W, horizonY); ctx.closePath(); ctx.fill()
+    // 路兩旁的田野(葡萄園草地),讓道路落在田中而不是浮在天空
+    const field = ctx.createLinearGradient(0, horizonY, 0, VIEW.H)
+    field.addColorStop(0, '#9ba86a'); field.addColorStop(1, '#7f8f54')
+    ctx.fillStyle = field; ctx.fillRect(0, horizonY, VIEW.W, VIEW.H - horizonY)
+
+    const scroll = b.progress * 2200 + t * 130
+    const roadH = bandBot - bandTop
+    // 一般石頭 / 泥巴路(不是高速公路——拿掉白色分隔虛線):泥土底 + 深淺斑塊 + 散落石子
+    const road = ctx.createLinearGradient(0, bandTop, 0, bandBot)
+    road.addColorStop(0, '#bda579'); road.addColorStop(0.5, '#cbb184'); road.addColorStop(1, '#a98c5d')
+    ctx.fillStyle = road; ctx.fillRect(0, bandTop, VIEW.W, roadH)
+    // 濕泥 / 車轍深色斑塊(往左捲動,帶前進感)
+    const Pm = VIEW.W + 200
+    ctx.fillStyle = 'rgba(110,88,52,0.30)'
+    for (let i = 0; i < 22; i++) {
+      const sx = ((i * 96 - scroll * 0.6) % Pm + Pm) % Pm - 100
+      const py = bandTop + 14 + ((i * 57) % (roadH - 28))
+      ctx.beginPath(); ctx.ellipse(sx, py, 30, 10, 0, 0, Math.PI * 2); ctx.fill()
+    }
+    // 散落石子(碎石路:灰褐 + 一點高光)
+    const Ps = VIEW.W + 120
+    for (let i = 0; i < 54; i++) {
+      const sx = ((i * 41 - scroll) % Ps + Ps) % Ps - 60
+      const py = bandTop + 8 + ((i * 73) % (roadH - 16))
+      const r = 3 + (i % 3) * 1.7
+      ctx.fillStyle = i % 2 ? '#8d8270' : '#a79c88'
+      ctx.beginPath(); ctx.ellipse(sx, py, r, r * 0.7, 0, 0, Math.PI * 2); ctx.fill()
+      ctx.fillStyle = 'rgba(255,255,255,0.20)'
+      ctx.beginPath(); ctx.ellipse(sx - r * 0.3, py - r * 0.3, r * 0.4, r * 0.28, 0, 0, Math.PI * 2); ctx.fill()
+    }
+    // 兩旁葡萄園的矮石牆(民 22:24「這邊有牆,那邊有牆」)
+    const wall = (wy) => {
+      ctx.fillStyle = '#8a7c63'; ctx.fillRect(0, wy, VIEW.W, 11)
+      ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(0, wy, VIEW.W, 3)
+      ctx.fillStyle = 'rgba(60,50,34,0.45)'
+      for (let x = -((scroll * 0.5) % 28); x < VIEW.W; x += 28) ctx.fillRect(x, wy, 2, 11)
+    }
+    wall(bandTop - 11); wall(bandBot)
+
+    // 使者(拔刀)
+    for (const a of b.angels) this._angel(a.x * VIEW.W, yOf(a.y), t)
+    // 驢 + 巴蘭
+    this._donkeyRider(BALAAM.donkeyX * VIEW.W, yOf(b.donkeyY), t, b.balking, b.donkeyTremble)
+    // 撞擊紅閃
+    if (b.bumpFlash > 0.05) { ctx.fillStyle = `rgba(200,60,40,${b.bumpFlash * 0.22})`; ctx.fillRect(0, 0, VIEW.W, VIEW.H) }
+
+    this._balaamHud(game, b)
+  }
+
+  // 拔刀的耶和華使者(白袍 + 翅膀 + 光環 + 舉刀)。2026-06-14:回原大小(刀刃仍加長 1.5,見下)。
+  _angel(x, y, t) {
+    const ctx = this.ctx
+    ctx.save(); ctx.translate(x, y)
+    ctx.fillStyle = 'rgba(255,250,210,0.5)'; ctx.beginPath(); ctx.arc(0, -22, 22, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = 'rgba(255,255,255,0.85)'
+    ctx.beginPath(); ctx.ellipse(-12, -30, 8, 16, -0.4, 0, Math.PI * 2); ctx.ellipse(12, -30, 8, 16, 0.4, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = '#f4f1e6'
+    ctx.beginPath(); ctx.moveTo(-10, -40); ctx.lineTo(10, -40); ctx.lineTo(8, -2); ctx.lineTo(-8, -2); ctx.closePath(); ctx.fill()
+    ctx.fillStyle = '#f0d9b8'; ctx.beginPath(); ctx.arc(0, -46, 7, 0, Math.PI * 2); ctx.fill()
+    // 莊嚴嚴肅的臉(面向走來的驢):雙眼 + 內低外揚的眉 + 抿緊的嘴
+    ctx.fillStyle = '#2c2620'
+    ctx.beginPath(); ctx.arc(-3, -47, 1.3, 0, Math.PI * 2); ctx.arc(2, -47, 1.3, 0, Math.PI * 2); ctx.fill()
+    ctx.strokeStyle = '#6a5436'; ctx.lineWidth = 1.5; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(-6, -50.5); ctx.lineTo(-1.5, -48.5); ctx.moveTo(5, -50.5); ctx.lineTo(0.5, -48.5); ctx.stroke()
+    ctx.strokeStyle = '#7a5a44'; ctx.beginPath(); ctx.moveTo(-3, -42.5); ctx.lineTo(2.5, -42.5); ctx.stroke()
+    ctx.strokeStyle = '#e8c34a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, -55, 7, 0, Math.PI * 2); ctx.stroke()
+    // 拔出來的刀(2026-06-14:刀刃加長 1.5 倍——終點 (26,-54)→(33,-67),沿原方向延伸)
+    ctx.strokeStyle = '#cfd6df'; ctx.lineWidth = 3; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(12, -28); ctx.lineTo(33, -67); ctx.stroke()
+    ctx.strokeStyle = '#8a939e'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(9, -24); ctx.lineTo(15, -30); ctx.stroke()
+    ctx.restore()
+  }
+
+  // 驢(面向右,長耳/長臉/尾巴/鬃毛——明顯是驢不是豬)+ 騎在背上的巴蘭(會做表情;停步時舉杖鞭打)
+  _donkeyRider(x, y, t, balking, tremble) {
+    const ctx = this.ctx
+    const tr = balking ? Math.sin(t * 30) * tremble * 2 : 0
+    ctx.save(); ctx.translate(x + tr, y); ctx.scale(1.3, 1.3)
+    const gait = balking ? 0 : Math.sin(t * 8) * 2.2
+    const GREY = '#9b9189', DARK = '#6f675f'
+
+    // 尾巴(身體左後,末端一撮毛)
+    ctx.strokeStyle = DARK; ctx.lineWidth = 3; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(-18, -12); ctx.quadraticCurveTo(-27, -9 + gait, -25, 1); ctx.stroke()
+    ctx.fillStyle = '#4a433c'; ctx.beginPath(); ctx.ellipse(-25, 3, 3, 5.5, 0.2, 0, Math.PI * 2); ctx.fill()
+
+    // 四條細腿 + 蹄(前後交錯踏步)
+    ctx.strokeStyle = DARK; ctx.lineWidth = 3.4; ctx.lineCap = 'round'
+    const legs = [[-12, gait], [10, -gait], [-3, -gait], [5, gait]]
+    ctx.beginPath()
+    for (const [lx, off] of legs) { ctx.moveTo(lx, -2); ctx.lineTo(lx, 9 + off) }
+    ctx.stroke()
+    ctx.fillStyle = '#3a332c'
+    for (const [lx, off] of legs) ctx.fillRect(lx - 2, 8 + off, 4, 3)
+
+    // 身體(瘦長橢圓 + 淺色肚腹 + 背脊深線)
+    ctx.fillStyle = GREY; ctx.beginPath(); ctx.ellipse(-3, -10, 18, 10, 0, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = '#b8afa4'; ctx.beginPath(); ctx.ellipse(-3, -6, 14, 5, 0, 0, Math.PI * 2); ctx.fill()
+    ctx.strokeStyle = 'rgba(70,62,52,0.5)'; ctx.lineWidth = 2
+    ctx.beginPath(); ctx.moveTo(-15, -17); ctx.lineTo(13, -16); ctx.stroke()
+
+    // 脖子 + 短鬃毛
+    ctx.fillStyle = GREY
+    ctx.beginPath(); ctx.moveTo(10, -16); ctx.lineTo(22, -29); ctx.lineTo(29, -25); ctx.lineTo(19, -9); ctx.closePath(); ctx.fill()
+    ctx.strokeStyle = '#5f574e'; ctx.lineWidth = 2
+    for (let i = 0; i <= 4; i++) { const k = i / 4; const mx = 12 + 10 * k, my = -16 - 12 * k; ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx - 3, my - 4); ctx.stroke() }
+
+    // 頭(朝右下,長臉)+ 長耳 ×2 + 淺色口鼻 + 睜大的眼(劇情:只有驢看見使者)
+    ctx.save(); ctx.translate(27, -26); ctx.rotate(0.5)
+    const ear = (ex, rot) => {
+      ctx.save(); ctx.translate(ex, -3); ctx.rotate(rot)
+      ctx.fillStyle = GREY; ctx.beginPath(); ctx.ellipse(0, -12, 4.5, 13, 0, 0, Math.PI * 2); ctx.fill()
+      ctx.fillStyle = '#c7a9a9'; ctx.beginPath(); ctx.ellipse(0, -12, 2, 9, 0, 0, Math.PI * 2); ctx.fill()
+      ctx.restore()
+    }
+    ear(-8, -0.28); ear(-3, 0.12) // 兩隻長耳(驢的招牌)
+    ctx.fillStyle = GREY; ctx.beginPath(); ctx.ellipse(0, 0, 13, 7, 0, 0, Math.PI * 2); ctx.fill() // 長臉
+    ctx.fillStyle = '#d7cfc2'; ctx.beginPath(); ctx.ellipse(11, 2, 6, 5, 0, 0, Math.PI * 2); ctx.fill() // 淺色口鼻
+    ctx.fillStyle = '#4a433c'; ctx.beginPath(); ctx.ellipse(14, 1, 1.5, 2.1, 0, 0, Math.PI * 2); ctx.fill() // 鼻孔
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, -2, 2.8, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = '#2a2420'; ctx.beginPath(); ctx.arc(0.6, -2, 1.6, 0, Math.PI * 2); ctx.fill() // 睜大的眼
+    if (balking) { // 受驚:斜眉 + 汗珠
+      ctx.strokeStyle = '#3a332c'; ctx.lineWidth = 1.4; ctx.lineCap = 'round'
+      ctx.beginPath(); ctx.moveTo(-4, -6); ctx.lineTo(1, -4.5); ctx.stroke()
+      ctx.fillStyle = 'rgba(120,205,225,0.9)'; ctx.beginPath(); ctx.ellipse(-7, -1, 1.6, 2.4, 0, 0, Math.PI * 2); ctx.fill()
+    }
+    ctx.restore() // 頭
+
+    // ---- 巴蘭(坐在驢背,紫袍 + 頭巾 + 鬍子,會做表情)----
+    ctx.save(); ctx.translate(-3, -22)
+    ctx.fillStyle = '#7a5a9c' // 袍
+    ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(7, 0); ctx.lineTo(5, -17); ctx.lineTo(-5, -17); ctx.closePath(); ctx.fill()
+    ctx.fillStyle = '#e8bb8d'; ctx.beginPath(); ctx.arc(0, -22, 6, 0, Math.PI * 2); ctx.fill() // 頭
+    ctx.fillStyle = '#caa05a'; ctx.fillRect(-6, -27, 12, 3) // 頭巾
+    ctx.fillStyle = '#cfcabf'; ctx.beginPath(); ctx.moveTo(-4, -19); ctx.lineTo(4, -19); ctx.lineTo(0, -13); ctx.closePath(); ctx.fill() // 鬍子
+    // 表情:停步時又惱又急地鞭打(怒)、前進時看不見使者(平靜往前)
+    ctx.fillStyle = '#2c2620'
+    if (balking) {
+      ctx.beginPath(); ctx.arc(-2.4, -23, 1.2, 0, Math.PI * 2); ctx.arc(2.4, -23, 1.2, 0, Math.PI * 2); ctx.fill()
+      ctx.strokeStyle = '#6a3a2a'; ctx.lineWidth = 1.3; ctx.lineCap = 'round' // 怒眉(內低)
+      ctx.beginPath(); ctx.moveTo(-5, -26); ctx.lineTo(-1, -24.5); ctx.moveTo(5, -26); ctx.lineTo(1, -24.5); ctx.stroke()
+      ctx.fillStyle = '#5a2420'; ctx.beginPath(); ctx.ellipse(0, -19.3, 2, 1.6, 0, 0, Math.PI * 2); ctx.fill() // 張口喝斥
+    } else {
+      ctx.beginPath(); ctx.arc(-2.2, -23, 1.1, 0, Math.PI * 2); ctx.arc(2.6, -23, 1.1, 0, Math.PI * 2); ctx.fill()
+      ctx.strokeStyle = '#7a5a44'; ctx.lineWidth = 1.2; ctx.lineCap = 'round' // 平眉
+      ctx.beginPath(); ctx.moveTo(-5, -25); ctx.lineTo(-1, -25); ctx.moveTo(1, -25); ctx.lineTo(5, -25); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(-2, -19.3); ctx.lineTo(2, -19.3); ctx.stroke() // 平嘴
+    }
+    // 手臂 / 杖(停步時高舉鞭打)
+    ctx.strokeStyle = '#7a5a9c'; ctx.lineWidth = 3; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(4, -13)
+    if (balking) { ctx.lineTo(15, -27) } else { ctx.lineTo(12, -9) }
+    ctx.stroke()
+    if (balking) { ctx.strokeStyle = '#6f4720'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(15, -27); ctx.lineTo(27, -22); ctx.stroke() } // 杖
+    ctx.restore() // 巴蘭
+
+    ctx.restore() // 驢整體
+  }
+
+  // 反轉奇兵 HUD:前進(出發→眼開)+ 時間 + 停步提示 + 操作提示。
+  _balaamHud(game, b) {
+    const ctx = this.ctx
+    const barW = 300, barH = 16, bx = (VIEW.W - barW) / 2
+    const hud = game.hudLabels || { start: '出發', goal: '巴蘭眼開 👁️' }
+    let by = 30
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; roundRect(ctx, bx, by, barW, barH, 8); ctx.fill()
+    ctx.fillStyle = '#7a5a9c'; roundRect(ctx, bx, by, barW * b.progress, barH, 8); ctx.fill()
+    ctx.fillStyle = '#3a2c4a'; ctx.font = '600 15px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.textBaseline = 'bottom'; ctx.textAlign = 'left'; ctx.fillText(hud.start, bx, by - 3)
+    ctx.textAlign = 'right'; ctx.fillText(hud.goal, bx + barW, by - 3)
+    by = 58
+    const tleft = Math.max(0, 1 - b.time / BALAAM.duration)
+    this._statBar(bx, by, barW, 10, tleft, tleft < 0.25 ? '#d6533b' : '#caa83a', '⏳ 時間')
+    // 命:左上角心數(被使者擋住、巴蘭鞭打驢 = 扣一條;數量依 config.BALAAM.lives,2026-06-14:3→5)
+    const maxL = b.maxLives ?? 3
+    for (let i = 0; i < maxL; i++) this._emoji(i < (b.lives ?? maxL) ? '❤️' : '🤍', 34 + i * 30, 40, 24, 'middle')
+    if (b.balking) {
+      ctx.fillStyle = `rgba(214,83,59,${0.55 + 0.35 * Math.abs(Math.sin(b.time * 7))})`
+      ctx.font = '800 24px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.fillText('驢停住了!上下移開,別讓使者擋路 🗡️', VIEW.W / 2, VIEW.H * 0.42)
+    }
+    ctx.font = '700 18px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.textBaseline = 'bottom'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(40,40,60,0.9)'
+    ctx.fillText('↑ ↓(或上下滑)移動驢子,避開拔刀的使者 🗡️　·　巴蘭看不見,只有驢看見', VIEW.W / 2, VIEW.H - 12)
   }
 
   // 第三關「大魚肚內」畫面:漆黑的魚腹(肋骨、水、氣泡、禱告的約拿),

@@ -49,6 +49,103 @@ export const STORM = {
   invertControl: false,
 }
 
+// 戰爭闖關原型 #1「摩西舉手之戰」(出 17:8–13)——重用第二關暴風雨的平衡 loop 換皮。
+//   armDrop(0=高舉雙手,1=完全垂下):疲勞像重力把手往下拉(gravity),玩家出力把手舉回(push),
+//   呼求亞倫、戶珥來扶手(supportPush,很強但有「可用度」support 會耗盡、需回充)。
+//   手垂太低(armDrop>safeDrop)→ 谷中亞瑪力得勢,defeat 值上升;升到 1 = 以色列敗(失敗)。
+//   撐到日落(survival>=duration)= 以色列得勝(過關)。這一關「單靠自己撐不到日落」是刻意的——
+//   late game gravity 會超過 push,逼玩家學會「在對的時候呼求同工」(依靠值鉤子;亞 4:6)。
+//   想更難 → 調高 gravityGrow / defeatRise,或調低 push / supportDrainTime / safeDrop;反之更簡單。
+// 操作(2026-06-13 簡化,牧師實測「按左邊也輸」=舊兩區設計是陷阱):
+//   按住畫面任意處 / 任意方向鍵 = 出力舉手(armDrop 往 0)。就這一個動作,夠單純。
+//   亞倫、戶珥「自動」在手垂下時來扶(supportTriggerDrop),不必玩家自己呼求——
+//   依靠值改用「看得見」的方式教:後段你光靠自己撐不住,會親眼看到他們上來扶手。
+export const MOSES = {
+  duration: 20, // 撐到日落(秒)= 過關;越短越輕鬆(原 75→35→20,牧師回饋)
+  safeDrop: 0.5, // 手垂在此之內(armDrop<0.5)算「舉得夠高」,defeat 會回落;超過就上升
+  // 平衡心法:你出力舉手是主力,亞倫戶珥是「撐住、不讓它垮」的扶持。
+  // 後段疲勞(gravity)會超過你獨力的 push → 必須有扶手;但扶手獨力也不夠(supportPush < 後段 gravity)
+  // → 光被動等扶手也會輸。兩者「同工」才撐得住(這就是依靠值)。
+  push: 3.0, // 玩家「出力舉手」的回正力(主力)
+  supportPush: 2.5, // 亞倫、戶珥扶手時的額外上舉(自動觸發;獨力不足以勝過後段疲勞)
+  supportTriggerDrop: 0.45, // 手垂超過這個程度,亞倫戶珥就自動上來扶(若還有可用度)
+  damp: 2.2, // 手臂角速度阻尼(越大越穩、不甩過頭)
+  gravityBase: 1.0, // 疲勞基礎下垂力
+  gravityGrow: 2.6, // 疲勞隨時間增強(後段超過 push,必須加上扶手才撐得住)
+  twingeBase: 0.4, // 隨機「手一沉」的抽痛基礎強度
+  twingeGrow: 0.8, // 抽痛隨時間增強
+  defeatRise: 0.5, // 手垂太低時 defeat(亞瑪力得勢)上升速度
+  defeatRecover: 1.3, // 手舉夠高時 defeat 回落速度(越大越有反應時間=越簡單)
+  supportDrainTime: 5.0, // 亞倫戶珥連續扶手可持續的秒數(可用度由 1 耗到 0)
+  supportRechargeTime: 5.0, // 可用度從 0 回充到滿所需秒數(沒在扶手時回充)
+  supportMinToStart: 0.15, // 耗盡後要回充到這個量才能再次扶手(避免在 0 附近閃爍)
+}
+
+// 戰爭闖關原型 #3「聖歌奇兵 · 約沙法唱詩得勝」(代下 20)——自成一格的場景(level === 9)。
+//   比照摩西「撐住一個會下滑的值」:按住=讚美(praise 回充),放開=下滑;
+//   持續讚美 → 詩班前進(advance)+ 敵軍自亂條(ambush)累積,ambush 滿 = 得勝;
+//   讚美斷 → 恐懼(fear)上升,fear 滿 = 潰散。沒有攻擊鍵——兵器只有讚美。
+//   調手感只動這裡:按住要明顯穩得住(praiseGain ≫ praiseDrain);難在「後段下滑加乘 + 隨機陣痛」。
+export const JEHOSHAPHAT = {
+  startPraise: 0.6, // 開場讚美值
+  startFear: 0.06, // 開場恐懼值
+  praiseGain: 0.95, // 按住「讚美」的回充速度(要明顯 > 下滑,按住就穩得住)
+  praiseDrain: 0.5, // 沒按住時讚美自然下滑速度
+  lateDrainMult: 1.5, // 敵軍自亂條接近滿(接近望樓)時下滑加乘——最後最吃緊
+  advanceThreshold: 0.4, // 讚美高於此 =「在讚美」→ 詩班前進 + 自亂條累積
+  advanceSpeed: 0.04, // 詩班走向望樓的速度(0..1 距離/秒;約 25 秒抵達)
+  ambushGrowth: 0.03, // 敵軍自亂條累積速度(穩定讚美約 33 秒填滿 = 得勝)
+  ambushDecay: 0.05, // 讚美斷掉時自亂條回退速度
+  fearThreshold: 0.28, // 讚美低於此 → 恐懼上升
+  fearGrow: 0.38, // 恐懼上升速度(完全不讚美約 3 秒潰散)
+  fearRecover: 0.6, // 讚美回來後恐懼回落速度(越大越好救=越簡單)
+  twingeInterval: 4.5, // 「會眾騷動/敵軍逼近」陣痛的平均間隔(秒)
+  twingeDrop: 0.5, // 陣痛對讚美的瞬間額外下滑強度
+  twingeFade: 0.9, // 陣痛消退速度
+}
+
+// 戰爭闖關原型 #4「反轉奇兵 · 巴蘭的驢」(民 22)——自成一格的場景(level === 10)。
+//   閃避關:↑/↓(或指標)上下移動驢子,避開「拔刀的使者」(巴蘭看不見,只有驢看見)。
+//   沒撞到 → progress 前進;撞到 → 驢停步、巴蘭鞭打、progress 暫停略退。走到底(progress=1)
+//   = 使者顯現、驢開口、巴蘭眼開(得勝);時限內走不到 = 失敗。撞到不會死(寬容)。
+//   調難度:angelSpeed↑ / spawnInterval↓ / hitBandY↑ 變難;duration↑ / advanceSpeed↑ 變簡單。
+export const BALAAM = {
+  duration: 55, // 時限(秒):progress 沒在這之內到 1 = 失敗(2026-06-14:40→55,配合放慢前進、玩更久)
+  advanceSpeed: 0.045, // 沒撞使者時前進速度(0..1/秒;約 22 秒可走完——2026-06-14:0.055→0.045 玩更久)
+  backOnBump: 0.02, // 撞到時 progress 倒退速度(壓力;設 0 = 只暫停不倒退)
+  donkeySpeed: 1.8, // 驢上下移動速度(每秒走過多少「道路高度」0..1)
+  roadTop: 0.21, // 驢/使者可在的縱向範圍(0=道路上緣 .. 1=下緣)(2026-06-14:路再×0.9→0.21/0.79,可走帶 0.58)
+  roadBot: 0.79,
+  donkeyX: 0.26, // 驢固定的 x(0..1 畫面寬)
+  hitBandX: 0.07, // 橫向命中帶:使者 x 進入 donkeyX±此值才判定
+  hitBandY: 0.15, // 縱向命中帶:|驢.y − 使者.y| < 此值 = 在同一條路上 = 撞上(2026-06-14:天使多又大,碰撞放寬一點才公平)
+  angelSpeedMin: 0.47, // 使者從右往左捲動速度(0..1 寬/秒)(2026-06-14:×0.9 回調→0.47,飛慢一點、好躲)
+  angelSpeedMax: 0.68, // (2026-06-14:×0.9 回調→0.68)
+  spawnInterval: 0.83, // 使者出現間隔(秒)(2026-06-14:1.0→0.83,數量再×1.2;間隔越小=天使越密)
+  spawnRampPerSec: 0.012, // 間隔隨時間縮短的量(後段密一點)
+  bumpCooldown: 0.7, // 同一隻使者的撞擊判定冷卻(避免連扣)
+  lives: 3, // 命數(被使者擋住、鞭打驢一次扣 1;民 22「你三次打我」)(2026-06-14:牧者定 3 命 + 路更窄,偏難版)
+}
+
+// 戰爭闖關原型 #2「紅海奔逃」(出 14)——自成一格的場景(level === 8),重用「跑酷/跳躍」手感。
+//   phase: stand(站住等候、海漸開)→ cross(過海床、跳障礙、追兵在後)→ closing(海合攏淹追兵)→ done。
+//   lead = 領先追兵的距離(px):乾淨奔跑會拉開(gapRecoverPerSec,上限 chaseGapMax),
+//   絆到障礙瞬間縮短 chaseCloseOnHit;lead<=0 = 追兵追上(失敗)。跑到 goalDistance = 對岸(過關)。
+//   想更難 → 調高 chaseCloseOnHit、調低 chaseGapStart / gapRecoverPerSec / hazardGap;反之更簡單。
+export const REDSEA = {
+  standTime: 3.0, // 站住等候、海分開的秒數(海全開才能衝)
+  runSpeed: 320, // 海床奔跑速度(px/s;世界捲動 = 前進距離)
+  goalDistance: 4200, // 紅海有多寬(此岸→對岸的距離;約 13 秒腳程)
+  hazardGap: 540, // 海床障礙(礁石/陷坑)之間的距離
+  chaseGapStart: 360, // 開跑時領先追兵的距離(px)
+  chaseGapMax: 540, // 領先距離上限(拉太開也不超過,維持壓力)
+  chaseCloseOnHit: 150, // 絆到一次障礙,追兵逼近的距離
+  gapRecoverPerSec: 26, // 乾淨奔跑時每秒拉開的距離
+  stumbleTime: 0.5, // 絆到後變慢的秒數
+  stumbleSpeedMult: 0.42, // 踉蹌時的速度倍率
+  closeTime: 2.2, // 抵達對岸後「海合攏淹追兵」動畫的秒數
+}
+
 // 衝刺(跑酷撿到 ⚡ 寶物):短暫跑得更快——「速度出於耶和華」(王上 18:46 以利亞束腰奔跑)
 export const BOOST = {
   duration: 4, // 衝刺持續秒數

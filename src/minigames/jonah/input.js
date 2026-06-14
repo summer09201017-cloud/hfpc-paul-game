@@ -9,6 +9,7 @@ export class Input {
     this.right = false // → / D 是否按住
     this.left = false // ← / A 是否按住
     this.down = false // ↓ / S 是否按住(第三關蹲下)
+    this.up = false // 空白 / ↑ / W 是否按住(聖歌奇兵「讚美」用;跳躍仍走 jumpQueued 邊緣,互不影響)
     this.jumpQueued = false // 鍵盤跳躍(邊緣)
     this.pauseQueued = false // 暫停(邊緣;鍵盤或右上角熱區)
     this.muteQueued = false // 靜音切換(邊緣;M 鍵)
@@ -37,6 +38,7 @@ export class Input {
         case 'KeyW':
           e.preventDefault()
           this.jumpQueued = true
+          this.up = true
           break
         case 'ArrowRight':
         case 'KeyD':
@@ -74,6 +76,11 @@ export class Input {
         case 'ArrowDown':
         case 'KeyS':
           this.down = false
+          break
+        case 'Space':
+        case 'ArrowUp':
+        case 'KeyW':
+          this.up = false
           break
       }
     }
@@ -121,7 +128,7 @@ export class Input {
     }
     this._onBlur = () => {
       // 視窗失焦時清掉「按住」狀態,避免卡住一直走/跳
-      this.right = this.left = this.down = false
+      this.right = this.left = this.down = this.up = false
       this.pointerDown = false
     }
 

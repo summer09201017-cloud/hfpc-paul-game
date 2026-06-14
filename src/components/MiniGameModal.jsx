@@ -31,6 +31,23 @@ const LEVELS = {
     title: '🌿 蓖麻樹的功課',
     how: '看五幕「神的安排」：蓖麻、蟲子、東風……每幕結束回答一個反思題（輕點可跳過動畫；這一關不會失敗）。',
   },
+  // 戰爭/逆轉動作關（約拿引擎原型，2026-06-15 sync 進來）：皆純 Canvas，用 NullUI。
+  7: {
+    title: '🙌 摩西舉手之戰',
+    how: '按住畫面 / 任意方向鍵 = 出力舉手；手垂下時亞倫、戶珥會自動上來扶。撐到日落就得勝！',
+  },
+  8: {
+    title: '🌊 紅海奔逃',
+    how: '先站住等候神分開紅海（海全開才能衝）：空白鍵 / ↑ / 點畫面 跳過海床的礁石，趕在追兵之前走到對岸！',
+  },
+  9: {
+    title: '🎵 聖歌奇兵 · 約沙法',
+    how: '按住畫面 / 任意方向鍵 = 高聲讚美；讚美值滿、敵軍自相殘殺就得勝！',
+  },
+  10: {
+    title: '🫏 反轉奇兵 · 巴蘭的驢',
+    how: '用 ↑ ↓ 讓驢避開攔路拔刀的使者，走到底、巴蘭眼睛開了就得勝！',
+  },
 }
 
 // 卡片流程關（3/5/6）：引擎的 ui.showXxx 由下面的 EmbedUI 接手畫成 React 卡片。
@@ -154,7 +171,7 @@ export default function MiniGameModal({ minigame, onComplete }) {
   // in-repo 拋射引擎（src/minigames/sling/）：站點用 minigame.engine:'sling' 指定，Canvas 即時關，
   // 同樣在約拿 fork 之外。未來其他投擲關（擲矛/射箭）也走這條。
   const isSling = minigame.engine === 'sling'
-  const level = [1, 2, 3, 4, 5, 6].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）
+  const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約；7/8/9/10=摩西/紅海/聖歌/反轉動作關）
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 拋射關的預設）。
   const info = {
     title: minigame.label || (cardSpec ? cardSpec.title : isSling ? '🪨 大衛戰歌利亞' : LEVELS[level].title),
