@@ -50,7 +50,7 @@ function person(ctx, x, gy, k, o = {}) {
   const robe = o.robe || '#6a8caf', skin = '#e8bb8d'
   const kneel = o.pose === 'kneel' || o.pose === 'bow'
   const H = (kneel ? 78 : 108) * k
-  const headR = 12 * k
+  const headR = 14.5 * k // 頭放大,表情才看得清楚(投影用)
   const hy = gy - H + headR
   const bodyTop = hy + headR * 0.7
   const bodyBot = gy - 2 * k
@@ -98,15 +98,22 @@ function person(ctx, x, gy, k, o = {}) {
   }
   // 鬍子(o.beard)
   if (o.beard) { ctx.fillStyle = '#cfcabf'; ctx.beginPath(); ctx.moveTo(x - 5 * k, hy + 4 * k); ctx.lineTo(x + 5 * k, hy + 4 * k); ctx.lineTo(x, hy + 12 * k); ctx.closePath(); ctx.fill() }
-  // 臉:眼 + 表情
-  ctx.fillStyle = '#3a2c22'
-  ctx.beginPath(); ctx.arc(x - 3.4 * k, hy + 0.5 * k, 1.4 * k, 0, TAU); ctx.arc(x + 3.4 * k, hy + 0.5 * k, 1.4 * k, 0, TAU); ctx.fill()
-  ctx.strokeStyle = '#7a3b30'; ctx.lineWidth = 1.6 * k; ctx.lineCap = 'round'; ctx.beginPath()
-  if (o.face === 'joy') ctx.arc(x, hy + 3 * k, 3 * k, 0.15 * Math.PI, 0.85 * Math.PI)
-  else if (o.face === 'awe') { ctx.fillStyle = '#7a3b30'; ctx.ellipse(x, hy + 5 * k, 2 * k, 2.6 * k, 0, 0, TAU); ctx.fill(); ctx.beginPath() }
-  else if (o.face === 'worry') ctx.arc(x, hy + 7 * k, 2.4 * k, Math.PI * 1.15, Math.PI * 1.85)
-  else { ctx.moveTo(x - 2.4 * k, hy + 4 * k); ctx.lineTo(x + 2.4 * k, hy + 4 * k) }
+  // 臉:眼 + 眉 + 嘴(表情明顯——投影看得到)
+  const ex = 4 * k, ey = hy + 0.5 * k, er = 2 * k
+  ctx.fillStyle = '#2c2016'
+  ctx.beginPath(); ctx.arc(x - ex, ey, er, 0, TAU); ctx.arc(x + ex, ey, er, 0, TAU); ctx.fill()
+  // 眉(隨表情)
+  ctx.strokeStyle = '#5a3a28'; ctx.lineWidth = 1.9 * k; ctx.lineCap = 'round'; ctx.beginPath()
+  if (o.face === 'joy') { ctx.moveTo(x - ex - 2.6 * k, ey - 4.6 * k); ctx.lineTo(x - ex + 2.2 * k, ey - 5.8 * k); ctx.moveTo(x + ex - 2.2 * k, ey - 5.8 * k); ctx.lineTo(x + ex + 2.6 * k, ey - 4.6 * k) }
+  else if (o.face === 'worry') { ctx.moveTo(x - ex - 2.6 * k, ey - 6 * k); ctx.lineTo(x - ex + 2.2 * k, ey - 3.4 * k); ctx.moveTo(x + ex - 2.2 * k, ey - 3.4 * k); ctx.lineTo(x + ex + 2.6 * k, ey - 6 * k) }
+  else if (o.face === 'awe') { ctx.moveTo(x - ex - 2.6 * k, ey - 6.4 * k); ctx.lineTo(x - ex + 2.2 * k, ey - 7 * k); ctx.moveTo(x + ex - 2.2 * k, ey - 7 * k); ctx.lineTo(x + ex + 2.6 * k, ey - 6.4 * k) }
   ctx.stroke()
+  // 嘴(隨表情)
+  ctx.strokeStyle = '#8a3b2e'; ctx.lineWidth = 2.4 * k; ctx.lineCap = 'round'; ctx.beginPath()
+  if (o.face === 'joy') { ctx.arc(x, hy + 4 * k, 4.2 * k, 0.12 * Math.PI, 0.88 * Math.PI); ctx.stroke() }
+  else if (o.face === 'awe') { ctx.fillStyle = '#7a2b22'; ctx.beginPath(); ctx.ellipse(x, hy + 6.5 * k, 2.6 * k, 3.4 * k, 0, 0, TAU); ctx.fill() }
+  else if (o.face === 'worry') { ctx.arc(x, hy + 9.5 * k, 3.2 * k, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke() }
+  else { ctx.moveTo(x - 3 * k, hy + 5 * k); ctx.lineTo(x + 3 * k, hy + 5 * k); ctx.stroke() }
 }
 
 // 房子(右側,門口戲用)
@@ -115,6 +122,26 @@ function house(ctx, x, gy, k) {
   ctx.fillStyle = '#8a6a44'; ctx.beginPath(); ctx.moveTo(x - 56 * k, gy - 88 * k); ctx.lineTo(x + 56 * k, gy - 88 * k); ctx.lineTo(x, gy - 124 * k); ctx.closePath(); ctx.fill()
   ctx.fillStyle = '#5a4026'; ctx.fillRect(x - 14 * k, gy - 56 * k, 28 * k, 56 * k) // 門洞
   ctx.fillStyle = '#caa05a'; ctx.fillRect(x + 10 * k, gy - 30 * k, 3 * k, 6 * k)
+}
+
+// 俯伏下拜的人(門口戲:哥尼流俯伏在彼得腳前)——臉朝左下、拱背、雙手伸到前方的腳邊。
+function prostrate(ctx, x, gy, k, o = {}) {
+  const robe = o.robe || '#9c3b3b', skin = '#e8bb8d', headR = 13 * k
+  // 折在身下的小腿/臀(坐在腳跟上)
+  ctx.fillStyle = shade(robe, -30)
+  ctx.beginPath(); ctx.ellipse(x + 8 * k, gy - 7 * k, 17 * k, 8 * k, 0, 0, TAU); ctx.fill()
+  // 拱起的背(臀 → 頭,粗弧線當身體)
+  ctx.strokeStyle = robe; ctx.lineWidth = 22 * k; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(x + 12 * k, gy - 20 * k); ctx.quadraticCurveTo(x - 6 * k, gy - 30 * k, x - 18 * k, gy - 12 * k); ctx.stroke()
+  // 雙臂往前伸到地(朝彼得的腳)
+  ctx.strokeStyle = robe; ctx.lineWidth = 6 * k
+  ctx.beginPath(); ctx.moveTo(x - 14 * k, gy - 14 * k); ctx.lineTo(x - 32 * k, gy - 3 * k); ctx.stroke()
+  ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(x - 33 * k, gy - 3 * k, 4 * k, 0, TAU); ctx.fill()
+  // 低伏的頭(幾乎貼地)
+  ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(x - 20 * k, gy - 11 * k, headR, 0, TAU); ctx.fill()
+  if (o.head === 'helmet') { ctx.fillStyle = '#b9482e'; ctx.beginPath(); ctx.arc(x - 20 * k, gy - 13 * k, headR + 1 * k, Math.PI * 0.55, Math.PI * 1.95); ctx.fill() }
+  ctx.fillStyle = '#cfcabf'; ctx.beginPath(); ctx.arc(x - 26 * k, gy - 9 * k, 3 * k, 0, TAU); ctx.fill() // 鬍子(側臉朝下)
+  ctx.fillStyle = '#2c2016'; ctx.beginPath(); ctx.arc(x - 25 * k, gy - 12 * k, 1.5 * k, 0, TAU); ctx.fill() // 一隻眼
 }
 
 // 火舌(聖靈降臨)
@@ -250,15 +277,15 @@ function door(ctx, w, h, t) {
   const sky = ctx.createLinearGradient(0, 0, 0, h)
   sky.addColorStop(0, '#cfe4ee'); sky.addColorStop(1, '#efe7d2')
   ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
-  house(ctx, w * 0.8, gy, k * 1.2)
+  house(ctx, w * 0.82, gy, k * 1.2)
   ctx.fillStyle = '#c2a878'; ctx.fillRect(0, gy, w, h - gy)
-  // 哥尼流俯伏(隨彼得的手起伏=被扶起)
-  const rise = (Math.sin(t * 1.5) * 0.5 + 0.5) * 10 * k
-  person(ctx, w * 0.6, gy - rise, k * 1.0, { robe: '#9c3b3b', head: 'helmet', pose: 'bow', arms: 'down', face: 'awe', beard: true })
-  // 彼得伸手拉他起來
-  person(ctx, w * 0.38, gy, k * 1.15, { robe: '#3a6a9c', head: 'turban', headColor: '#d8c39a', beard: true, arms: 'reach', reach: 26, reachUp: 10, face: 'calm' })
+  // 彼得(左)彎身、伸手往下扶
+  person(ctx, w * 0.34, gy, k * 1.2, { robe: '#3a6a9c', head: 'turban', headColor: '#d8c39a', beard: true, arms: 'reach', reach: 24, reachUp: -12, face: 'calm' })
+  // 哥尼流俯伏在彼得腳前拜他(微微起伏 = 正被扶起)
+  const rise = (Math.sin(t * 1.5) * 0.5 + 0.5) * 4 * k
+  prostrate(ctx, w * 0.55, gy - rise, k * 1.1, { robe: '#9c3b3b', head: 'helmet' })
   // 對白
-  speechBubble(ctx, w * 0.5, gy - 96 * k, k, '你起來,我也是人')
+  speechBubble(ctx, w * 0.5, gy - 104 * k, k, '你起來,我也是人')
 }
 
 // 5) 神是不偏待人(徒 10:34-35)——彼得在滿屋外邦人面前宣講
