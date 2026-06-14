@@ -371,3 +371,181 @@ function speechBubble(ctx, cx, cy, k, text) {
 }
 
 export const CORNELIUS = { pray, vision, walk, door, speak, spirit, allnations }
+
+// ===================== 共用小道具(盼望/大光用) =====================
+function tree(ctx, x, gy, k) { // 羅騰樹:細幹 + 稀疏灌叢
+  ctx.strokeStyle = '#6e5a3a'; ctx.lineWidth = 6 * k; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x - 4 * k, gy - 48 * k); ctx.stroke()
+  ctx.fillStyle = '#869a52'
+  for (const [dx, dy, r] of [[-15, -52, 17], [11, -58, 19], [24, -48, 14], [-2, -68, 16]]) { ctx.beginPath(); ctx.ellipse(x + dx * k, gy + dy * k, r * k, r * 0.7 * k, 0, 0, TAU); ctx.fill() }
+}
+function sleeper(ctx, x, gy, k, robe = '#7a6a9c') { // 側臥睡覺(頭朝左)
+  ctx.fillStyle = robe; ctx.beginPath(); ctx.ellipse(x, gy - 9 * k, 30 * k, 9 * k, 0, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#e8bb8d'; ctx.beginPath(); ctx.arc(x - 30 * k, gy - 13 * k, 9 * k, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#cfcabf'; ctx.beginPath(); ctx.arc(x - 35 * k, gy - 11 * k, 3 * k, 0, TAU); ctx.fill()
+  ctx.strokeStyle = '#2c2016'; ctx.lineWidth = 1.6 * k; ctx.beginPath(); ctx.moveTo(x - 33 * k, gy - 14 * k); ctx.lineTo(x - 28 * k, gy - 14 * k); ctx.stroke()
+}
+function zzz(ctx, x, y, k, t) {
+  ctx.fillStyle = 'rgba(70,70,110,0.85)'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
+  for (let i = 0; i < 3; i++) { const p = (t * 0.5 + i / 3) % 1; ctx.globalAlpha = 1 - p; ctx.font = `700 ${(12 + i * 3) * k}px sans-serif`; ctx.fillText('Z', x + i * 9 * k + p * 10 * k, y - i * 11 * k - p * 16 * k) } ctx.globalAlpha = 1
+}
+function angelFig(ctx, x, gy, k, t) { // 發光的天使
+  const glow = ctx.createRadialGradient(x, gy - 55 * k, 0, x, gy - 55 * k, 46 * k)
+  glow.addColorStop(0, `rgba(255,250,210,${0.6 + Math.sin(t * 3) * 0.2})`); glow.addColorStop(1, 'rgba(255,250,210,0)')
+  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, gy - 55 * k, 46 * k, 0, TAU); ctx.fill()
+  ctx.fillStyle = 'rgba(255,255,255,0.92)'
+  ctx.beginPath(); ctx.ellipse(x - 15 * k, gy - 58 * k, 9 * k, 21 * k, -0.4, 0, TAU); ctx.ellipse(x + 15 * k, gy - 58 * k, 9 * k, 21 * k, 0.4, 0, TAU); ctx.fill()
+  person(ctx, x, gy, k, { robe: '#f4f1e6', head: 'turban', headColor: '#f0e6c8', face: 'calm' })
+  ctx.strokeStyle = '#e8c34a'; ctx.lineWidth = 2.2 * k; ctx.beginPath(); ctx.arc(x, gy - 112 * k, 9 * k, 0, TAU); ctx.stroke()
+}
+function cityRight(ctx, w, gy, k) {
+  ctx.fillStyle = '#c8a06a'
+  for (const [dx, bw, bh] of [[0, 34, 56], [30, 26, 84], [54, 30, 50], [80, 24, 70]]) ctx.fillRect(w - 120 * k + dx * k, gy - bh * k, bw * k, bh * k)
+  ctx.fillStyle = '#9c7a48'; ctx.fillRect(w - 122 * k, gy - 12 * k, 122 * k, 12 * k)
+}
+function fallen(ctx, x, gy, k, robe) { // 仆倒在地(被大光擊倒,仰躺)
+  ctx.fillStyle = robe; ctx.beginPath(); ctx.ellipse(x, gy - 8 * k, 32 * k, 9 * k, 0, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#e8bb8d'; ctx.beginPath(); ctx.arc(x + 30 * k, gy - 12 * k, 9 * k, 0, TAU); ctx.fill()
+  ctx.strokeStyle = robe; ctx.lineWidth = 5 * k; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(x - 6 * k, gy - 12 * k); ctx.lineTo(x - 18 * k, gy - 24 * k); ctx.stroke() // 舉起的手(遮擋大光)
+  ctx.fillStyle = '#2c2016'; ctx.beginPath(); ctx.arc(x + 32 * k, gy - 13 * k, 1.5 * k, 0, TAU); ctx.fill()
+}
+
+// ===================== 盼望奇兵 · 以利亞重得力(王上 19) =====================
+function eliSky(ctx, w, h) { const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#c79a6e'); g.addColorStop(1, '#e8cf9c'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h) }
+
+function despair(ctx, w, h, t) { // 1) 羅騰樹下灰心求死
+  const k = h / 240, gy = h * 0.86; eliSky(ctx, w, h)
+  ctx.fillStyle = '#c9a86e'; ctx.fillRect(0, gy, w, h - gy)
+  tree(ctx, w * 0.6, gy, k * 1.35)
+  person(ctx, w * 0.44, gy, k * 1.05, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, pose: 'kneel', arms: 'pray', face: 'worry' })
+  // 低垂的嘆息點
+  for (let i = 0; i < 4; i++) { const p = (t * 0.4 + i / 4) % 1; ctx.fillStyle = `rgba(110,100,140,${0.4 * (1 - p)})`; ctx.beginPath(); ctx.arc(w * 0.44 - 14 * k, gy - 60 * k - p * 20 * k, 2 * k, 0, TAU); ctx.fill() }
+}
+function broomtree(ctx, w, h, t) { // 2) 神第一步:讓他睡(天使將臨)
+  const k = h / 240, gy = h * 0.86; eliSky(ctx, w, h)
+  ctx.fillStyle = '#c9a86e'; ctx.fillRect(0, gy, w, h - gy)
+  tree(ctx, w * 0.66, gy, k * 1.35)
+  sleeper(ctx, w * 0.46, gy, k * 1.2, '#7a6a9c')
+  zzz(ctx, w * 0.46 + 6 * k, gy - 30 * k, k, t)
+  // 天使將臨的微光
+  const gl = ctx.createRadialGradient(w * 0.5, h * 0.18, 0, w * 0.5, h * 0.18, 50 * k); gl.addColorStop(0, `rgba(255,250,210,${0.3 + Math.sin(t * 2) * 0.15})`); gl.addColorStop(1, 'rgba(255,250,210,0)')
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(w * 0.5, h * 0.18, 50 * k, 0, TAU); ctx.fill()
+}
+function angelfood(ctx, w, h, t) { // 3) 天使送餅送水
+  const k = h / 240, gy = h * 0.86; eliSky(ctx, w, h)
+  ctx.fillStyle = '#c9a86e'; ctx.fillRect(0, gy, w, h - gy)
+  tree(ctx, w * 0.16, gy, k)
+  angelFig(ctx, w * 0.66, gy, k * 1.05, t)
+  person(ctx, w * 0.4, gy, k * 1.0, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, pose: 'kneel', arms: 'reach', reach: 14, reachUp: 4, face: 'awe' })
+  // 餅 + 水罐
+  ctx.fillStyle = '#caa05a'; ctx.beginPath(); ctx.ellipse(w * 0.5, gy - 8 * k, 9 * k, 5 * k, 0, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#7a5a8c'; ctx.beginPath(); ctx.moveTo(w * 0.54, gy - 18 * k); ctx.lineTo(w * 0.565, gy - 18 * k); ctx.lineTo(w * 0.57, gy - 2 * k); ctx.lineTo(w * 0.535, gy - 2 * k); ctx.closePath(); ctx.fill()
+}
+function stillvoice(ctx, w, h, t) { // 4) 何烈山:風/震/火過去,微小的聲音
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#5a6a8c'); g.addColorStop(1, '#9aa6b8'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  // 山 + 洞
+  ctx.fillStyle = '#6a6256'; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w * 0.4, h * 0.2); ctx.lineTo(w, gy); ctx.closePath(); ctx.fill()
+  ctx.fillStyle = '#2e2a26'; ctx.beginPath(); ctx.ellipse(w * 0.4, gy - 4 * k, 26 * k, 34 * k, 0, Math.PI, 0); ctx.fill()
+  ctx.fillStyle = '#3a3530'; ctx.fillRect(0, gy, w, h - gy)
+  // 風線(上)+ 火(右)——表示風震火都過去了
+  ctx.strokeStyle = 'rgba(230,236,245,0.5)'; ctx.lineWidth = 2 * k
+  for (let i = 0; i < 4; i++) { const yy = h * 0.2 + i * 12 * k; const off = (t * 120) % (w * 0.5); ctx.beginPath(); ctx.moveTo(w * 0.55 - off, yy); ctx.lineTo(w * 0.95 - off, yy); ctx.stroke() }
+  flame(ctx, w * 0.8, gy - 4 * k, k, t, 1); flame(ctx, w * 0.86, gy - 4 * k, k, t, 2)
+  // 以利亞在洞口
+  person(ctx, w * 0.4, gy, k * 0.95, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, face: 'awe' })
+  // 微小聲音的柔光(由洞口向以利亞)
+  const sv = ctx.createRadialGradient(w * 0.4, gy - 40 * k, 0, w * 0.4, gy - 40 * k, (24 + Math.sin(t * 2) * 6) * k)
+  sv.addColorStop(0, 'rgba(255,250,220,0.9)'); sv.addColorStop(1, 'rgba(255,250,220,0)')
+  ctx.fillStyle = sv; ctx.beginPath(); ctx.arc(w * 0.4, gy - 40 * k, 30 * k, 0, TAU); ctx.fill()
+}
+function remnant(ctx, w, h, t) { // 5) 還有七千人未曾向巴力屈膝(你不孤單)
+  const k = h / 240, gy = h * 0.86; eliSky(ctx, w, h)
+  ctx.fillStyle = '#bcae84'; ctx.fillRect(0, gy, w, h - gy)
+  const colors = ['#3a6a9c', '#a8553a', '#6a8a52', '#8a6a9c', '#c2873a', '#4a7a8a']
+  for (let r = 0; r < 2; r++) for (let i = 0; i < 6; i++) { const x = w * 0.34 + i * 42 * k - r * 20 * k; person(ctx, x, gy - r * 16 * k, k * (0.7 - r * 0.1), { robe: colors[(i + r) % 6], head: 'turban', face: 'calm' }) }
+  person(ctx, w * 0.16, gy, k * 1.05, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, face: 'awe' })
+}
+function renew(ctx, w, h, t) { // 6) 重新得力:日出 + 把外袍披在以利沙身上
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#f4c785'); g.addColorStop(1, '#fdebc4'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  const sun = ctx.createRadialGradient(w * 0.5, gy, 0, w * 0.5, gy, (90 + Math.sin(t * 1.5) * 10) * k); sun.addColorStop(0, 'rgba(255,238,170,0.95)'); sun.addColorStop(1, 'rgba(255,238,170,0)')
+  ctx.fillStyle = sun; ctx.beginPath(); ctx.arc(w * 0.5, gy, 100 * k, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#bca06a'; ctx.fillRect(0, gy, w, h - gy)
+  person(ctx, w * 0.4, gy, k * 1.1, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, arms: 'reach', reach: 22, reachUp: 6, face: 'joy' }) // 以利亞
+  // 披在以利沙身上的外袍(連兩人之間)
+  ctx.strokeStyle = '#6a4a8c'; ctx.lineWidth = 7 * k; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(w * 0.4 + 22 * k, gy - 60 * k); ctx.lineTo(w * 0.56, gy - 50 * k); ctx.stroke()
+  person(ctx, w * 0.6, gy, k * 1.0, { robe: '#3a7a5a', head: 'turban', face: 'joy' }) // 以利沙
+}
+export const ELIJAH = { despair, broomtree, angelfood, stillvoice, remnant, renew }
+
+// ===================== 大光奇兵 · 掃羅信主(徒 9) =====================
+function journey(ctx, w, h, t) { // 1) 掃羅怒氣往大馬士革
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#bcd0e0'); g.addColorStop(1, '#e8dcc0'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  cityRight(ctx, w, gy, k)
+  ctx.fillStyle = '#c9aa78'; ctx.fillRect(0, gy, w, h - gy)
+  const base = w * 0.18 + (Math.sin(t * 0.8) * 0.5 + 0.5) * w * 0.12
+  person(ctx, base + 40 * k, gy, k * 0.95, { robe: '#8a5a3a', head: 'turban', walk: t * 7 + 1 })
+  person(ctx, base + 18 * k, gy, k * 0.95, { robe: '#6a6a8a', head: 'turban', walk: t * 7 + 2 })
+  person(ctx, base, gy, k * 1.15, { robe: '#7a2e2e', head: 'turban', beard: true, walk: t * 7, face: 'worry' }) // 掃羅(怒)
+}
+function light(ctx, w, h, t) { // 2) 大馬士革路上的大光,仆倒在地
+  const k = h / 240, gy = h * 0.86
+  ctx.fillStyle = '#e8dcc0'; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#c9aa78'; ctx.fillRect(0, gy, w, h - gy)
+  // 同伴呆站
+  person(ctx, w * 0.74, gy, k * 0.95, { robe: '#6a6a8a', head: 'turban', face: 'awe' })
+  fallen(ctx, w * 0.42, gy, k * 1.15, '#7a2e2e') // 掃羅仆倒
+  // 大光:由天而降的強光 + 白閃
+  const cx = w * 0.42
+  const beam = ctx.createRadialGradient(cx, h * 0.05, 0, cx, h * 0.05, (140 + Math.sin(t * 6) * 16) * k)
+  beam.addColorStop(0, `rgba(255,255,255,${0.85 + Math.sin(t * 6) * 0.12})`); beam.addColorStop(0.5, 'rgba(255,250,220,0.5)'); beam.addColorStop(1, 'rgba(255,250,220,0)')
+  ctx.fillStyle = beam; ctx.beginPath(); ctx.arc(cx, h * 0.05, 150 * k, 0, TAU); ctx.fill()
+  rays(ctx, w, h, t, cx, 1)
+}
+function blind(ctx, w, h, t) { // 3) 瞎眼三天,禁食禱告(被人牽著)
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#8a8496'); g.addColorStop(1, '#bcb4ac'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#9c8a72'; ctx.fillRect(0, gy, w, h - gy)
+  // 同伴牽著掃羅
+  person(ctx, w * 0.38, gy, k * 1.0, { robe: '#6a6a8a', head: 'turban', arms: 'reach', reach: 20, reachUp: 2, face: 'calm' })
+  person(ctx, w * 0.56, gy, k * 1.1, { robe: '#7a2e2e', head: 'turban', beard: true, arms: 'pray', face: 'worry' })
+  // 蒙眼布條
+  ctx.strokeStyle = '#d8d0c4'; ctx.lineWidth = 4 * k; ctx.beginPath(); ctx.moveTo(w * 0.56 - 14 * k, gy - 86 * k); ctx.lineTo(w * 0.56 + 14 * k, gy - 86 * k); ctx.stroke()
+}
+function ananias(ctx, w, h, t) { // 4) 亞拿尼亞害怕卻順服去按手
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#e7d8b8'); g.addColorStop(1, '#d3bd95'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#b79b6e'; ctx.fillRect(0, gy, w, h - gy)
+  // 掃羅坐著等候
+  person(ctx, w * 0.62, gy, k * 1.05, { robe: '#7a2e2e', head: 'turban', beard: true, pose: 'kneel', arms: 'pray', face: 'calm' })
+  // 亞拿尼亞(害怕)伸手按手
+  person(ctx, w * 0.4, gy, k * 1.1, { robe: '#3a7a5a', head: 'turban', beard: true, arms: 'reach', reach: 22, reachUp: 8, face: 'worry' })
+  speechBubble(ctx, w * 0.4, gy - 104 * k, k, '主啊,我聽見許多人說……')
+}
+function scales(ctx, w, h, t) { // 5) 鱗片掉下、復明、受洗
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#cfe4ee'); g.addColorStop(1, '#eef0dc'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#b8a070'; ctx.fillRect(0, gy, w, h - gy)
+  person(ctx, w * 0.5, gy, k * 1.2, { robe: '#7a2e2e', head: 'turban', beard: true, arms: 'up', face: 'joy' })
+  // 掉落的鱗片
+  for (let i = 0; i < 8; i++) { const p = (t * 0.8 + i / 8) % 1; ctx.fillStyle = `rgba(160,170,180,${0.8 * (1 - p)})`; ctx.beginPath(); ctx.ellipse(w * 0.5 - 8 * k + (i % 2) * 16 * k, gy - 92 * k + p * 60 * k, 3 * k, 1.6 * k, 0, 0, TAU); ctx.fill() }
+  // 復明的光
+  const gl = ctx.createRadialGradient(w * 0.5, gy - 88 * k, 0, w * 0.5, gy - 88 * k, 30 * k); gl.addColorStop(0, `rgba(255,250,210,${0.6 + Math.sin(t * 3) * 0.2})`); gl.addColorStop(1, 'rgba(255,250,210,0)')
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(w * 0.5, gy - 88 * k, 30 * k, 0, TAU); ctx.fill()
+}
+function apostle(ctx, w, h, t) { // 6) 逼迫者變成使徒保羅,放膽傳道
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#bfe7ea'); g.addColorStop(1, '#fdf3d4'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  const gl = ctx.createRadialGradient(w * 0.28, h * 0.22, 0, w * 0.28, h * 0.22, 70 * k); gl.addColorStop(0, `rgba(255,250,210,${0.6 + Math.sin(t * 2) * 0.15})`); gl.addColorStop(1, 'rgba(255,250,210,0)')
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(w * 0.28, h * 0.22, 70 * k, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#bda072'; ctx.fillRect(0, gy, w, h - gy)
+  // 十字架光
+  ctx.strokeStyle = 'rgba(255,240,180,0.9)'; ctx.lineWidth = 4 * k; ctx.beginPath(); ctx.moveTo(w * 0.28, h * 0.12); ctx.lineTo(w * 0.28, h * 0.34); ctx.moveTo(w * 0.22, h * 0.2); ctx.lineTo(w * 0.34, h * 0.2); ctx.stroke()
+  person(ctx, w * 0.28, gy, k * 1.2, { robe: '#3a6a9c', head: 'turban', headColor: '#d8c39a', beard: true, arms: 'speak', face: 'joy' }) // 保羅
+  const colors = ['#a8553a', '#6a8a52', '#8a6a9c', '#c2873a']
+  for (let i = 0; i < 4; i++) person(ctx, w * 0.58 + i * 40 * k, gy, k * 0.9, { robe: colors[i], head: 'turban', face: 'calm' })
+}
+export const SAUL = { journey, light, blind, ananias, scales, apostle }
