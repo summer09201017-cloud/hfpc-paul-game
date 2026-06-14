@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import CardScene from './CardScene'
+import * as CardAudio from './cardAudio'
 
 // 卡片流程闖關播放器（純 React，不用 Canvas 引擎；內容規格見 specs.js）。
 // 與約拿 3/5/6 卡片關同精神：不會失敗——答錯溫柔重試，走完全部 step 即過關。
@@ -143,6 +144,14 @@ export default function CardGame({ spec, onComplete }) {
   //   沒設 = 維持原本「不會失敗、溫柔重試」(但以理/出埃及等卡片關不受影響)。
   const livesMax = spec.lives ?? null
   const [lives, setLives] = useState(livesMax)
+
+  // 背景音樂(各關不同曲風;掛載播放、卸載停止;音訊要等使用者手勢才發聲)
+  const [musicMuted, setMusicMuted] = useState(CardAudio.isMuted())
+  const music = spec.music || 'warm'
+  useEffect(() => {
+    CardAudio.play(music)
+    return () => CardAudio.stop()
+  }, [music])
 
   const stepIdx = typeof stage === 'number' ? stage : -1
   const step = stepIdx >= 0 ? spec.steps[stepIdx] : null
@@ -346,8 +355,20 @@ export default function CardGame({ spec, onComplete }) {
   }
 
   return (
-    <div className="minigame__card minigame__card--pure" data-kind="cardgame">
+    <div
+      className="minigame__card minigame__card--pure"
+      data-kind="cardgame"
+      onPointerDown={() => CardAudio.play(music)} /* 第一次互動時解鎖/接續音樂 */
+    >
       <div className="mgcard mgcard--anim" key={String(stage) + '-' + sub}>
+        <button
+          className="mgcard__mute"
+          aria-label={musicMuted ? '開啟音樂' : '關閉音樂'}
+          title={musicMuted ? '開啟背景音樂' : '關閉背景音樂'}
+          onClick={() => setMusicMuted(CardAudio.toggleMute())}
+        >
+          {musicMuted ? '🔇' : '🎵'}
+        </button>
         {(typeof stage === 'number' || stage === 'done') && (
           <div className="mgcard__score" aria-label="目前得分">⭐ {score}</div>
         )}

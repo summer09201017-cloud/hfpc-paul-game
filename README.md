@@ -3,6 +3,11 @@
 [![CI](https://github.com/summer09201017-cloud/hfpc-paul-game/actions/workflows/ci.yml/badge.svg)](https://github.com/summer09201017-cloud/hfpc-paul-game/actions/workflows/ci.yml)
 
 > 🌐 **線上版：https://hfpc-paul-game.netlify.app/**（push `main` 即自動重新部署；可在手機「加入主畫面」安裝、離線玩）
+>
+> 🆕 **2026-06-14（在 `feat/cornelius-card` 分支，尚未上線）**：暑假兒童營「逆轉奇兵」三個卡片奇兵
+> （🕊️福音 `?demo=cornelius`／🌅盼望 `?demo=elijah`／💡大光 `?demo=saul`）+ 系列九個卡片關，
+> 全部升級成**手繪 Canvas 動畫（不再只有 emoji）**、加了**背景音樂**與**奇兵關 3 條命（會輸）**。
+> 怎麼做卡片關場景見 skill `card-canvas-scenes`；上線前的部署閘見 `讀我-HANDOFF.txt`。
 
 互動式聖經地圖關卡遊戲。跟著使徒保羅走過**第一次宣教旅程**（使徒行傳 13–14 章）：
 擲**骰子（1～6 點）**→ 沿著旅程地圖前進 → 停在城市看「**劇情 / 事件卡 + 歷史小檔案**」，
