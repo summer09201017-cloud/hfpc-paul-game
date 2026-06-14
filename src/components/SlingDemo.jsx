@@ -9,8 +9,29 @@ export default function SlingDemo() {
   const [started, setStarted] = useState(false)
   const [result, setResult] = useState(null)
 
+  // 進全螢幕 + 盡量鎖橫向（手機只有在「使用者手勢」中呼叫才有效，所以綁在「開始甩石」點擊裡）。
+  const enterFullscreenLandscape = () => {
+    try {
+      const el = document.documentElement
+      if (!document.fullscreenElement && el.requestFullscreen) {
+        const p = el.requestFullscreen()
+        // 進全螢幕後再嘗試鎖橫向（桌機沒有 orientation.lock，靜默略過）。
+        if (p && p.then) p.then(() => { try { screen.orientation?.lock?.('landscape') } catch {} }).catch(() => {})
+        else { try { screen.orientation?.lock?.('landscape') } catch {} }
+      }
+    } catch {}
+  }
+
+  const toggleFullscreen = () => {
+    try {
+      if (document.fullscreenElement) document.exitFullscreen()
+      else enterFullscreenLandscape()
+    } catch {}
+  }
+
   const begin = () => {
     if (gameRef.current) return
+    enterFullscreenLandscape() // 在點擊手勢中要全螢幕——手機才會生效
     setStarted(true)
     setResult(null)
     const g = new SlingGame(canvasRef.current, {
@@ -33,8 +54,16 @@ export default function SlingDemo() {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#0f1922', display: 'flex', flexDirection: 'column' }}>
+      <button
+        onClick={toggleFullscreen}
+        aria-label="全螢幕"
+        title="全螢幕"
+        style={{ position: 'absolute', top: 8, right: 8, zIndex: 10, width: 40, height: 40, fontSize: 20, borderRadius: 10, border: '1px solid #3a5160', background: 'rgba(20,30,40,0.7)', color: '#cfe3e8', cursor: 'pointer' }}
+      >
+        ⛶
+      </button>
       <div style={{ color: '#cfe3e8', padding: '6px 12px', font: '14px system-ui' }}>
-        大衛甩石・開發預覽（?demo=sling）{result && `　→ 結果：${result.won ? '命中得勝 🎯' : '五顆用完'}（score ${result.score}）`}
+        大衛甩石・開發預覽（?demo=sling）{result && `　→ 結果：${result.won ? '命中得勝 🎯' : '石子用完了'}（score ${result.score}）`}
       </div>
       <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
         <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />

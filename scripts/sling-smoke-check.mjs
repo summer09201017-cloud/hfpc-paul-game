@@ -18,7 +18,7 @@ const canvas = page.locator('canvas')
 const box = await canvas.boundingBox()
 const canvasOK = box && box.width > 100 && box.height > 100
 
-// 在「命中帶(48–57°)」內放手 → 必中，走完整 win 路徑(_win→_finish(won))。
+// 在「命中帶內(實測 50.25–54.75°，取安全內側 50.5–54.5°)」放手 → 必中，走完整 win 路徑(_win→_finish(won))。
 // 讀 dev 掛勾 window.__sling 的即時 aimDeg/state，只在帶內、且在 aim 階段才點擊放手。
 let resultText = ''
 let firedInBand = false
@@ -28,7 +28,7 @@ for (let i = 0; i < 400; i++) {
     return g ? { state: g.state, aimDeg: g.aimDeg } : null
   })
   if (st && st.state === 'aim') {
-    if (st.aimDeg >= 48 && st.aimDeg <= 57) { // 只在命中帶內放手
+    if (st.aimDeg >= 50.5 && st.aimDeg <= 54.5) { // 只在命中帶內放手
       await canvas.click({ position: { x: 480, y: 300 } })
       firedInBand = true
     }
