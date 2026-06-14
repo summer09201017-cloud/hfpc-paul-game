@@ -549,3 +549,106 @@ function apostle(ctx, w, h, t) { // 6) 逼迫者變成使徒保羅,放膽傳道
   for (let i = 0; i < 4; i++) person(ctx, w * 0.58 + i * 40 * k, gy, k * 0.9, { robe: colors[i], head: 'turban', face: 'calm' })
 }
 export const SAUL = { journey, light, blind, ananias, scales, apostle }
+
+// ===================== 但以理 · 金像之夢(但 2) =====================
+function statueFig(ctx, cx, gy, k, lean = 0) {
+  const top = gy - 150 * k
+  ctx.save(); ctx.translate(cx, gy); ctx.rotate(lean); ctx.translate(-cx, -gy)
+  const seg = (y0, y1, wT, wB, col) => { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(cx - wT * k, y0); ctx.lineTo(cx + wT * k, y0); ctx.lineTo(cx + wB * k, y1); ctx.lineTo(cx - wB * k, y1); ctx.closePath(); ctx.fill() }
+  ctx.fillStyle = '#e8c23a'; ctx.beginPath(); ctx.arc(cx, top, 14 * k, 0, TAU); ctx.fill() // 金頭
+  seg(top + 12 * k, top + 52 * k, 19, 21, '#d2d8e0') // 銀胸臂
+  seg(top + 52 * k, top + 94 * k, 21, 18, '#b87333') // 銅腹腿
+  seg(top + 94 * k, top + 128 * k, 16, 13, '#7a7d82') // 鐵小腿
+  ctx.fillStyle = '#7a7d82'; ctx.fillRect(cx - 13 * k, top + 128 * k, 11 * k, 20 * k)
+  ctx.fillStyle = '#9c6b4a'; ctx.fillRect(cx + 2 * k, top + 128 * k, 11 * k, 20 * k) // 半鐵半泥腳
+  ctx.restore()
+}
+function goldStatue(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.9
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#2a2440'); g.addColorStop(1, '#5a4a6a'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  const gl = ctx.createRadialGradient(w * 0.5, gy - 120 * k, 0, w * 0.5, gy - 120 * k, 130 * k); gl.addColorStop(0, `rgba(255,240,180,${0.25 + Math.sin(t * 2) * 0.08})`); gl.addColorStop(1, 'rgba(255,240,180,0)')
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(w * 0.5, gy - 120 * k, 130 * k, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#3a3450'; ctx.fillRect(0, gy, w, h - gy)
+  statueFig(ctx, w * 0.5, gy, k * 1.1)
+  person(ctx, w * 0.16, gy, k * 0.95, { robe: '#6a3a8c', head: 'crown', beard: true, face: 'awe' }) // 王
+}
+function goldStone(ctx, w, h, t) { // 非人手鑿的石頭打在腳上,大像砸碎,石頭成大山
+  const k = h / 240, gy = h * 0.9
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#3a3450'); g.addColorStop(1, '#6a5a7a'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  // 成形的大山(右後)
+  ctx.fillStyle = '#5a6a52'; ctx.beginPath(); ctx.moveTo(w * 0.5, gy); ctx.lineTo(w * 0.8, gy - 120 * k); ctx.lineTo(w, gy); ctx.closePath(); ctx.fill()
+  ctx.fillStyle = '#3a3450'; ctx.fillRect(0, gy, w, h - gy)
+  statueFig(ctx, w * 0.42, gy, k, Math.sin(t * 2) * 0.06 + 0.06) // 傾斜搖晃
+  // 碎塊
+  for (let i = 0; i < 6; i++) { const p = (t * 0.7 + i / 6) % 1; ctx.fillStyle = `rgba(170,150,120,${0.8 * (1 - p)})`; ctx.fillRect(w * 0.42 - 10 * k + i * 5 * k, gy - 24 * k - p * 30 * k, 5 * k, 5 * k) }
+  // 滾來的石頭
+  ctx.fillStyle = '#8a8276'; ctx.beginPath(); ctx.arc(w * 0.3 + Math.sin(t * 2) * 6 * k, gy - 14 * k, 13 * k, 0, TAU); ctx.fill()
+}
+
+// ===================== 但以理 · 牆上的字(但 5) =====================
+function wallHand(ctx, w, h, t) { // 伯沙撒的宴席:一隻手在牆上寫字
+  const k = h / 240, gy = h * 0.88
+  ctx.fillStyle = '#2e2a3a'; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#46405a'; ctx.fillRect(0, 0, w, gy) // 牆
+  ctx.fillStyle = '#3a3448'; ctx.fillRect(0, gy, w, h - gy)
+  // 發光的字
+  ctx.fillStyle = `rgba(255,236,150,${0.7 + Math.sin(t * 4) * 0.25})`; ctx.font = `700 ${20 * k}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+  ctx.fillText('彌尼 提客勒 烏法珥新', w * 0.52, h * 0.3)
+  // 寫字的手
+  ctx.fillStyle = '#e8bb8d'; ctx.beginPath(); ctx.ellipse(w * 0.52 + 90 * k, h * 0.3, 8 * k, 5 * k, -0.4, 0, TAU); ctx.fill()
+  for (let i = 0; i < 4; i++) { ctx.fillRect(w * 0.52 + 96 * k + i * 2.5 * k, h * 0.3 - 2 * k, 1.8 * k, 8 * k) }
+  // 驚恐的王
+  person(ctx, w * 0.2, gy, k * 1.0, { robe: '#7a2e4a', head: 'crown', beard: true, face: 'awe' })
+}
+function wallWord(ctx, w, h, t) { // 但以理在發光的字前解讀
+  const k = h / 240, gy = h * 0.88
+  ctx.fillStyle = '#46405a'; ctx.fillRect(0, 0, w, gy); ctx.fillStyle = '#3a3448'; ctx.fillRect(0, gy, w, h - gy)
+  ctx.fillStyle = `rgba(255,236,150,${0.7 + Math.sin(t * 3) * 0.2})`
+  for (let i = 0; i < 3; i++) { ctx.globalAlpha = 0.8; ctx.fillRect(w * 0.4 + i * 60 * k, h * 0.22, 44 * k, 30 * k) }
+  ctx.globalAlpha = 1; ctx.fillStyle = '#3a2a10'; ctx.font = `700 ${15 * k}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+  ;['彌尼', '提客勒', '烏法珥新'].forEach((wd, i) => ctx.fillText(wd, w * 0.4 + 22 * k + i * 60 * k, h * 0.22 + 15 * k))
+  person(ctx, w * 0.2, gy, k * 1.05, { robe: '#3a6a9c', head: 'turban', beard: true, arms: 'speak', face: 'calm' }) // 但以理
+}
+
+// ===================== 但以理 · 神掌權五幕(但 7) =====================
+function beasts(ctx, w, h, t) { // 第1幕:四獸從翻騰的海中上來
+  const k = h / 240, gy = h * 0.7
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#3a4a6a'); g.addColorStop(1, '#1e2a44'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  // 翻騰的海
+  ctx.fillStyle = '#24406a'; ctx.beginPath(); ctx.moveTo(0, gy)
+  for (let x = 0; x <= w; x += 18) ctx.lineTo(x, gy + Math.sin(x * 0.05 + t * 3) * 8 * k); ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath(); ctx.fill()
+  // 四個獸影
+  const beast = (x, c) => { ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(x, gy + 6 * k, 18 * k, 12 * k, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.moveTo(x + 10 * k, gy); ctx.lineTo(x + 22 * k, gy - 16 * k); ctx.lineTo(x + 16 * k, gy + 2 * k); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#e8c23a'; ctx.fillRect(x + 17 * k, gy - 12 * k, 2 * k, 2 * k) }
+  beast(w * 0.18, '#7a3a2a'); beast(w * 0.4, '#5a3a6a'); beast(w * 0.6, '#3a5a3a'); beast(w * 0.82, '#2a2a2a')
+}
+function throne(ctx, w, h, t) { // 第2幕:亙古常在者的寶座,千千萬萬侍立
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#f7e9b0'); g.addColorStop(1, '#e8c87a'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  rays(ctx, w, h, t, w * 0.5, 0.8)
+  // 火焰寶座
+  ctx.fillStyle = '#caa05a'; ctx.fillRect(w * 0.44, h * 0.22, w * 0.12, h * 0.34)
+  for (let i = 0; i < 5; i++) flame(ctx, w * 0.45 + i * (w * 0.025), h * 0.56, k, t, i)
+  // 千千萬萬侍立(小點)
+  ctx.fillStyle = 'rgba(120,90,40,0.5)'
+  for (let i = 0; i < 30; i++) ctx.fillRect((i * 37) % w, gy - 6 * k - (i % 3) * 4 * k, 4 * k, 10 * k)
+}
+function sonofman(ctx, w, h, t) { // 第3幕:人子駕雲而來,得權柄
+  const k = h / 240
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#9ec4e0'); g.addColorStop(1, '#e7eef4'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  // 雲
+  ctx.fillStyle = 'rgba(255,255,255,0.92)'
+  for (const [cx, cy, r] of [[w * 0.5, h * 0.5, 40], [w * 0.42, h * 0.55, 30], [w * 0.58, h * 0.55, 32]]) { ctx.beginPath(); ctx.arc(cx + Math.sin(t) * 4 * k, cy, r * k, 0, TAU); ctx.fill() }
+  const gl = ctx.createRadialGradient(w * 0.5, h * 0.4, 0, w * 0.5, h * 0.4, 60 * k); gl.addColorStop(0, `rgba(255,250,210,${0.7 + Math.sin(t * 2) * 0.2})`); gl.addColorStop(1, 'rgba(255,250,210,0)')
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(w * 0.5, h * 0.4, 60 * k, 0, TAU); ctx.fill()
+  person(ctx, w * 0.5, h * 0.62, k * 1.1, { robe: '#f4f1e6', head: 'turban', headColor: '#f0e6c8', arms: 'up', face: 'calm' })
+}
+function kingdomRest(ctx, w, h, t) { // 第4/5幕:國度賜給聖民,得享安息
+  const k = h / 240, gy = h * 0.86
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#bfe7ea'); g.addColorStop(1, '#fdf3d4'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  const sun = ctx.createRadialGradient(w * 0.5, h * 0.22, 0, w * 0.5, h * 0.22, 80 * k); sun.addColorStop(0, `rgba(255,244,190,${0.7 + Math.sin(t * 2) * 0.12})`); sun.addColorStop(1, 'rgba(255,244,190,0)')
+  ctx.fillStyle = sun; ctx.beginPath(); ctx.arc(w * 0.5, h * 0.22, 80 * k, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#7aa86a'; ctx.fillRect(0, gy, w, h - gy)
+  const colors = ['#3a6a9c', '#a8553a', '#6a8a52', '#8a6a9c', '#c2873a']
+  for (let i = 0; i < 5; i++) person(ctx, w * 0.2 + i * (w * 0.15), gy, k * 0.95, { robe: colors[i], head: 'turban', arms: 'up', face: 'joy' })
+}
+export const DANIEL = { goldStatue, goldStone, wallHand, wallWord, beasts, throne, sonofman, kingdomRest }

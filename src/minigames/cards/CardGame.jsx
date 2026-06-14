@@ -42,7 +42,9 @@ function Scene({ scene }) {
 // 場景區:永遠有一層 Canvas 背景動畫(通用,所有卡片關受惠);
 //   若 scene.canvas 指定了逐幕 drawer(福音奇兵),就改放手繪動畫(取代 emoji);
 //   否則 Canvas 當背景、emoji 小劇場疊在上面(比純 emoji 高級很多)。
-function SceneArea({ scene, accent }) {
+function SceneArea({ scene, accent, fallback }) {
+  // spec 層級的預設場景:某步沒指定自己的 canvas 時,用整關的預設(但以理/出埃及多步共用一景時很省)
+  if (fallback && !(scene && scene.canvas)) scene = { ...(scene || {}), canvas: fallback }
   if (scene && scene.canvas) {
     return (
       <div className="mgscene mgscene--full">
@@ -188,7 +190,7 @@ export default function CardGame({ spec, onComplete }) {
     body = (
       <>
         <div className="mgcard__kicker mgcard__kicker--intro">{c.kicker}</div>
-        <SceneArea accent={accent} scene={c.scene} />
+        <SceneArea accent={accent} fallback={spec.canvas} scene={c.scene} />
         {c.ref && c.line && (
           <div className="mgcard__verse">
             <span className="mgcard__ref">{c.ref}</span>
@@ -208,7 +210,7 @@ export default function CardGame({ spec, onComplete }) {
     body = (
       <>
         <div className="mgcard__win">🏆 得勝！</div>
-        <SceneArea accent={accent} scene={c.scene || { motion: 'rise', cast: ['🎉', '✨', '🎉'] }} />
+        <SceneArea accent={accent} fallback={spec.canvas} scene={c.scene || { motion: 'rise', cast: ['🎉', '✨', '🎉'] }} />
         <div className="mgcard__finalscore">⭐ 得分 {score} / {maxScore}</div>
         {vRef && vLine && (
           <div className="mgcard__verse mgcard__verse--win">
@@ -232,7 +234,7 @@ export default function CardGame({ spec, onComplete }) {
     body = (
       <>
         <div className="mgcard__win mgcard__win--lose">💔 闖關失敗</div>
-        <SceneArea accent={accent} scene={{ motion: 'fall', cast: ['😣', '💔'] }} />
+        <SceneArea accent={accent} fallback={spec.canvas} scene={{ motion: 'fall', cast: ['😣', '💔'] }} />
         <div className="mgcard__finalscore">⭐ 得分 {score} / {maxScore}</div>
         {vRef && vLine && (
           <div className="mgcard__verse mgcard__verse--win">
@@ -249,7 +251,7 @@ export default function CardGame({ spec, onComplete }) {
   } else if (sub === 'wrong') {
     body = (
       <>
-        <SceneArea accent={accent} scene={{ motion: 'pulse', cast: ['🤔', '📖'] }} />
+        <SceneArea accent={accent} fallback={spec.canvas} scene={{ motion: 'pulse', cast: ['🤔', '📖'] }} />
         <div className="mgcard__kicker mgcard__kicker--tryagain">
           {livesMax != null ? '💔 答錯了,失去一條命' : '🤔 再想想～'}
         </div>
@@ -274,7 +276,7 @@ export default function CardGame({ spec, onComplete }) {
     body = (
       <>
         <Sparkles />
-        <SceneArea accent={accent} scene={step.scene} />
+        <SceneArea accent={accent} fallback={spec.canvas} scene={step.scene} />
         <div className="mgcard__kicker mgcard__kicker--reveal">✓ {step.kicker}</div>
         {r.ref && r.line && (
           <div className="mgcard__verse">
@@ -294,7 +296,7 @@ export default function CardGame({ spec, onComplete }) {
         <div className="mgcard__kicker mgcard__kicker--question">
           {step.kicker}　{progress}
         </div>
-        <SceneArea accent={accent} scene={step.scene} />
+        <SceneArea accent={accent} fallback={spec.canvas} scene={step.scene} />
         <OrderStep step={step} onDone={orderDone} />
       </>
     )
@@ -304,7 +306,7 @@ export default function CardGame({ spec, onComplete }) {
         <div className="mgcard__kicker mgcard__kicker--intro">
           {step.kicker}　{progress}
         </div>
-        <SceneArea accent={accent} scene={step.scene} />
+        <SceneArea accent={accent} fallback={spec.canvas} scene={step.scene} />
         {step.ref && step.line && (
           <div className="mgcard__verse">
             <span className="mgcard__ref">{step.ref}</span>
@@ -324,7 +326,7 @@ export default function CardGame({ spec, onComplete }) {
         <div className="mgcard__kicker mgcard__kicker--question">
           {step.kicker}　{progress}
         </div>
-        <SceneArea accent={accent} scene={step.scene} />
+        <SceneArea accent={accent} fallback={spec.canvas} scene={step.scene} />
         <h3 className="mgcard__q">{step.q}</h3>
         <div className="mgcard__choices">
           {step.choices.map((c, i) => (

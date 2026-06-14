@@ -10,6 +10,7 @@ export const CARD_GAMES = {
   // ===================== 但以理 · 闖關2 金像之夢（但 2） =====================
   goldImage: {
     title: '🗿 金像之夢',
+    canvas: 'goldStatue', // 預設場景:夢中大像
     how: '把王夢中大像的五個部分「由上而下」排出來，再看那塊非人手鑿出來的石頭——點選卡片作答（這一關不會失敗）。',
     intro: {
       kicker: '🗿 金像之夢',
@@ -33,6 +34,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🪨 非人手鑿出來的石頭',
+        scene: { canvas: 'goldStone', caption: '非人手鑿的石頭打碎大像、成為大山' },
         q: '打碎大像的那塊「非人手鑿出來的石頭」代表什麼？',
         choices: ['一場大地震', '神所立、永不敗壞的國', '波斯的軍隊', '巴比倫的城牆'],
         answer: 1,
@@ -45,6 +47,7 @@ export const CARD_GAMES = {
     ],
     done: {
       kicker: '✓ 夢的講解顯明了',
+      scene: { canvas: 'goldStone', caption: '神的國永不敗壞' },
       body: '「夢準是這樣，講解也是確實的。」（但 2:45）尼布甲尼撒王俯伏在地，說：「你們的神誠然是萬神之神、萬王之主！」（但 2:47）',
       btn: '🎉 完成解夢',
     },
@@ -53,9 +56,11 @@ export const CARD_GAMES = {
   // ===================== 但以理 · 闖關4 牆上的字（但 5） =====================
   wallWriting: {
     title: '✍️ 牆上的字',
+    canvas: 'wallWord', // 預設場景:但以理在發光的字前解讀
     how: '王宮粉牆上出現了神祕的字——彌尼、彌尼、提客勒、烏法珥新。逐字解開它的意思（這一關不會失敗）。',
     intro: {
       kicker: '✍️ 牆上的字',
+      scene: { canvas: 'wallHand', caption: '指頭在粉牆上寫字,王驚惶變色' },
       ref: '但以理書 5:5-6',
       line: '當時，忽有人的指頭顯出，在王宮與燈臺相對的粉牆上寫字……王就變了臉色，心意驚惶。',
       body: '伯沙撒王用聖殿的金銀器皿飲酒、讚美假神，牆上就出現了四個字：彌尼，彌尼，提客勒，烏法珥新。全國哲士都不能讀——只有但以理能講解。請你逐字解碼！',
@@ -121,6 +126,7 @@ export const CARD_GAMES = {
   // ===================== 但以理 · 闖關6 神掌權（終局反思，但 7、9、12） =====================
   danielFinale: {
     title: '👑 神掌權 · 五幕',
+    canvas: 'throne', // 預設場景:亙古常在者的寶座(幕2/intro/done 用)
     how: '看五幕異象與禱告：四獸、寶座、人子、聖民、歸回的應許——每幕回答一個反思題（這一關不會失敗）。',
     intro: {
       kicker: '👑 神掌權 · 終局五幕',
@@ -132,6 +138,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '第 1 幕 · 四獸從海中上來',
+        scene: { canvas: 'beasts', caption: '四獸從翻騰的海中上來' },
         q: '但以理夢見四個大獸從海中上來，各不相同。這四個大獸代表什麼？',
         choices: ['四種快要絕種的動物', '從地上興起的四個王（國度）', '巴比倫的四座城門', '四季的變化'],
         answer: 1,
@@ -156,6 +163,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '第 3 幕 · 人子駕雲而來',
+        scene: { canvas: 'sonofman', caption: '人子駕著天雲而來,得權柄國度' },
         q: '「有一位像人子的，駕著天雲而來」——祂得了什麼？',
         choices: ['一座新的王宮', '權柄、榮耀、國度，使各方、各國、各族的人都事奉他', '巴比倫的王位', '四獸的領土'],
         answer: 1,
@@ -168,6 +176,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '第 4 幕 · 國度賜給聖民',
+        scene: { canvas: 'kingdomRest', caption: '國度賜給至高者的聖民' },
         q: '到了結局，國度、權柄要歸給誰？',
         choices: ['最強的帝國', '至高者的聖民', '最聰明的哲士', '巴比倫的後代'],
         answer: 1,
@@ -180,6 +189,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '第 5 幕 · 七十年與安息',
+        scene: { canvas: 'kingdomRest', caption: '七十年將滿,得享安息' },
         q: '但以理是從哪位先知的書上，得知耶路撒冷荒涼七十年將滿？',
         choices: ['以賽亞', '耶利米', '以西結', '阿摩司'],
         answer: 1,
