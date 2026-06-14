@@ -416,10 +416,12 @@ export const CARD_GAMES = {
   // ⚠ 文案為 AI 草擬，和合本經文與教導內容均須牧者審核通過後才上線。
   cornelius: {
     title: '🕊️ 福音奇兵 · 彼得與哥尼流',
-    how: '跟著使徒彼得，從約帕的屋頂異象到該撒利亞的客廳——用選擇與排序，看神怎麼把福音帶給外邦人（這一關不會失敗）。',
+    accent: [58, 141, 141], // Canvas 場景配色(teal)
+    lives: 3, // 3 條命:答錯扣一條,扣完會輸(逆轉奇兵營會競賽用)
+    how: '跟著使徒彼得，從約帕的屋頂異象到該撒利亞的客廳——用選擇與排序，看神怎麼把福音帶給外邦人。',
     intro: {
       kicker: '🕊️ 福音奇兵',
-      scene: { motion: 'rise', cast: ['💂', '🙏', '🕊️'], caption: '軍官哥尼流禱告' },
+      scene: { canvas: 'pray', motion: 'rise', cast: ['💂', '🙏', '🕊️'], caption: '軍官哥尼流禱告' },
       ref: '使徒行傳 10:1-4',
       line: '在該撒利亞有一個人，名叫哥尼流……他是個虔誠人，他和全家都敬畏神，多多賙濟百姓，常常禱告神。',
       body: '哥尼流是個外邦軍官，他的禱告和賙濟達到神面前，蒙了記念。神要他去請使徒彼得來。可是猶太人和外邦人素不來往——所以神同時給了彼得一個異象，要先翻轉他心裡的一道牆。',
@@ -429,7 +431,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🍖 屋頂的異象',
-        scene: { motion: 'drop', cast: ['🍖', '🦎', '🦅', '🐍', '🐑'] },
+        scene: { canvas: 'vision', motion: 'drop', cast: ['🍖', '🦎', '🦅', '🐍', '🐑'], caption: '一塊大布從天降下' },
         q: '彼得餓了，恍惚中看見一塊大布降下，裡面有各樣走獸。有聲音三次說：「神所潔淨的，你不可當作俗物。」這異象真正在講什麼？',
         choices: [
           '從今以後可以隨便亂吃東西',
@@ -447,7 +449,7 @@ export const CARD_GAMES = {
       {
         kind: 'order',
         kicker: '👣 彼得順服的腳步',
-        scene: { motion: 'walk', cast: ['🧔', '🚶', '🚶', '🚶'], target: '🏠' },
+        scene: { canvas: 'walk', motion: 'walk', cast: ['🧔', '🚶', '🚶', '🚶'], target: '🏠', caption: '彼得一行人前往該撒利亞' },
         prompt: '聖靈一開口，彼得就一步步順服。把他「順服神」的步驟，由先到後排出來：',
         items: [
           '🤔 心裡正猜疑這異象是什麼意思',
@@ -465,7 +467,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🙇 在哥尼流家門口',
-        scene: { motion: 'lift', cast: ['🧍', '🙇'], caption: '「你起來，我也是人」' },
+        scene: { canvas: 'door', motion: 'lift', cast: ['🧍', '🙇'] },
         q: '彼得一進門，哥尼流就俯伏在他腳前拜他。彼得怎麼做？',
         choices: [
           '接受跪拜，顯出使徒的威嚴',
@@ -483,7 +485,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '💡 彼得開口第一句',
-        scene: { motion: 'speak', cast: ['🧔', '💬'], caption: '「神是不偏待人」' },
+        scene: { canvas: 'speak', motion: 'speak', cast: ['🧔', '💬'], caption: '「神是不偏待人」' },
         q: '彼得在滿屋外邦人面前開口，第一句領悟是什麼？',
         choices: [
           '「你們得先成為猶太人才行」',
@@ -501,7 +503,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🔥 彼得還說著話',
-        scene: { motion: 'rise', cast: ['🕊️', '🔥', '🕊️', '🔥', '🕊️'] },
+        scene: { canvas: 'spirit', motion: 'rise', cast: ['🕊️', '🔥', '🕊️', '🔥', '🕊️'], caption: '聖靈降在眾人身上' },
         q: '彼得正講說耶穌的時候，發生了什麼大事？',
         choices: [
           '滿屋的人都睡著了',
@@ -519,6 +521,7 @@ export const CARD_GAMES = {
     ],
     done: {
       kicker: '✓ 福音給萬人',
+      scene: { canvas: 'allnations', caption: '福音臨到萬民' },
       ref: '徒 10:34',
       line: '我真看出神是不偏待人。',
       body: '從約帕的屋頂到該撒利亞的客廳，神拆掉了一道又高又久的牆。最虔誠的彼得都需要被逆轉觀念——何況我們？福音的得勝，不是打倒誰，是看見神的愛沒有界線。',

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import CardScene from './CardScene'
 
 // 卡片流程闖關播放器（純 React，不用 Canvas 引擎；內容規格見 specs.js）。
 // 與約拿 3/5/6 卡片關同精神：不會失敗——答錯溫柔重試，走完全部 step 即過關。
@@ -34,6 +35,36 @@ function Scene({ scene }) {
       </div>
       {scene.target && <span className="scene__target">{scene.target}</span>}
       {scene.caption && <div className="scene__caption">{scene.caption}</div>}
+    </div>
+  )
+}
+
+// 場景區:永遠有一層 Canvas 背景動畫(通用,所有卡片關受惠);
+//   若 scene.canvas 指定了逐幕 drawer(福音奇兵),就改放手繪動畫(取代 emoji);
+//   否則 Canvas 當背景、emoji 小劇場疊在上面(比純 emoji 高級很多)。
+function SceneArea({ scene, accent }) {
+  if (scene && scene.canvas) {
+    return (
+      <div className="mgscene mgscene--full">
+        <CardScene sceneKey={scene.canvas} accent={accent} />
+        {scene.caption && <div className="mgscene__cap">{scene.caption}</div>}
+      </div>
+    )
+  }
+  if (scene) {
+    return (
+      <div className="mgscene">
+        <CardScene sceneKey={null} accent={accent} />
+        <div className="mgscene__fg">
+          <Scene scene={scene} />
+        </div>
+      </div>
+    )
+  }
+  // 沒有 scene 的卡片(如部分但以理/出埃及關):仍給一條輕量背景動畫——所有卡片關一次受惠
+  return (
+    <div className="mgscene mgscene--bare">
+      <CardScene sceneKey={null} accent={accent} />
     </div>
   )
 }
@@ -104,6 +135,13 @@ export default function CardGame({ spec, onComplete }) {
   const [wrongs, setWrongs] = useState(0) // 本題答錯次數(算分:第一次答對最高分)
   const maxScore = (spec.steps ? spec.steps.length : 0) * 3 // 滿分 = 每題 3 分
 
+  // 場景配色(Canvas 背景動畫用);可在 spec 設 accent:[r,g,b]
+  const accent = spec.accent || [120, 140, 170]
+  // 3 條命(opt-in):spec.lives 有設(如福音奇兵=3)才啟用「答錯扣命、扣完會輸」;
+  //   沒設 = 維持原本「不會失敗、溫柔重試」(但以理/出埃及等卡片關不受影響)。
+  const livesMax = spec.lives ?? null
+  const [lives, setLives] = useState(livesMax)
+
   const stepIdx = typeof stage === 'number' ? stage : -1
   const step = stepIdx >= 0 ? spec.steps[stepIdx] : null
   const progress = stepIdx >= 0 ? `${stepIdx + 1} / ${spec.steps.length}` : ''
@@ -115,6 +153,11 @@ export default function CardGame({ spec, onComplete }) {
     else setStage('done')
   }
 
+  // 從頭再玩(輸了之後)
+  const restart = () => {
+    setStage('intro'); setSub('ask'); setScore(0); setWrongs(0); setLives(livesMax)
+  }
+
   const answer = (i) => {
     if (i === step.answer) {
       // 第一次答對 3 分、第二次 2 分、第三次以後 1 分(答對都有分,沒人會 0 分挫折)
@@ -122,7 +165,15 @@ export default function CardGame({ spec, onComplete }) {
       setSub('reveal')
     } else {
       setWrongs((w) => w + 1)
-      setSub('wrong')
+      if (livesMax != null) {
+        // 有命模式:答錯扣一條命,扣完就輸(會輸 = 有緊張感、競賽用)
+        const left = lives - 1
+        setLives(left)
+        if (left <= 0) setStage('lost')
+        else setSub('wrong')
+      } else {
+        setSub('wrong') // 無命模式:溫柔重試,不會輸
+      }
     }
   }
 
@@ -137,7 +188,7 @@ export default function CardGame({ spec, onComplete }) {
     body = (
       <>
         <div className="mgcard__kicker mgcard__kicker--intro">{c.kicker}</div>
-        <Scene scene={c.scene} />
+        <SceneArea accent={accent} scene={c.scene} />
         {c.ref && c.line && (
           <div className="mgcard__verse">
             <span className="mgcard__ref">{c.ref}</span>
@@ -157,7 +208,7 @@ export default function CardGame({ spec, onComplete }) {
     body = (
       <>
         <div className="mgcard__win">🏆 得勝！</div>
-        <Scene scene={c.scene || { motion: 'rise', cast: ['🎉', '✨', '🎉'] }} />
+        <SceneArea accent={accent} scene={c.scene || { motion: 'rise', cast: ['🎉', '✨', '🎉'] }} />
         <div className="mgcard__finalscore">⭐ 得分 {score} / {maxScore}</div>
         {vRef && vLine && (
           <div className="mgcard__verse mgcard__verse--win">
@@ -175,12 +226,43 @@ export default function CardGame({ spec, onComplete }) {
         </button>
       </>
     )
+  } else if (stage === 'lost') {
+    const vRef = spec.intro && spec.intro.ref
+    const vLine = spec.intro && spec.intro.line
+    body = (
+      <>
+        <div className="mgcard__win mgcard__win--lose">💔 闖關失敗</div>
+        <SceneArea accent={accent} scene={{ motion: 'fall', cast: ['😣', '💔'] }} />
+        <div className="mgcard__finalscore">⭐ 得分 {score} / {maxScore}</div>
+        {vRef && vLine && (
+          <div className="mgcard__verse mgcard__verse--win">
+            <span className="mgcard__ref">{vRef}</span>
+            {vLine}
+          </div>
+        )}
+        <p className="mgcard__body">沒關係!得勝不是靠自己——再倚靠神試一次。三條命用完了,從頭再來。</p>
+        <button className="btn btn--primary mgcard__btn" onClick={restart}>
+          🔁 從頭再來
+        </button>
+      </>
+    )
   } else if (sub === 'wrong') {
     body = (
       <>
-        <Scene scene={{ motion: 'pulse', cast: ['🤔', '📖'] }} />
-        <div className="mgcard__kicker mgcard__kicker--tryagain">🤔 再想想～</div>
-        <p className="mgcard__body">還差一點點！再讀一次題目，想想經文怎麼說 📖，然後再選一次。</p>
+        <SceneArea accent={accent} scene={{ motion: 'pulse', cast: ['🤔', '📖'] }} />
+        <div className="mgcard__kicker mgcard__kicker--tryagain">
+          {livesMax != null ? '💔 答錯了,失去一條命' : '🤔 再想想～'}
+        </div>
+        {livesMax != null && (
+          <div className="mgcard__lives" aria-label="剩餘生命">
+            {Array.from({ length: livesMax }, (_, i) => (i < lives ? '❤️' : '🤍')).join(' ')}
+          </div>
+        )}
+        <p className="mgcard__body">
+          {livesMax != null
+            ? `還剩 ${lives} 條命!再讀一次題目,想想經文怎麼說 📖,然後再選一次。`
+            : '還差一點點！再讀一次題目，想想經文怎麼說 📖，然後再選一次。'}
+        </p>
         <button className="btn btn--primary mgcard__btn" onClick={() => setSub('ask')}>
           再試一次
         </button>
@@ -192,7 +274,7 @@ export default function CardGame({ spec, onComplete }) {
     body = (
       <>
         <Sparkles />
-        <Scene scene={step.scene} />
+        <SceneArea accent={accent} scene={step.scene} />
         <div className="mgcard__kicker mgcard__kicker--reveal">✓ {step.kicker}</div>
         {r.ref && r.line && (
           <div className="mgcard__verse">
@@ -212,7 +294,7 @@ export default function CardGame({ spec, onComplete }) {
         <div className="mgcard__kicker mgcard__kicker--question">
           {step.kicker}　{progress}
         </div>
-        <Scene scene={step.scene} />
+        <SceneArea accent={accent} scene={step.scene} />
         <OrderStep step={step} onDone={orderDone} />
       </>
     )
@@ -222,7 +304,7 @@ export default function CardGame({ spec, onComplete }) {
         <div className="mgcard__kicker mgcard__kicker--intro">
           {step.kicker}　{progress}
         </div>
-        <Scene scene={step.scene} />
+        <SceneArea accent={accent} scene={step.scene} />
         {step.ref && step.line && (
           <div className="mgcard__verse">
             <span className="mgcard__ref">{step.ref}</span>
@@ -242,7 +324,7 @@ export default function CardGame({ spec, onComplete }) {
         <div className="mgcard__kicker mgcard__kicker--question">
           {step.kicker}　{progress}
         </div>
-        <Scene scene={step.scene} />
+        <SceneArea accent={accent} scene={step.scene} />
         <h3 className="mgcard__q">{step.q}</h3>
         <div className="mgcard__choices">
           {step.choices.map((c, i) => (
@@ -266,6 +348,11 @@ export default function CardGame({ spec, onComplete }) {
       <div className="mgcard mgcard--anim" key={String(stage) + '-' + sub}>
         {(typeof stage === 'number' || stage === 'done') && (
           <div className="mgcard__score" aria-label="目前得分">⭐ {score}</div>
+        )}
+        {livesMax != null && typeof stage === 'number' && (
+          <div className="mgcard__hearts" aria-label={`剩餘生命 ${lives}`}>
+            {Array.from({ length: livesMax }, (_, i) => (i < lives ? '❤️' : '🤍')).join('')}
+          </div>
         )}
         {body}
       </div>
