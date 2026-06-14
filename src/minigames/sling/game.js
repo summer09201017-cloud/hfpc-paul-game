@@ -147,7 +147,7 @@ export class Game {
       this.state = 'lose'
       this.beat = {
         kind: 'lose',
-        kicker: '五顆石子用完了',
+        kicker: `${this.totalStones} 顆石子都甩完了`,
         ref: CONTENT.lose.ref,
         line: CONTENT.lose.line,
         teach: CONTENT.lose.teach,
