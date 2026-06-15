@@ -29,6 +29,9 @@ export class RedSea {
     this.hazards = [] // 海床礁石/陷坑 [{ x, resolved, cleared }]
     this._nextHazardAt = REDSEA.hazardGap * 1.1 // 第一顆礁石出現的距離(留一點起跑緩衝)
     this.tooEarly = 0 // 海未全開就想衝 → 顯示「站住,等候」提示的剩餘秒數
+    this.holdT = 0 // 指標連續按住的秒數(長按 = 加速衝刺)
+    this.stompCount = 0 // 踩死的水中動物數(劇情/成就味)
+    this.stompFlash = 0 // 剛踩死的閃光 0..1(renderer 用)
     this.done = false
     // 重用跑酷玩家的跳躍/重力(固定在畫面左側 PLAYER.x,只上下)
     this.game.player.reset()
@@ -43,13 +46,10 @@ export class RedSea {
     return j || !!pr || tp
   }
 
-  // 玩家此刻是否「加速衝刺」(按住,不消耗邊緣):→ / D 鍵,或指標按住畫面右側 60% 以後。
-  //   跳躍走邊緣(_act),衝刺走按住(這裡),兩者互不干擾——可以邊衝刺邊跳。
+  // 玩家此刻是否「加速衝刺」:→ / D 鍵,或「長按」畫面任意處(按住 > 0.3 秒;短按是跳,長按是加速)。
+  //   跳躍走邊緣(_act),衝刺走長按(這裡),兩者互不干擾——可以邊衝刺邊跳。
   _sprinting() {
-    const inp = this.game.input
-    if (inp.right) return true
-    if (inp.pointerDown && inp.viewW > 0 && inp.pointerX > inp.viewW * 0.6) return true
-    return false
+    return this.game.input.right || this.holdT > 0.3
   }
 
   // 隨機決定一個障礙的種類與行為(2026-06-15 應牧者「不要都是石頭、要有水中動物」)。
@@ -100,6 +100,9 @@ export class RedSea {
 
     // ── cross:過海床主玩法。世界向前捲(dist 增加),跳過礁石,追兵在後。──
     if (this.phase === 'cross') {
+      // 長按加速:指標持續按住就累積 holdT(達 0.3s 即衝刺);放開歸零。鍵盤用 → / D。
+      this.holdT = this.game.input.pointerDown ? this.holdT + dt : 0
+      if (this.stompFlash > 0) this.stompFlash = Math.max(0, this.stompFlash - dt * 2.5)
       if (this._act() && p.jump()) Audio.sfx('jump')
       p.update(dt)
 
@@ -132,6 +135,13 @@ export class RedSea {
           h.resolved = true
           if (!p.onGround && p.y < GROUND_Y - 22) {
             h.cleared = true // 成功跳過
+            // 跳到水中動物身上 = 踩死(礁石不能踩);純回饋,不影響難度(本來就要跳起來才算清掉)
+            if (h.kind && h.kind !== 'rock') {
+              h.stomped = true
+              this.stompCount++
+              this.stompFlash = 1
+              Audio.sfx('jump') // 踩扁的彈跳聲
+            }
           } else {
             this.stumble = REDSEA.stumbleTime // 絆到:變慢 + 追兵逼近
             this.lead -= REDSEA.chaseCloseOnHit
