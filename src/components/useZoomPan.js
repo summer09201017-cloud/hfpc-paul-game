@@ -2,11 +2,25 @@ import { useRef, useState, useCallback, useEffect, useLayoutEffect } from 'react
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 
-// 連續縮放：100%~250%（上限 250% 是為了避免放太大後出現算繪空白）。
-// 滑桿／輸入框可設任意百分比；＋／－與滾輪則以固定級距變動。
+// 連續縮放：下限 100%，上限「動態」——桌機最多 250%，但手機/高 DPR 會自動降低，
+// 確保「放大後的場景點陣尺寸（CSS px × 裝置 DPR）不超過行動瀏覽器點陣上限」，
+// 否則 SVG 底圖被點陣化成超大圖會整片變白（2026-06-15 修「手機地圖放大畫面空白」）。
 const MIN = 1
-const MAX = 2.5
+const MAX = 2.5 // 桌機硬上限
 const STEP = 0.25 // ＋／－、滾輪每次變動 25%
+// 安全點陣預算（單軸 CSS px × DPR 的上限）。iOS/Android 多數約 4096;取 3200 保守留餘裕
+// （單軸 ≤3200 → 面積也 ≤3200²≈10M < iOS ~16.7M 上限,雙重保險,確保放大不變白）。
+const RASTER_BUDGET = 3200
+// 依容器 CSS 尺寸 + base 倍率 + 裝置 DPR，算出「不會超過點陣上限」的最大縮放。
+function safeMaxScale(w, h, bw, bh) {
+  if (!w || !h) return MAX
+  const dpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 3)
+  const longest = Math.max(w * bw, h * bh) // 場景在 100% 時的最長邊(CSS px)
+  if (!longest) return MAX
+  const cap = RASTER_BUDGET / (longest * dpr)
+  // 至少允許放大到 150%(再小就沒意義);最多不超過桌機硬上限 2.5。
+  return Math.max(1.5, Math.min(MAX, cap))
+}
 
 // 地圖縮放 / 平移。回傳要掛到「裁切容器」的 ref、指標事件處理器、目前縮放/位移，
 // 以及 +／－／重設 與目前百分比。平移會被夾住；所有數值做有限值檢查，避免 NaN 導致地圖消失。
@@ -22,6 +36,8 @@ export function useZoomPan({ aspect = 0 } = {}) {
   const [base, setBase] = useState({ bw: 1, bh: 1 })
   const baseRef = useRef(base)
   baseRef.current = base
+  const [maxScale, setMaxScale] = useState(MAX) // 動態上限(依容器×DPR);UI 用
+  const maxRef = useRef(MAX) // 給 norm/zoomAt/step 即時讀(callback 不重建)
   const drag = useRef(null)
   const pinch = useRef(null)
   const pointers = useRef(new Map())
@@ -31,9 +47,9 @@ export function useZoomPan({ aspect = 0 } = {}) {
     return el ? { w: el.clientWidth, h: el.clientHeight } : { w: 0, h: 0 }
   }
 
-  // 正規化：scale 夾在 [MIN,MAX]、平移夾在「場景蓋滿容器」的範圍內，且全部保證是有限數。
+  // 正規化：scale 夾在 [MIN, 動態上限]、平移夾在「場景蓋滿容器」的範圍內，且全部保證是有限數。
   const norm = (s, x, y) => {
-    s = clamp(Number.isFinite(s) ? s : 1, MIN, MAX)
+    s = clamp(Number.isFinite(s) ? s : 1, MIN, maxRef.current)
     const { w, h } = dims()
     const { bw, bh } = baseRef.current
     x = clamp(Number.isFinite(x) ? x : 0, Math.min(0, -(s * bw - 1) * w), 0)
@@ -56,6 +72,10 @@ export function useZoomPan({ aspect = 0 } = {}) {
           : { bw: Math.max(1, aspect / contA), bh: 1 } // 容器比地圖高 → 高填滿、寬超出
       baseRef.current = next
       setBase(next)
+      // 依容器尺寸 + DPR 算動態縮放上限(避免放大後點陣超限變白);若目前倍率超過新上限就拉回。
+      const mx = safeMaxScale(w, h, next.bw, next.bh)
+      maxRef.current = mx
+      setMaxScale(mx)
       setTf((t) => norm(t.s, t.x, t.y))
     }
     compute()
@@ -68,7 +88,7 @@ export function useZoomPan({ aspect = 0 } = {}) {
   // 以容器內座標 (px,py) 為定點，縮放到 ns（該點縮放前後位置不變）。
   const zoomAt = useCallback((px, py, ns) => {
     setTf((t) => {
-      const s = clamp(Number.isFinite(ns) ? ns : t.s, MIN, MAX)
+      const s = clamp(Number.isFinite(ns) ? ns : t.s, MIN, maxRef.current)
       const k = s / t.s
       return norm(s, px - (px - t.x) * k, py - (py - t.y) * k)
     })
@@ -77,7 +97,7 @@ export function useZoomPan({ aspect = 0 } = {}) {
   // ＋／－／滾輪：以固定級距連續縮放（dir>0 放大）；可指定定點，否則以中心。
   const step = useCallback((dir, px, py) => {
     setTf((t) => {
-      const s = clamp(t.s + dir * STEP, MIN, MAX)
+      const s = clamp(t.s + dir * STEP, MIN, maxRef.current)
       const { w, h } = dims()
       const cx = px ?? w / 2
       const cy = py ?? h / 2
@@ -180,9 +200,9 @@ export function useZoomPan({ aspect = 0 } = {}) {
     baseH: base.bh,
     percent: Math.round(t.s * 100),
     minPercent: Math.round(MIN * 100),
-    maxPercent: Math.round(MAX * 100),
+    maxPercent: Math.round(maxScale * 100),
     canZoomOut: t.s > MIN + 0.001,
-    canZoomIn: t.s < MAX - 0.001,
+    canZoomIn: t.s < maxScale - 0.001,
     handlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp },
     zoomIn,
     zoomOut,
