@@ -3,13 +3,28 @@
 > 🆕 **2026-06-15（已上線 main）**：🥉「盼望」**動作版**——以利亞重得力（收集餅🍞水💧恢復體力，王上 19）。
 > 自成一體引擎 `src/minigames/elijah/`（仿大衛甩石，約拿 fork 之外）。線上預覽 `?demo=elijah-action`，
 > 已接進**大廳「逆轉奇兵」合輯的「盼望奇兵」卡片**（hfpc-bible-games）。⚠ 教導文案 AI 草擬，牧者請過目（可隨時 revert）。
-> 完整設計與「未併 main」的卡片版/其他分支見 `讀我-HANDOFF.txt` 與分支 `feat/elijah-action`。
+> 🕊️ **福音奇兵（cornelius）卡片關亦於 2026-06-15 併入 main**（?demo=cornelius，牧者已審）；盼望/大光的「卡片版」文案仍待審、未連結。
 >
-> 對齊現況：**2026-06-13 晚**。GitHub：`summer09201017-cloud/hfpc-paul-game`（branch `main`）。
+> 對齊現況：**2026-06-14 晚**。GitHub：`summer09201017-cloud/hfpc-paul-game`。
+> **逆轉奇兵三卡片關 + 系列九個卡片關**升級成「L6 等級」手繪 Canvas 動畫 + 卡片關 3 條命（原 `feat/cornelius-card`）。跨專案現況看 `讀我-HANDOFF.txt`。
 > 這份是給接手的人 / AI 看的「目前到哪了、接下來做什麼」。技術細節看 `CLAUDE.md`，玩法/編輯看 `README.md`，
-> **完整跨機交接看 `讀我-HANDOFF.txt` 最上方「2026-06-13 晚」整段**（含分支表＋部署閘）。
+> **完整跨機交接看 `讀我-HANDOFF.txt` 最上方「2026-06-14 晚」整段**（含分支表＋部署閘＋未來功能 CP 排序）。
 
-> ### 📌 現況速覽（2026-06-13 晚）
+## 🆕 2026-06-14 晚 進度（feat/cornelius-card，未併 main）
+
+- **逆轉奇兵三卡片關（福音/盼望/大光）全做完**，並升級成「L6 等級」逐幕手繪 Canvas 動畫（像約拿蓖麻樹），不再只有 emoji。
+- **系列九個卡片關全部 L6 化**：福音/盼望/大光 + 但以理(金像/牆上字/神掌權) + 出埃及(十災/十誡/會幕)，約 40 幕場景。
+- **新架構 `src/minigames/cards/`**：`scenes.js`（drawBackdrop 通用背景 + person 等道具 + 各書卷場景 drawer）、`CardScene.jsx`（canvas+rAF+ResizeObserver+reduced-motion）、`CardGame.jsx`（SceneArea 決定 bespoke/通用/輕量底；spec.canvas 預設 fallback）。心法見 skill **`card-canvas-scenes`**。
+- **卡片關 3 條命（opt-in `spec.lives`）**：奇兵關答錯扣命、扣完 💔 可重來；但以理/出埃及反思關維持「不會失敗」。
+- **卡片關背景音樂**：`cardAudio.js`（零音檔 Web Audio，可離線），各關不同曲風（`spec.music`）+ 🎵/🔇 靜音鈕（記憶）。
+- **大衛甩石**：牧者調整（瞄準角 0–90、石子 5→3、命中區微縮）。
+- 測試：`npm test` 32 項全綠；每關 `?demo=` 用 Playwright 截圖驗收、零 JS 錯誤。
+- ⚠ 部署閘：福音文案牧者已審；**盼望/大光文案待審**。上線前決定「只上福音」或「三卡一起」，再併 main（自動部署），並把大廳對應 soon 拿掉。
+
+## 🔮 未來功能 / Skill / Tool Calling（CP 值排序）
+完整清單見 `讀我-HANDOFF.txt`「🚀 接下來可做的」「🧩 Skill」「🛠️ Tool Calling」三段。重點：離線啟動選單頁、通關獎狀、得分進大廳計分板（半天內）；reverse-rpg-design / quiz-authoring skill；Playwright 截圖驗收與送審清單自動化。
+
+> ### 📌 現況速覽（2026-06-13 晚 · 旅程部分）
 > - **線上 main = 七條旅程**（保羅 1/2/3/4 + 約拿 + 出埃及 + 但以理；牧者已審、已部署）。
 > - **總入口大廳上線**：https://hfpc-bible-games.netlify.app （獨立 repo，卡片連各遊戲）。
 > - **四條已驗證、待併 main 的分支**（使用者明示暫不重部署保羅站）：
