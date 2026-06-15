@@ -754,6 +754,17 @@ export class Renderer {
       for (const h of r.hazards) {
         const sx = PLAYER.x + (h.x - r.dist)
         if (sx < -40 || sx > W + 40) continue
+        if (h.stomped) {
+          // 被踩死的動物:壓扁(縱向壓縮)+ 一個 💥,留在身後
+          ctx.save()
+          ctx.translate(sx, GROUND_Y + 14)
+          ctx.scale(1.15, 0.4) // 壓扁
+          ctx.globalAlpha = 0.85
+          this._emoji(HZ[h.kind] || '🦀', 0, 0, 30, 'middle')
+          ctx.restore()
+          this._emoji('💥', sx + 8, GROUND_Y - 6, 20)
+          continue
+        }
         // 螃蟹快速衝:加一點左右橫向抖動,看起來像在爬/衝
         const wobble = h.kind === 'crab' ? Math.sin(t * 18 + h.x * 0.05) * 3 : 0
         this._emoji(HZ[h.kind] || '🪨', sx + wobble, GROUND_Y + 6, 34)
@@ -922,7 +933,7 @@ export class Renderer {
       ctx.font = '600 16px "Noto Sans TC","Microsoft JhengHei",sans-serif'
       ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'
       ctx.fillStyle = 'rgba(255,255,255,0.88)'
-      ctx.fillText('跳：空白／↑／點畫面　·　加速衝刺：按住 → ／ D ／畫面右側', VIEW.W / 2, VIEW.H - 10)
+      ctx.fillText('跳過／踩死動物：空白／↑／輕點　·　加速衝刺：長按畫面（或 → ／ D）', VIEW.W / 2, VIEW.H - 10)
     } else if (r.phase === 'closing') {
       say('水合攏了，淹沒了法老的全軍！', '出 14:28', '#cfe8ff')
     }
