@@ -4,6 +4,7 @@ import App from './App.jsx'
 import SlingDemo from './components/SlingDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
 import CardDemo from './components/CardDemo.jsx'
+import CorneliusActionDemo from './components/CorneliusActionDemo.jsx'
 import { CARD_GAMES } from './minigames/cards/specs'
 import './styles.css'
 import { registerSW } from 'virtual:pwa-register'
@@ -27,6 +28,7 @@ function pickRoot() {
   if (demo === 'sling') return <SlingDemo />
   if (demo === 'elijah-action') return <ElijahDemo />
   if (demo && CARD_GAMES[demo]) return <CardDemo specKey={demo} />
+  if (demo === 'cornelius-action') return <CorneliusActionDemo />
   return <App />
 }
 
