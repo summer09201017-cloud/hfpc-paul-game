@@ -32,6 +32,23 @@ const LEVELS = {
     title: '🌿 蓖麻樹的功課',
     how: '看五幕「神的安排」：蓖麻、蟲子、東風……每幕結束回答一個反思題（輕點可跳過動畫；這一關不會失敗）。',
   },
+  // —— 戰爭闖關原型（出 17 / 出 14 / 代下 20 / 民 22），由 sync:jonah 自約拿引擎帶入 ——
+  7: {
+    title: '🙌 摩西舉手之戰',
+    how: '摩西在山頂舉手，以色列就得勝。手會痠而下垂——按住畫面／方向鍵把手撐住；後段自己撐不住時，亞倫、戶珥會來扶手。撐到底就得勝（出 17）。',
+  },
+  8: {
+    title: '🌊 紅海奔逃',
+    how: '法老戰車在後追趕！先站住等候神把海完全分開，海路一開就快跑過乾海床、跳過礁石衝到對岸；海水合攏淹沒追兵就得勝（出 14）。空白鍵／↑／點畫面 = 跳。',
+  },
+  9: {
+    title: '🎵 聖歌奇兵 · 約沙法',
+    how: '沒有刀劍，只有讚美。按住畫面／方向鍵／空白鍵 = 帶領詩班持續讚美；讚美夠高詩班就前進、敵軍自亂。撐住讚美到底就得勝（代下 20）。',
+  },
+  10: {
+    title: '🫏 反轉奇兵 · 巴蘭的驢',
+    how: '用 ↑ ↓（或點畫面）上下移動驢，避開站在路上拔刀的使者（巴蘭看不見，只有驢看見）。走到底、神開巴蘭的眼就得勝（民 22）。',
+  },
 }
 
 // 卡片流程關（3/5/6）：引擎的 ui.showXxx 由下面的 EmbedUI 接手畫成 React 卡片。
@@ -158,7 +175,7 @@ export default function MiniGameModal({ minigame, onComplete }) {
   // in-repo 恢復/收集引擎（src/minigames/elijah/）：站點用 minigame.engine:'elijah' 指定，Canvas 即時關，
   // 同樣在約拿 fork 之外（sync:jonah 不會碰）。撿餅水恢復體力、走到何烈山過關（王上 19）。
   const isElijah = minigame.engine === 'elijah'
-  const level = [1, 2, 3, 4, 5, 6].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）
+  const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
     title:
