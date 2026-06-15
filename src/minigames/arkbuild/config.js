@@ -23,6 +23,28 @@ export const RULES = {
   totalYears: 120, // 風味用：蓋方舟「花了好多年」的年數（隨進度成長顯示）
 }
 
+// 蓋舟時洪水還沒來：底部是乾地（不是海），人在地上嘲笑挪亞。
+export const GROUND_Y = 500
+
+// 挪亞鎚擊瞄準：挪亞拿著鎚子沿「目前這塊木板那一排」左右移動，
+// 玩家要抓準在「釘點」記號上點擊，才能把木板釘正；沒對準會歪掉、要重來（不失敗）。
+export const AIM = {
+  speed: 235, // 挪亞左右移動速度（px/s）
+  tol: 34, // 命中容差：|noahX - 釘點X| <= tol 視為對準
+  margin: 26, // 掃動範圍比箱體左右各多出的邊
+}
+
+// 各排木板的「釘點」相對位置（0..1，在 left..right 之間），循環取用 →
+// 每排要瞄的位置都不同，這就是難度來源。
+export const STUDS = [0.5, 0.27, 0.73, 0.4, 0.62, 0.32, 0.68, 0.46, 0.78, 0.22]
+
+// 嘲笑挪亞的人：站在左邊乾地上，講風涼話（氣氛＋教導，不影響過關）。
+export const MOCKERS = [
+  { x: 92, scale: 1.0, face: '😆' },
+  { x: 158, scale: 0.92, face: '😂' },
+  { x: 222, scale: 1.05, face: '🤣' },
+]
+
 export const PALETTE = {
   skyTop: '#cfe6f0',
   skyBottom: '#eaf3da',

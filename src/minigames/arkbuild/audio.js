@@ -26,10 +26,11 @@ export class BuildAudio {
       o.stop(t + dur)
     } catch {}
   }
-  knock() { // 釘木板：低頓「叩」
+  knock() { // 釘木板命中：清脆「叩—叩」
     this._beep(150, 0.09, 'square', 0.14, 90)
     setTimeout(() => this._beep(110, 0.07, 'square', 0.08), 60)
   }
+  miss() { this._beep(120, 0.16, 'sawtooth', 0.09, 70) } // 鎚歪了：悶悶一聲
   section() { this._beep(660, 0.16, 'sine', 0.1) } // 完成一段：清亮一聲
   win() { [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => this._beep(f, 0.24, 'sine', 0.12), i * 130)) }
   destroy() { try { this.ctx && this.ctx.close() } catch {} this.ctx = null }
