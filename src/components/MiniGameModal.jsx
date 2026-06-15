@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Game } from '../minigames/jonah/game'
 import { Game as SlingGame } from '../minigames/sling/game'
+import { Game as ElijahGame } from '../minigames/elijah/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -154,17 +155,30 @@ export default function MiniGameModal({ minigame, onComplete }) {
   // in-repo 拋射引擎（src/minigames/sling/）：站點用 minigame.engine:'sling' 指定，Canvas 即時關，
   // 同樣在約拿 fork 之外。未來其他投擲關（擲矛/射箭）也走這條。
   const isSling = minigame.engine === 'sling'
+  // in-repo 恢復/收集引擎（src/minigames/elijah/）：站點用 minigame.engine:'elijah' 指定，Canvas 即時關，
+  // 同樣在約拿 fork 之外（sync:jonah 不會碰）。撿餅水恢復體力、走到何烈山過關（王上 19）。
+  const isElijah = minigame.engine === 'elijah'
   const level = [1, 2, 3, 4, 5, 6].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）
-  // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 拋射關的預設）。
+  // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
-    title: minigame.label || (cardSpec ? cardSpec.title : isSling ? '🪨 大衛戰歌利亞' : LEVELS[level].title),
+    title:
+      minigame.label ||
+      (cardSpec
+        ? cardSpec.title
+        : isSling
+          ? '🪨 大衛戰歌利亞'
+          : isElijah
+            ? '🌅 盼望 · 以利亞重得力'
+            : LEVELS[level].title),
     how:
       minigame.how ||
       (cardSpec
         ? cardSpec.how
         : isSling
           ? '瞄準線會上下擺動，看準歌利亞的「額頭」，按空白鍵／點畫面放手甩石！五顆石子內擊中就得勝。'
-          : LEVELS[level].how),
+          : isElijah
+            ? '灰心的以利亞在曠野趕路。空白鍵／↑／點畫面 = 跳起來撿天使預備的餅🍞和水💧把體力補回來；體力歸零也沒關係，神會再扶你起來。走到何烈山就過關。'
+            : LEVELS[level].how),
   }
 
   // 卡片按鈕 → 依前綴分派給引擎對應的 handler（嵌入模式下 boot 不註冊 ui 回呼，直接呼叫公開方法）。
@@ -186,6 +200,17 @@ export default function MiniGameModal({ minigame, onComplete }) {
     if (isSling) {
       // 拋射關：自帶 renderer/input/audio，介面與約拿引擎相同（embed/onComplete/boot/destroy）。
       const game = new SlingGame(canvasRef.current, {
+        embed: true,
+        winPoints: minigame.winPoints || 5,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
+    if (isElijah) {
+      // 恢復/收集關：自帶 renderer/input/audio，介面與約拿引擎相同（embed/onComplete/boot/destroy）。
+      const game = new ElijahGame(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 5,
         onComplete: (result) => onComplete(result),

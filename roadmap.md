@@ -1,5 +1,10 @@
 # 🗺️ 保羅大富翁 — 進度藍圖（已完成 vs 真正待做）
 
+> 🆕 **2026-06-15（已上線 main）**：🥉「盼望」**動作版**——以利亞重得力（收集餅🍞水💧恢復體力，王上 19）。
+> 自成一體引擎 `src/minigames/elijah/`（仿大衛甩石，約拿 fork 之外）。線上預覽 `?demo=elijah-action`，
+> 已接進**大廳「逆轉奇兵」合輯的「盼望奇兵」卡片**（hfpc-bible-games）。⚠ 教導文案 AI 草擬，牧者請過目（可隨時 revert）。
+> 完整設計與「未併 main」的卡片版/其他分支見 `讀我-HANDOFF.txt` 與分支 `feat/elijah-action`。
+>
 > 對齊現況：**2026-06-13 晚**。GitHub：`summer09201017-cloud/hfpc-paul-game`（branch `main`）。
 > 這份是給接手的人 / AI 看的「目前到哪了、接下來做什麼」。技術細節看 `CLAUDE.md`，玩法/編輯看 `README.md`，
 > **完整跨機交接看 `讀我-HANDOFF.txt` 最上方「2026-06-13 晚」整段**（含分支表＋部署閘）。
