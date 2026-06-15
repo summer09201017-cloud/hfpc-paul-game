@@ -28,12 +28,19 @@ export class Balaam {
     this.maxLives = BALAAM.lives ?? 3
     this.lives = this.maxLives // 命數(config.BALAAM.lives):每被使者擋住、巴蘭鞭打驢一次扣 1;扣完 = 闖了禍(失敗)
     this.donkeyTremble = 0
+    this.holdT = 0 // 指標連續按住的秒數(用於「長按加速」判定)
     this.done = false
   }
 
   // 給 renderer/UI:此刻是否該提醒玩家避開
   suggestMove() {
     return this.balking
+  }
+
+  // 此刻是否「加速前進」(2026-06-15 應牧者):→ / D 鍵,或長按(指標按住 > 0.35s)。
+  //   上下鍵/指標 Y 仍用來閃避,互不干擾;加速只讓 progress 走更快(早點走到使者顯現)。
+  _accelerating() {
+    return this.game.input.right || this.holdT > 0.35
   }
 
   step(dt) {
@@ -50,6 +57,9 @@ export class Balaam {
     if (inp.pointerDown && inp.viewH > 0) {
       const py = Math.max(0, Math.min(1, inp.pointerY / inp.viewH))
       this.donkeyY += (py - this.donkeyY) * Math.min(1, dt * 6)
+      this.holdT += dt // 持續按住 → 累積長按時間(達門檻即加速)
+    } else {
+      this.holdT = 0
     }
     this.donkeyY = Math.max(C.roadTop, Math.min(C.roadBot, this.donkeyY))
 
@@ -91,11 +101,12 @@ export class Balaam {
       ? Math.min(1, this.donkeyTremble + dt * 4)
       : Math.max(0, this.donkeyTremble - dt * 3)
 
-    // ---- 前進(沒撞才前進;撞到暫停並略退)----
+    // ---- 前進(沒撞才前進;撞到暫停並略退;按住 →/D 或長按 = 加速)----
     if (this.balking) {
       this.progress = Math.max(0, this.progress - C.backOnBump * dt)
     } else {
-      this.progress = Math.min(1, this.progress + C.advanceSpeed * dt)
+      const spd = C.advanceSpeed * (this._accelerating() ? (C.sprintMult || 1) : 1)
+      this.progress = Math.min(1, this.progress + spd * dt)
     }
 
     // ---- 結束判定 ----
