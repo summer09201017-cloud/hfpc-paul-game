@@ -914,6 +914,12 @@ export class Renderer {
       if (r.canGo()) say('海開了！點擊舉杖，衝過海床 →', '趁海分開、海牆倒下前跑到對岸', '#ffe08a')
       else if (r.tooEarly > 0) say('不要懼怕，只管站住！', '等耶和華分開紅海（出 14:13）', '#ffd0d0')
       else say('站住，等候耶和華的救恩', '出 14:13–14', '#cfe8ff')
+    } else if (r.phase === 'cross') {
+      // 過海床時:畫面底部小提示(跳躍 + 加速衝刺),不擋住玩法
+      ctx.font = '600 16px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'
+      ctx.fillStyle = 'rgba(255,255,255,0.88)'
+      ctx.fillText('跳：空白／↑／點畫面　·　加速衝刺：按住 → ／ D ／畫面右側', VIEW.W / 2, VIEW.H - 10)
     } else if (r.phase === 'closing') {
       say('水合攏了，淹沒了法老的全軍！', '出 14:28', '#cfe8ff')
     }

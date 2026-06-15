@@ -43,6 +43,15 @@ export class RedSea {
     return j || !!pr || tp
   }
 
+  // 玩家此刻是否「加速衝刺」(按住,不消耗邊緣):→ / D 鍵,或指標按住畫面右側 60% 以後。
+  //   跳躍走邊緣(_act),衝刺走按住(這裡),兩者互不干擾——可以邊衝刺邊跳。
+  _sprinting() {
+    const inp = this.game.input
+    if (inp.right) return true
+    if (inp.pointerDown && inp.viewW > 0 && inp.pointerX > inp.viewW * 0.6) return true
+    return false
+  }
+
   // 海分開進度 0..1(renderer / UI 用):stand 階段漸開;cross 全開;closing 漸合
   seaOpen() {
     if (this.phase === 'stand') return Math.min(1, this.standT / REDSEA.standTime)
@@ -82,8 +91,10 @@ export class RedSea {
       if (this._act() && p.jump()) Audio.sfx('jump')
       p.update(dt)
 
-      // 前進(踉蹌時打折)
-      const mult = this.stumble > 0 ? REDSEA.stumbleSpeedMult : 1
+      // 前進:踉蹌時打折;否則按住可加速衝刺(踉蹌優先,絆到時不能靠衝刺硬闖)
+      const mult = this.stumble > 0
+        ? REDSEA.stumbleSpeedMult
+        : (this._sprinting() ? REDSEA.sprintMult : 1)
       this.dist += REDSEA.runSpeed * mult * dt
       if (this.stumble > 0) this.stumble = Math.max(0, this.stumble - dt)
 

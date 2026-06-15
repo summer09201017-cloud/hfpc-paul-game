@@ -134,8 +134,9 @@ export const BALAAM = {
 //   想更難 → 調高 chaseCloseOnHit、調低 chaseGapStart / gapRecoverPerSec / hazardGap;反之更簡單。
 export const REDSEA = {
   standTime: 3.0, // 站住等候、海分開的秒數(海全開才能衝)
-  runSpeed: 320, // 海床奔跑速度(px/s;世界捲動 = 前進距離)
-  goalDistance: 4200, // 紅海有多寬(此岸→對岸的距離;約 13 秒腳程)
+  runSpeed: 320, // 海床奔跑「基準」速度(px/s;世界捲動 = 前進距離)
+  sprintMult: 1.6, // 衝刺倍率:按住 → / D / 畫面右側 = 加速(2026-06-15 應牧者「要能加速」)
+  goalDistance: 8400, // 紅海有多寬(此岸→對岸;2026-06-15「時間×2」加長:基準約 26 秒、衝刺約 16 秒)
   hazardGap: 540, // 海床障礙(礁石/陷坑)之間的距離
   chaseGapStart: 360, // 開跑時領先追兵的距離(px)
   chaseGapMax: 540, // 領先距離上限(拉太開也不超過,維持壓力)
