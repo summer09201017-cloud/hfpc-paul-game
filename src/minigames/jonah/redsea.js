@@ -52,6 +52,18 @@ export class RedSea {
     return false
   }
 
+  // 隨機決定一個障礙的種類與行為(2026-06-15 應牧者「不要都是石頭、要有水中動物」)。
+  //   rock 礁石(靜止)、crab 螃蟹(往玩家快速橫衝 vx=crabDart,反應時間短)、
+  //   snake 海蛇、scorpion 水蠍子(目前行為同礁石,僅外觀不同;之後可再加各自動法)。
+  //   權重:約六成是動物、四成礁石。kind 只影響外觀;唯一影響玩法的是 crab 的 vx → 校準用最壞情況驗。
+  _makeHazard() {
+    const roll = Math.random()
+    if (roll < 0.4) return { kind: 'rock', vx: 0 }
+    if (roll < 0.7) return { kind: 'crab', vx: REDSEA.crabDart || 0 } // 螃蟹快速衝
+    if (roll < 0.85) return { kind: 'snake', vx: 0 }
+    return { kind: 'scorpion', vx: 0 }
+  }
+
   // 海分開進度 0..1(renderer / UI 用):stand 階段漸開;cross 全開;closing 漸合
   seaOpen() {
     if (this.phase === 'stand') return Math.min(1, this.standT / REDSEA.standTime)
@@ -101,13 +113,18 @@ export class RedSea {
       // 追兵:乾淨奔跑慢慢拉開(上限 chaseGapMax)
       this.lead = Math.min(REDSEA.chaseGapMax, this.lead + REDSEA.gapRecoverPerSec * dt)
 
-      // 依距離產生前方礁石
+      // 依距離產生前方障礙(礁石 + 水中動物:螃蟹/海蛇/水蠍子,kind 決定外觀與行為)
       while (this._nextHazardAt < this.dist + 1400) {
-        this.hazards.push({ x: this._nextHazardAt, resolved: false, cleared: false })
+        this.hazards.push({ x: this._nextHazardAt, resolved: false, cleared: false, ...this._makeHazard() })
         this._nextHazardAt += REDSEA.hazardGap
       }
 
-      // 礁石到達玩家(screenX 越過 PLAYER.x)時結算一次:在空中夠高=跳過;在地面=絆到
+      // 會動的障礙(螃蟹快速橫衝)往玩家逼近:x 減少 = 比礁石更早到、反應時間更短
+      for (const h of this.hazards) {
+        if (!h.resolved && h.vx) h.x -= h.vx * dt
+      }
+
+      // 障礙到達玩家(screenX 越過 PLAYER.x)時結算一次:在空中夠高=跳過;在地面=絆到
       for (const h of this.hazards) {
         if (h.resolved) continue
         const screenX = PLAYER.x + (h.x - this.dist)
