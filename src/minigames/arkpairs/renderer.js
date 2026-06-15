@@ -1,6 +1,6 @@
 // 繪製層：只讀 game 狀態、不改狀態。邏輯座標固定 960×540，依畫布父層尺寸等比縮放置中。
 // measure() 在每幀更新前被呼叫，存下 fit（scale/位移）供點擊換算成世界座標。
-import { WORLD, GRID, ARK, PALETTE, arkRoomRects } from './config.js'
+import { WORLD, GRID, ARK, PALETTE, arkRoomRects, worldWidth, gridLayout, arkLayout } from './config.js'
 import { CONTENT } from './content.js'
 
 const EMOJI = '"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",system-ui'
@@ -10,6 +10,9 @@ export class Renderer {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
     this.fit = null
+    this.worldW = WORLD.w
+    this.grid = GRID
+    this.ark = ARK
   }
 
   measure() {
@@ -21,10 +24,15 @@ export class Renderer {
       this.canvas.width = Math.round(cw * dpr)
       this.canvas.height = Math.round(ch * dpr)
     }
-    const scale = Math.min(cw / WORLD.w, ch / WORLD.h)
-    const ox = (cw - WORLD.w * scale) / 2
+    // 世界寬度隨裝置長寬比變寬：寬螢幕時 scale=ch/540、ox=0 → 場景填滿、無黑邊。
+    const worldW = worldWidth(cw, ch)
+    const scale = Math.min(cw / worldW, ch / WORLD.h)
+    const ox = (cw - worldW * scale) / 2
     const oy = (ch - WORLD.h * scale) / 2
-    this.fit = { dpr, scale, ox, oy }
+    this.worldW = worldW
+    this.grid = gridLayout(worldW)
+    this.ark = arkLayout(worldW)
+    this.fit = { dpr, scale, ox, oy, worldW }
     return this.fit
   }
 
@@ -32,13 +40,23 @@ export class Renderer {
     const { ctx } = this
     const { dpr, scale, ox, oy } = this.fit || this.measure()
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.fillStyle = '#16242e'
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    // 留邊（手機全螢幕比例比 16:9 寬時的兩側）用海天漸層填滿，不要黑邊。
+    // 漸層的海平面對齊世界內的海平面（世界高 70% 處），左右兩側就和場景無縫接起來。
+    const cw = this.canvas.width / dpr
+    const ch = this.canvas.height / dpr
+    const hz = Math.max(0.001, Math.min(0.999, (oy + WORLD.h * 0.7 * scale) / ch))
+    const bg = ctx.createLinearGradient(0, 0, 0, ch)
+    bg.addColorStop(0, PALETTE.skyTop)
+    bg.addColorStop(hz * 0.999, PALETTE.skyBottom)
+    bg.addColorStop(hz, PALETTE.sea)
+    bg.addColorStop(1, PALETTE.seaDeep)
+    ctx.fillStyle = bg
+    ctx.fillRect(0, 0, cw, ch)
     ctx.save()
     ctx.translate(ox, oy)
     ctx.scale(scale, scale)
     ctx.beginPath()
-    ctx.rect(0, 0, WORLD.w, WORLD.h)
+    ctx.rect(0, 0, this.worldW, WORLD.h)
     ctx.clip()
 
     this._scene(ctx)
@@ -60,11 +78,12 @@ export class Renderer {
     sky.addColorStop(0.701, PALETTE.sea)
     sky.addColorStop(1, PALETTE.seaDeep)
     ctx.fillStyle = sky
-    ctx.fillRect(0, 0, WORLD.w, WORLD.h)
+    ctx.fillRect(0, 0, this.worldW, WORLD.h)
     ctx.strokeStyle = 'rgba(255,255,255,0.18)'
     ctx.lineWidth = 1
-    for (let i = 0; i < 26; i++) {
-      const x = (i * 53) % WORLD.w
+    const drops = Math.ceil((this.worldW / WORLD.w) * 26) // 雨絲數量隨寬度增加，鋪滿整個世界
+    for (let i = 0; i < drops; i++) {
+      const x = (i * 53) % this.worldW
       const y = (i * 91) % 300
       ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 6, y + 18); ctx.stroke()
     }
@@ -79,10 +98,20 @@ export class Renderer {
     ctx.font = `15px ${EMOJI}`
     ctx.fillStyle = '#4a3a24'
     ctx.textAlign = 'right'
-    const right = ARK.x + ARK.w
+    const right = this.ark.x + this.ark.w
     if (game.state === 'arrange') ctx.fillText('🛏️ 安排房間：猛獸旁放大象或飛鳥', right, 30)
     else if (game.state === 'won') ctx.fillText('🌈 全部平安上船', right, 30)
     else ctx.fillText(`已上船 ${game.rooms.length} / ${game.pairs} 對`, right, 30)
+
+    // HUD：難度・計時・翻錯（play/arrange 才顯示；碼錶不會「歸零失敗」，只是計分用）
+    if (game.state === 'play' || game.state === 'arrange') {
+      const secs = Math.round(game.elapsed)
+      const mm = String(Math.floor(secs / 60)).padStart(1, '0')
+      const ss = String(secs % 60).padStart(2, '0')
+      ctx.font = `13px ${EMOJI}`
+      ctx.fillStyle = '#5f4a2c'
+      ctx.fillText(`${game.diff.label}　⏱ ${mm}:${ss}　翻錯 ${game.misses}`, right, 50)
+    }
   }
 
   // ---------- 左側翻牌 ----------
@@ -176,11 +205,11 @@ export class Renderer {
 
   // ---------- 右側方舟（殼 + 房間）----------
   _ark(ctx, game) {
-    const { x, y, w, roofH, hullH } = ARK
+    const { x, y, w, h, roofH, hullH } = this.ark
     const hx = x + 14
     const hw = w - 28
     const hy = y + roofH
-    const hh = ARK.h - roofH - hullH
+    const hh = h - roofH - hullH
     // 船身
     this._roundRect(ctx, hx, hy, hw, hh, 10)
     const g = ctx.createLinearGradient(hx, hy, hx, hy + hh)
@@ -217,8 +246,8 @@ export class Renderer {
     ctx.textBaseline = 'middle'
     ctx.fillText('🛕 方舟', x + w / 2, y + roofH / 2 + 14)
 
-    // 房間（共用幾何）
-    const rects = arkRoomRects(game.pairs)
+    // 房間（共用幾何，用同一個動態 ark 矩形）
+    const rects = arkRoomRects(game.pairs, this.ark)
     for (let i = 0; i < game.pairs; i++) {
       const r = rects[i]
       const room = game.rooms[i]
@@ -263,8 +292,8 @@ export class Renderer {
     ctx.font = `bold 14px ${EMOJI}`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    const tw = Math.min(GRID.w + 10, ctx.measureText(text).width + 32)
-    const tx = GRID.x + GRID.w / 2
+    const tw = Math.min(this.grid.w + 10, ctx.measureText(text).width + 32)
+    const tx = this.grid.x + this.grid.w / 2
     const ty = WORLD.h - 22
     ctx.fillStyle = 'rgba(180,69,46,0.92)'
     this._roundRect(ctx, tx - tw / 2, ty - 18, tw, 36, 18)
@@ -280,7 +309,7 @@ export class Renderer {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     const tw = ctx.measureText(toast.text).width + 36
-    const tx = GRID.x + GRID.w / 2
+    const tx = this.grid.x + this.grid.w / 2
     const ty = WORLD.h - 56
     ctx.fillStyle = toast.kind === 'match' ? 'rgba(58,166,74,0.92)' : 'rgba(180,90,40,0.92)'
     this._roundRect(ctx, tx - tw / 2, ty - 18, tw, 34, 17)
@@ -293,10 +322,11 @@ export class Renderer {
   _beat(ctx, beat) {
     ctx.fillStyle = 'rgba(20,30,40,0.86)'
     const pad = 70
-    const bx = pad
-    const by = WORLD.h / 2 - 130
-    const bw = WORLD.w - pad * 2
-    const bh = 260
+    const bw = Math.min(this.worldW - pad * 2, 820) // 對話框寬度上限，文字好讀
+    const bx = (this.worldW - bw) / 2 // 置中（世界變寬時不貼左）
+    const cx = this.worldW / 2
+    const bh = beat.stats ? 318 : 260 // 過關卡多一列成績（⭐+用時），加高避免擠掉經文
+    const by = WORLD.h / 2 - bh / 2
     this._roundRect(ctx, bx, by, bw, bh, 16)
     ctx.fill()
     ctx.strokeStyle = beat.kind === 'win' ? '#7bd88f' : beat.kind === 'arrange' ? '#ffd24a' : '#bcd'
@@ -308,25 +338,39 @@ export class Renderer {
     ctx.textBaseline = 'top'
     let y = by + 24
     if (beat.kicker) {
-      y = this._wrap(ctx, beat.kicker, WORLD.w / 2, y, bw - 80, 32, beat.kind === 'win' ? '#7bd88f' : '#ffd98a', `bold 25px ${EMOJI}`)
+      y = this._wrap(ctx, beat.kicker, cx, y, bw - 80, 32, beat.kind === 'win' ? '#7bd88f' : '#ffd98a', `bold 25px ${EMOJI}`)
       y += 6
+    }
+    // 成績列：⭐ 星等 + 用時 + 翻錯次數（+ 神速旗標）。經文文案不動，這是另畫的一行。
+    if (beat.stats) {
+      const s = beat.stats
+      ctx.textAlign = 'center'
+      ctx.font = `26px ${EMOJI}`
+      ctx.fillStyle = '#ffd24a'
+      ctx.fillText('⭐'.repeat(s.stars) + '☆'.repeat(3 - s.stars), cx, y)
+      y += 32
+      ctx.font = `14px ${EMOJI}`
+      ctx.fillStyle = '#cfe3e8'
+      const fast = s.fast ? '　⚡神速！' : ''
+      ctx.fillText(`用時 ${s.secs} 秒・翻錯 ${s.misses} 次${fast}`, cx, y)
+      y += 24
     }
     if (beat.ref) {
       ctx.fillStyle = '#ffe1a8'
       ctx.font = `bold 15px ${EMOJI}`
       ctx.textAlign = 'center'
-      ctx.fillText(beat.ref, WORLD.w / 2, y)
+      ctx.fillText(beat.ref, cx, y)
       y += 24
     }
-    if (beat.line) y = this._wrap(ctx, beat.line, WORLD.w / 2, y, bw - 80, 22, '#eef', `15px ${EMOJI}`)
+    if (beat.line) y = this._wrap(ctx, beat.line, cx, y, bw - 80, 22, '#eef', `15px ${EMOJI}`)
     if (beat.teach) {
       y += 6
-      y = this._wrap(ctx, beat.teach, WORLD.w / 2, y, bw - 80, 21, '#cfe', `italic 14px ${EMOJI}`)
+      y = this._wrap(ctx, beat.teach, cx, y, bw - 80, 21, '#cfe', `italic 14px ${EMOJI}`)
     }
     ctx.fillStyle = '#9fb6c6'
     ctx.font = `13px ${EMOJI}`
     ctx.textAlign = 'center'
-    ctx.fillText(beat.cont || '點畫面繼續', WORLD.w / 2, by + bh - 26)
+    ctx.fillText(beat.cont || '點畫面繼續', cx, by + bh - 26)
   }
 
   _wrap(ctx, text, cx, y, maxW, lh, color, font) {

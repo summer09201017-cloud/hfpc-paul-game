@@ -9,6 +9,7 @@ export default function ArkPairsDemo() {
   const [started, setStarted] = useState(false)
   const [result, setResult] = useState(null)
   const [pairs, setPairs] = useState(8) // 幾對動物：開始前可挑 6/8/10/12
+  const [difficulty, setDifficulty] = useState('normal') // 難度旋鈕：輕鬆/普通/挑戰
   const [muted, setMuted] = useState(false) // 背景音樂靜音
 
   const toggleMute = () => {
@@ -42,6 +43,7 @@ export default function ArkPairsDemo() {
       embed: true,
       winPoints: 5,
       pairs,
+      difficulty,
       onComplete: (r) => setResult(r),
     })
     gameRef.current = g
@@ -78,7 +80,8 @@ export default function ArkPairsDemo() {
         {muted ? '🔇' : '🎵'}
       </button>
       <div style={{ color: '#cfe3e8', padding: '6px 12px', font: '14px system-ui' }}>
-        一公一母進方舟・開發預覽（?demo=arkpairs）{result && `　→ 結果：全部上船 🌈（score ${result.score}）`}
+        一公一母進方舟・開發預覽（?demo=arkpairs）
+        {result && `　→ 結果：全部上船 🌈 ${'⭐'.repeat(result.stars || 0)}（用時 ${result.secs}s・翻錯 ${result.misses}・score ${result.score}）`}
       </div>
       <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
         <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
@@ -93,6 +96,18 @@ export default function ArkPairsDemo() {
                   style={{ padding: '8px 14px', fontSize: 15, borderRadius: 10, cursor: 'pointer', color: '#fff', border: n === pairs ? '2px solid #ffd98a' : '1px solid #3a5160', background: n === pairs ? '#3f7fd0' : 'rgba(20,30,40,0.6)' }}
                 >
                   {n} 對
+                </button>
+              ))}
+            </div>
+            <div style={{ color: '#cfe3e8', font: '15px system-ui' }}>難度？（翻錯停留時間／星等門檻）</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[{ id: 'easy', label: '輕鬆' }, { id: 'normal', label: '普通' }, { id: 'hard', label: '挑戰' }].map((d) => (
+                <button
+                  key={d.id}
+                  onClick={() => setDifficulty(d.id)}
+                  style={{ padding: '8px 14px', fontSize: 15, borderRadius: 10, cursor: 'pointer', color: '#fff', border: d.id === difficulty ? '2px solid #ffd98a' : '1px solid #3a5160', background: d.id === difficulty ? '#3f7fd0' : 'rgba(20,30,40,0.6)' }}
+                >
+                  {d.label}
                 </button>
               ))}
             </div>

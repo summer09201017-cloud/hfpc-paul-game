@@ -32,8 +32,18 @@ export class Renderer {
     const { ctx } = this
     const { dpr, scale, ox, oy } = this.fit || this.measure()
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.fillStyle = '#16242e'
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    // 留邊（手機全螢幕比例比 16:9 寬時的兩側）用天空＋乾地漸層填滿，不要黑邊。
+    // 地平線對齊世界內的乾地線（GROUND_Y），兩側就和場景無縫接起來。
+    const cw = this.canvas.width / dpr
+    const ch = this.canvas.height / dpr
+    const gy = Math.max(0.001, Math.min(0.999, (oy + GROUND_Y * scale) / ch))
+    const bg = ctx.createLinearGradient(0, 0, 0, ch)
+    bg.addColorStop(0, PALETTE.skyTop)
+    bg.addColorStop(gy * 0.999, PALETTE.skyBottom)
+    bg.addColorStop(gy, '#b79a5e')
+    bg.addColorStop(1, '#8c7038')
+    ctx.fillStyle = bg
+    ctx.fillRect(0, 0, cw, ch)
     ctx.save()
     ctx.translate(ox, oy)
     ctx.scale(scale, scale)

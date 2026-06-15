@@ -256,6 +256,7 @@ export default function MiniGameModal({ minigame, onComplete }) {
         embed: true,
         winPoints: minigame.winPoints || 5,
         pairs: minigame.pairs,
+        difficulty: minigame.difficulty, // 站點可設難度旋鈕（easy/normal/hard，預設 normal）
         onComplete: (result) => onComplete(result),
       })
       gameRef.current = game
