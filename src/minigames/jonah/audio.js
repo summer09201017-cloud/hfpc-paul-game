@@ -96,23 +96,38 @@ const MELODY = [
   [440, 1], [392, 1], [262, 2],
 ]
 const BASS = [131, 131, 175, 165, 131, 131, 175, 196] // 每 4 拍一個根音
-const LOOP_BEATS = MELODY.reduce((s, [, b]) => s + b, 0)
+
+// ---- 聖歌:代下 20 約沙法「稱謝耶和華,因他的慈愛永遠長存」----
+// 莊嚴流暢的讚美詩旋律(C 大調、慢板),聖歌奇兵(level 9)專用,與輕快的關卡旋律區分。
+const HYMN_BEAT = 0.44
+const HYMN = [
+  [523, 2], [587, 1], [659, 1], [659, 2], [587, 2],
+  [659, 1], [698, 1], [784, 2], [784, 2], [659, 2],
+  [698, 1], [659, 1], [587, 2], [659, 1], [587, 1], [523, 2],
+  [587, 2], [523, 1], [494, 1], [523, 4],
+]
+const HYMN_BASS = [131, 165, 175, 196, 175, 165, 147, 131] // 每 4 拍一個根音(I–iii–IV–V…回 I)
+
+// 目前播放的曲目(關卡輕快旋律 / 聖歌),由 startMusic(track) 切換;lastTrack 供暫停後恢復沿用。
+let curMelody = MELODY, curBass = BASS, curBeat = BEAT
+let curLoopBeats = MELODY.reduce((s, [, b]) => s + b, 0)
+let lastTrack = 'level'
 
 function scheduleLoop(start) {
   let t = start
-  for (const [f, b] of MELODY) {
-    if (f) tone(f, b * BEAT * 0.92, t, 0.5, 'triangle', musicGain)
-    t += b * BEAT
+  for (const [f, b] of curMelody) {
+    if (f) tone(f, b * curBeat * 0.92, t, 0.5, 'triangle', musicGain)
+    t += b * curBeat
   }
   // 低音:每 4 拍一個,柔和方波
-  for (let i = 0; i < BASS.length; i++) {
-    tone(BASS[i], BEAT * 3.6, start + i * 4 * BEAT, 0.4, 'sine', musicGain)
+  for (let i = 0; i < curBass.length; i++) {
+    tone(curBass[i], curBeat * 3.6, start + i * 4 * curBeat, 0.4, 'sine', musicGain)
   }
 }
 
 function pump() {
   if (!musicOn || !ctx) return
-  const loopDur = LOOP_BEATS * BEAT
+  const loopDur = curLoopBeats * curBeat
   while (nextLoopTime < ctx.currentTime + 1.2) {
     scheduleLoop(nextLoopTime)
     nextLoopTime += loopDur
@@ -144,10 +159,17 @@ export const Audio = {
     return muted
   },
 
-  startMusic() {
+  startMusic(track = lastTrack) {
     ensure()
     if (!ctx) return
-    if (musicOn) return
+    lastTrack = track
+    const wantHymn = track === 'hymn'
+    const changed = wantHymn ? curMelody !== HYMN : curMelody !== MELODY
+    if (wantHymn) { curMelody = HYMN; curBass = HYMN_BASS; curBeat = HYMN_BEAT }
+    else { curMelody = MELODY; curBass = BASS; curBeat = BEAT }
+    curLoopBeats = curMelody.reduce((s, [, b]) => s + b, 0)
+    if (musicOn && !changed) return
+    if (musicOn && changed) this.stopMusic() // 切換曲目:先停再起
     musicOn = true
     nextLoopTime = ctx.currentTime + 0.12
     pump()
