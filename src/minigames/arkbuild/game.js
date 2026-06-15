@@ -73,6 +73,14 @@ export class Game {
     return Math.max(1, Math.round((this.placedCount / this.total) * RULES.totalYears))
   }
 
+  // 進度 0→1（蓋了幾成）。漸進難度與挪亞鬍子長度/顏色都吃這個值。
+  get progress() {
+    return this.total ? this.placedCount / this.total : 0
+  }
+  // 有效移動速度 / 命中容差：越蓋越快、容差越小（守公平下限）。renderer 也讀 aimTol() 畫刻度。
+  aimSpeed() { return AIM.speed + (AIM.speedMax - AIM.speed) * this.progress }
+  aimTol() { return AIM.tol + (AIM.tolMin - AIM.tol) * this.progress }
+
   _nextPlank() {
     const sec = SECTION_ORDER[this.sectionIdx]
     return this.planks.find((p) => p.section === sec && !p.placed) || null
@@ -130,19 +138,19 @@ export class Game {
     }
   }
 
-  // 挪亞沿目前木板那一排左右移動。
+  // 挪亞沿目前木板那一排左右移動（越蓋越快）。
   _sweep(dt) {
-    this.noahX += this.noahDir * AIM.speed * dt
+    this.noahX += this.noahDir * this.aimSpeed() * dt
     if (this.noahX >= SWEEP_MAX) { this.noahX = SWEEP_MAX; this.noahDir = -1 }
     else if (this.noahX <= SWEEP_MIN) { this.noahX = SWEEP_MIN; this.noahDir = 1 }
   }
 
-  // 鎚下去：對準釘點就釘上木板，沒對準就歪掉重來。
+  // 鎚下去：對準釘點就釘上木板，沒對準就歪掉重來（容差越蓋越小）。
   _hammer() {
     const p = this._nextPlank()
     if (!p) return
     this.swingT = 0.18
-    if (Math.abs(this.noahX - p.targetX) <= AIM.tol) {
+    if (Math.abs(this.noahX - p.targetX) <= this.aimTol()) {
       this._place(p)
     } else {
       this.audio.miss()

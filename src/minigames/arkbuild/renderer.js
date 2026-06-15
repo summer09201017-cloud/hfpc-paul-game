@@ -138,8 +138,9 @@ export class Renderer {
 
   // —— 釘點瞄準記號（固定位置）＋ 容差刻度 ——
   _nail(ctx, game, p) {
+    const tol = game.aimTol ? game.aimTol() : AIM.tol
     const pulse = 0.6 + 0.4 * (0.5 + 0.5 * Math.sin((game.tAccum || 0) * 6))
-    const aligned = Math.abs(game.noahX - p.targetX) <= AIM.tol
+    const aligned = Math.abs(game.noahX - p.targetX) <= tol
     const color = aligned ? '#7bd88f' : '#ffd24a'
     ctx.save()
     ctx.globalAlpha = pulse
@@ -153,10 +154,10 @@ export class Renderer {
     ctx.moveTo(p.targetX, p.rowY - 16); ctx.lineTo(p.targetX, p.rowY + 16)
     ctx.stroke()
     ctx.globalAlpha = 1
-    // 容差刻度（兩個小括號，告訴你「這段內」算對準）
+    // 容差刻度（兩個小括號，告訴你「這段內」算對準；越蓋越窄）
     ctx.strokeStyle = 'rgba(255,255,255,0.5)'
     ctx.lineWidth = 2
-    for (const dx of [-AIM.tol, AIM.tol]) {
+    for (const dx of [-tol, tol]) {
       ctx.beginPath()
       ctx.moveTo(p.targetX + dx, p.rowY - 14); ctx.lineTo(p.targetX + dx, p.rowY + 14)
       ctx.stroke()
@@ -173,7 +174,7 @@ export class Renderer {
     ctx.fillStyle = 'rgba(90,61,34,0.6)'
     ctx.fillRect(x - 18, footY, 36, 4)
     // 對準導引線（從挪亞往釘點所在的橫排）
-    const aligned = Math.abs(x - p.targetX) <= AIM.tol
+    const aligned = Math.abs(x - p.targetX) <= (game.aimTol ? game.aimTol() : AIM.tol)
     ctx.strokeStyle = aligned ? 'rgba(123,216,143,0.9)' : 'rgba(255,255,255,0.4)'
     ctx.setLineDash([4, 4])
     ctx.lineWidth = 2
@@ -190,11 +191,51 @@ export class Renderer {
     ctx.beginPath()
     ctx.moveTo(x - 11, hy + 14); ctx.lineTo(x + 11, hy + 14); ctx.lineTo(x + 8, footY - 14); ctx.lineTo(x - 8, footY - 14)
     ctx.closePath(); ctx.fill()
-    // 頭 + 白鬍子（老挪亞）
+    // 頭 + 表情 + 鬍子（隨蓋方舟進度：鬍子越來越長、由黑漸白——蓋了「好多年」）
+    const prog = game.progress || 0
+    const headCY = hy + 4
+    const headR = 9
+    // 臉
     ctx.fillStyle = '#e8b887'
-    ctx.beginPath(); ctx.arc(x, hy + 4, 9, 0, Math.PI * 2); ctx.fill()
-    ctx.fillStyle = '#eee'
-    ctx.beginPath(); ctx.arc(x, hy + 10, 7, 0.1 * Math.PI, 0.9 * Math.PI); ctx.fill()
+    ctx.beginPath(); ctx.arc(x, headCY, headR, 0, Math.PI * 2); ctx.fill()
+    // 頭髮（同鬍色，跟著變白）
+    const hairShade = Math.round(40 + prog * 200) // 40(黑)→240(白)
+    const hairCol = `rgb(${hairShade},${hairShade},${hairShade})`
+    ctx.fillStyle = hairCol
+    ctx.beginPath(); ctx.arc(x, headCY - 2, headR, Math.PI * 1.05, Math.PI * 1.95); ctx.fill()
+    // 鬍子：長度 6→18 隨進度成長，顏色黑→白；用尖底三角＋圓潤兩側
+    const beardLen = 6 + prog * 12
+    const beardW = headR - 1
+    ctx.fillStyle = hairCol
+    ctx.beginPath()
+    ctx.moveTo(x - beardW, headCY + 2)
+    ctx.quadraticCurveTo(x - beardW, headCY + beardLen, x, headCY + beardLen + 2)
+    ctx.quadraticCurveTo(x + beardW, headCY + beardLen, x + beardW, headCY + 2)
+    ctx.quadraticCurveTo(x, headCY + 6, x - beardW, headCY + 2)
+    ctx.closePath(); ctx.fill()
+    // 眉毛（專注：內低外高一點）
+    ctx.strokeStyle = hairCol
+    ctx.lineWidth = 1.6
+    ctx.beginPath(); ctx.moveTo(x - 6, headCY - 3); ctx.lineTo(x - 2, headCY - 4); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x + 2, headCY - 4); ctx.lineTo(x + 6, headCY - 3); ctx.stroke()
+    // 眼睛（揮鎚瞬間瞇眼專注，平時睜眼）
+    ctx.fillStyle = '#2a2a2a'
+    const squint = game.swingT > 0
+    if (squint) {
+      ctx.lineWidth = 1.6; ctx.strokeStyle = '#2a2a2a'
+      ctx.beginPath(); ctx.moveTo(x - 5, headCY - 1); ctx.lineTo(x - 2, headCY - 1); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(x + 2, headCY - 1); ctx.lineTo(x + 5, headCY - 1); ctx.stroke()
+    } else {
+      ctx.beginPath(); ctx.arc(x - 3.5, headCY - 1, 1.3, 0, Math.PI * 2); ctx.fill()
+      ctx.beginPath(); ctx.arc(x + 3.5, headCY - 1, 1.3, 0, Math.PI * 2); ctx.fill()
+    }
+    // 嘴：對準→微笑、鎚歪→扁嘴、平時→堅定平線
+    ctx.strokeStyle = '#7a4a32'; ctx.lineWidth = 1.4
+    ctx.beginPath()
+    if (game.missFlash > 0) { ctx.moveTo(x - 3, headCY + 4); ctx.quadraticCurveTo(x, headCY + 2, x + 3, headCY + 4) } // 扁/苦
+    else if (aligned) { ctx.moveTo(x - 3, headCY + 3); ctx.quadraticCurveTo(x, headCY + 6, x + 3, headCY + 3) } // 微笑
+    else { ctx.moveTo(x - 3, headCY + 4); ctx.lineTo(x + 3, headCY + 4) } // 堅定
+    ctx.stroke()
     // 揮鎚手臂 + 鎚子（揮下時旋轉）
     const swing = game.swingT > 0 ? (1 - game.swingT / 0.18) : 1 // 0→1
     const ang = -1.1 + swing * 1.7 // 從舉起到敲下
