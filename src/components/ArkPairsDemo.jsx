@@ -8,6 +8,7 @@ export default function ArkPairsDemo() {
   const gameRef = useRef(null)
   const [started, setStarted] = useState(false)
   const [result, setResult] = useState(null)
+  const [pairs, setPairs] = useState(8) // 幾對動物：開始前可挑 6/8/10/12
 
   const enterFullscreenLandscape = () => {
     try {
@@ -31,7 +32,7 @@ export default function ArkPairsDemo() {
     const g = new ArkPairsGame(canvasRef.current, {
       embed: true,
       winPoints: 5,
-      pairs: 6,
+      pairs,
       onComplete: (r) => setResult(r),
     })
     gameRef.current = g
@@ -41,10 +42,12 @@ export default function ArkPairsDemo() {
 
   useEffect(() => () => gameRef.current && gameRef.current.destroy(), [])
 
+  // 回到「選對數 + 開始」畫面（可換不同對數再玩）。
   const replay = () => {
     if (gameRef.current) gameRef.current.destroy()
     gameRef.current = null
-    begin()
+    setResult(null)
+    setStarted(false)
   }
 
   return (
@@ -63,12 +66,26 @@ export default function ArkPairsDemo() {
       <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
         <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
         {!started && (
-          <button
-            onClick={begin}
-            style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', padding: '12px 24px', fontSize: 18, borderRadius: 12, border: 'none', background: '#3f7fd0', color: '#fff', cursor: 'pointer' }}
-          >
-            開始配對 →
-          </button>
+          <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
+            <div style={{ color: '#cfe3e8', font: '15px system-ui' }}>幾對動物？（母的戴 🎀）</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[6, 8, 10, 12].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setPairs(n)}
+                  style={{ padding: '8px 14px', fontSize: 15, borderRadius: 10, cursor: 'pointer', color: '#fff', border: n === pairs ? '2px solid #ffd98a' : '1px solid #3a5160', background: n === pairs ? '#3f7fd0' : 'rgba(20,30,40,0.6)' }}
+                >
+                  {n} 對
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={begin}
+              style={{ padding: '12px 24px', fontSize: 18, borderRadius: 12, border: 'none', background: '#3f7fd0', color: '#fff', cursor: 'pointer' }}
+            >
+              開始配對 →
+            </button>
+          </div>
         )}
         {result && (
           <button

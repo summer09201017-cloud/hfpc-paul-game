@@ -144,6 +144,11 @@ export class Renderer {
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(card.emoji, cx0(x, w), y + h * 0.42)
+    // 母的頭上戴蝴蝶結 🎀（才像母的，小朋友一眼分辨公母）
+    if (card.sex === 'f') {
+      ctx.font = `${Math.round(h * 0.2)}px ${EMOJI}`
+      ctx.fillText('🎀', cx0(x, w), y + h * 0.19)
+    }
     // 名稱
     ctx.fillStyle = PALETTE.ink
     ctx.font = `bold ${Math.round(h * 0.13)}px ${EMOJI}`
@@ -240,12 +245,14 @@ export class Renderer {
       ctx.lineWidth = 2
       ctx.stroke()
       if (room) {
-        // 一公一母並肩
+        // 一公一母並肩（右邊那隻是母的，戴蝴蝶結 🎀）
         ctx.font = `${Math.round(chd * 0.5)}px ${EMOJI}`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         ctx.fillText(room.emoji, rx + cwd * 0.34, ry + chd * 0.42)
         ctx.fillText(room.emoji, rx + cwd * 0.66, ry + chd * 0.42)
+        ctx.font = `${Math.round(chd * 0.26)}px ${EMOJI}`
+        ctx.fillText('🎀', rx + cwd * 0.66, ry + chd * 0.16)
         // ♂♀ 小標
         ctx.font = `bold 12px ${EMOJI}`
         ctx.fillStyle = PALETTE.male

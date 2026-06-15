@@ -2,7 +2,8 @@
 // 規則：每種動物一公一母兩張牌；翻到「同一種」即配對成功，住進方舟房間。
 // 配對成功＝同種（系統保證同種剛好一公一母），藉此教「一公一母」（創 7:9）。
 
-// 動物池：用前 RULES.pairs 種。emoji = 零美術、可離線、跨專案可重用。
+// 動物池：每局從中隨機抽 RULES.pairs 種。emoji = 零美術、可離線、跨專案可重用。
+// 池子夠大（>20 種）才能支援 10、12 對以上又每局換不同動物。
 export const ANIMALS = [
   { id: 'lion', emoji: '🦁', name: '獅子' },
   { id: 'elephant', emoji: '🐘', name: '大象' },
@@ -14,6 +15,20 @@ export const ANIMALS = [
   { id: 'turtle', emoji: '🐢', name: '烏龜' },
   { id: 'owl', emoji: '🦉', name: '貓頭鷹' },
   { id: 'cow', emoji: '🐄', name: '牛' },
+  { id: 'dog', emoji: '🐶', name: '狗' },
+  { id: 'cat', emoji: '🐱', name: '貓' },
+  { id: 'pig', emoji: '🐷', name: '豬' },
+  { id: 'chicken', emoji: '🐔', name: '雞' },
+  { id: 'fox', emoji: '🦊', name: '狐狸' },
+  { id: 'bear', emoji: '🐻', name: '熊' },
+  { id: 'panda', emoji: '🐼', name: '貓熊' },
+  { id: 'deer', emoji: '🦌', name: '鹿' },
+  { id: 'monkey', emoji: '🐵', name: '猴子' },
+  { id: 'frog', emoji: '🐸', name: '青蛙' },
+  { id: 'horse', emoji: '🐴', name: '馬' },
+  { id: 'tiger', emoji: '🐯', name: '老虎' },
+  { id: 'mouse', emoji: '🐭', name: '老鼠' },
+  { id: 'chick', emoji: '🐥', name: '小雞' },
 ]
 
 export const CONTENT = {

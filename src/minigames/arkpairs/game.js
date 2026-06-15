@@ -58,8 +58,10 @@ export class Game {
   _buildCards() {
     const cells = this._cells()
     const deck = []
+    // 從動物池隨機抽 this.pairs 種（每局不同），每種一公一母。
+    const pool = shuffle([...ANIMALS]).slice(0, this.pairs)
     for (let i = 0; i < this.pairs; i++) {
-      const a = ANIMALS[i]
+      const a = pool[i]
       deck.push({ species: a.id, emoji: a.emoji, name: a.name, sex: 'm' })
       deck.push({ species: a.id, emoji: a.emoji, name: a.name, sex: 'f' })
     }

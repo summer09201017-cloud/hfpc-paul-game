@@ -3,7 +3,7 @@
 export const WORLD = { w: 960, h: 540 }
 
 export const RULES = {
-  pairs: 6, // 幾種動物（每種一公一母＝兩張牌）。可被站點/Demo 用 opts.pairs 覆寫（建議 4–8）。
+  pairs: 8, // 幾種動物（每種一公一母＝兩張牌）。可被站點/Demo 用 opts.pairs 覆寫（建議 6–12）。
   flipBackSec: 0.9, // 翻錯兩張後停留多久自動蓋回（也可點畫面快轉）
   cols: 4, // 卡片網格固定 4 欄，列數依張數自動算
 }
