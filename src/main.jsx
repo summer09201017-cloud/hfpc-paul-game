@@ -6,6 +6,7 @@ import ElijahDemo from './components/ElijahDemo.jsx'
 import RedSeaDemo from './components/RedSeaDemo.jsx'
 import CardDemo from './components/CardDemo.jsx'
 import CorneliusActionDemo from './components/CorneliusActionDemo.jsx'
+import SaulActionDemo from './components/SaulActionDemo.jsx'
 import { CARD_GAMES } from './minigames/cards/specs'
 import './styles.css'
 import { registerSW } from 'virtual:pwa-register'
@@ -17,6 +18,8 @@ registerSW({ immediate: true })
 //   ?demo=sling             → 大衛甩石（拋射動作關）
 //   ?demo=elijah-action     → 盼望·以利亞重得力（收集/恢復動作關，王上 19）
 //   ?demo=redsea            → 紅海奔逃（約拿引擎 level 8 動作關，出 14；不併保羅旅程）
+//   ?demo=cornelius-action  → 福音·出發傳福音（跑酷，約帕→該撒利亞，徒 10）
+//   ?demo=saul-action       → 大光·順服奔跑（曠野跑酷，大馬士革路→直街，徒 9）
 //   ?demo=<卡片關 key>      → 任一卡片關單獨玩，例 ?demo=cornelius（福音奇兵）
 const demo = (() => {
   try {
@@ -32,6 +35,7 @@ function pickRoot() {
   if (demo === 'redsea') return <RedSeaDemo />
   if (demo && CARD_GAMES[demo]) return <CardDemo specKey={demo} />
   if (demo === 'cornelius-action') return <CorneliusActionDemo />
+  if (demo === 'saul-action') return <SaulActionDemo />
   return <App />
 }
 
