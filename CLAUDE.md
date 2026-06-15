@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> 📌 **現況速覽（2026-06-15 早）**：線上 main = 七旅程 + 單獨可玩的 `?demo=sling`（大衛甩石）、`?demo=elijah-action`
+> （盼望·以利亞收集/恢復動作關）、`?demo=cornelius`（福音奇兵卡片關，牧者已審）；卡片關 `?demo=<key>` 走 `CardDemo`，
+> 動作關各自的入口元件（`SlingDemo`/`ElijahDemo`）由 `src/main.jsx` 依 `?demo=` 分派。
+> 🌊 紅海奔逃動作關（約拿引擎 level 8）已做好，sync 進 `src/minigames/jonah/` 並接到出埃及「過紅海」站，
+> **但在 `feat/redsea-exodus`（PR #2）尚未併 main**，待「紅海放哪」決策。**完整現況、開放決策、CP 排序 todo → `讀我-HANDOFF.txt`。**
+
 ## What this is
 
 「保羅宣教之旅」(Paul's Missionary Journey) — a single-page React + Vite PWA. A Monopoly-style board game where 1–4 players roll dice and walk Paul's first missionary journey (Acts 13–14), triggering story / event / Bible-quiz tiles. Built for classroom projection and tablet/phone (installable, offline-capable). Content and UI are in **Traditional Chinese**; preserve that in user-facing strings.
