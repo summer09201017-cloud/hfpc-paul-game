@@ -127,20 +127,23 @@ export class RedSea {
         if (!h.resolved && h.vx) h.x -= h.vx * dt
       }
 
-      // 障礙到達玩家(screenX 越過 PLAYER.x)時結算一次:在空中夠高=跳過;在地面=絆到
+      // 障礙到達玩家(screenX 越過 PLAYER.x)時結算一次。
+      //   動物(crab/snake/scorpion):只要「在空中」就踩死(軟的,踩上去就扁)——好踩、不會「踩不死」。
+      //   礁石:要跳「夠高」(離地 > 12px)才算跳過,否則絆到。
+      const animal = (h) => h.kind && h.kind !== 'rock'
       for (const h of this.hazards) {
         if (h.resolved) continue
         const screenX = PLAYER.x + (h.x - this.dist)
         if (screenX <= PLAYER.x) {
           h.resolved = true
-          if (!p.onGround && p.y < GROUND_Y - 22) {
-            h.cleared = true // 成功跳過
-            // 跳到水中動物身上 = 踩死(礁石不能踩);純回饋,不影響難度(本來就要跳起來才算清掉)
-            if (h.kind && h.kind !== 'rock') {
+          const cleared = animal(h) ? !p.onGround : (!p.onGround && p.y < GROUND_Y - 12)
+          if (cleared) {
+            h.cleared = true
+            if (animal(h)) { // 踩死水中動物:壓扁 + 💥 + 彈跳聲
               h.stomped = true
               this.stompCount++
               this.stompFlash = 1
-              Audio.sfx('jump') // 踩扁的彈跳聲
+              Audio.sfx('jump')
             }
           } else {
             this.stumble = REDSEA.stumbleTime // 絆到:變慢 + 追兵逼近
