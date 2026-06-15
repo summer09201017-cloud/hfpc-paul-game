@@ -808,13 +808,32 @@ export class Renderer {
       }
       ctx.stroke()
     }
-    // closing:先把「全部追兵」畫在海床上(在水牆之前 → 等下被合攏的水牆蓋住、淹沒,出 14:28)。
-    //   他們被困住、停在海床上(不再追),海水從上下闔起來把他們全部蓋掉。
+    // closing:全部追兵在水牆之前繪製 → 海水從上下合攏把他們沖走、人仰馬翻、淹沒(出 14:28)。
+    //   k 越大:被沖得越散(左右晃+往左沖)、越往下沉、翻覆角度越大(人仰馬翻),最後被合攏的水牆蓋掉。
     if (closing) {
+      const k = Math.min(1, r.closeT / REDSEA.closeTime)
       for (let i = 0; i < 7; i++) {
-        const cx = PLAYER.x - 64 - i * 52
-        if (cx < -60) continue
-        this._chariot(cx, GROUND_Y + 4, t * 0.3 + i, 1.0) // t*0.3:輪子幾乎停了(被困)
+        const baseCx = PLAYER.x - 64 - i * 52
+        if (baseCx < -90) continue
+        const sway = Math.sin(t * 5 + i * 1.7) * 12 * k // 被水推得左右晃
+        const cx = baseCx - 44 * k + sway // 整體被往左沖開
+        const sink = 20 * k // 往下沉沒
+        const tumble = (i % 2 ? 1 : -1) * k * (0.7 + 0.5 * Math.sin(t * 3 + i)) // 翻覆(人仰馬翻)
+        ctx.save()
+        ctx.translate(cx, GROUND_Y + 4 + sink)
+        ctx.rotate(tumble)
+        this._chariot(0, 0, t * 0.2 + i, 1.0) // 輪子幾乎停(被困)
+        ctx.restore()
+        // 翻覆濺起的水花
+        if (k > 0.15) {
+          ctx.fillStyle = `rgba(228,244,252,${0.6 * k})`
+          for (let s = 0; s < 4; s++) {
+            const a = s * 1.7 + t * 5 + i
+            ctx.beginPath()
+            ctx.arc(cx + Math.cos(a) * 22 * k, GROUND_Y - 18 + Math.sin(a) * 16 * k, 2.5 + (s % 2) * 2, 0, Math.PI * 2)
+            ctx.fill()
+          }
+        }
       }
     }
     drawWall(topWallBot, true) // 上水牆
