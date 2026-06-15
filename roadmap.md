@@ -4,11 +4,15 @@
 > 自成一體引擎 `src/minigames/elijah/`（仿大衛甩石，約拿 fork 之外）。線上預覽 `?demo=elijah-action`，
 > 已接進**大廳「逆轉奇兵」合輯的「盼望奇兵」卡片**（hfpc-bible-games）。⚠ 教導文案 AI 草擬，牧者請過目（可隨時 revert）。
 > 🕊️ **福音奇兵（cornelius）卡片關亦於 2026-06-15 併入 main**（?demo=cornelius，牧者已審）；盼望/大光的「卡片版」文案仍待審、未連結。
+> 🌊 **紅海奔逃動作關（出 14, level 8）已做好**（約拿引擎 redsea.js）並 sync 進保羅、接到出埃及「過紅海」站——
+> **但 `feat/redsea-exodus`（paul PR #2）尚未併 main**，待「紅海放哪」決策（出埃及旅程 vs 大廳獨立 ?demo=redsea；使用者傾向動作版獨立）。
+> 🔴 **兩個開放決策（紅海放哪、大廳逆轉奇兵每奇兵卡片版+動作版並列）+ 完整 CP 排序 todo + 奇兵卡片/動作矩陣，
+> 全部見 `讀我-HANDOFF.txt`（已更新到 2026-06-15 早）。**
 >
-> 對齊現況：**2026-06-14 晚**。GitHub：`summer09201017-cloud/hfpc-paul-game`。
-> **逆轉奇兵三卡片關 + 系列九個卡片關**升級成「L6 等級」手繪 Canvas 動畫 + 卡片關 3 條命（原 `feat/cornelius-card`）。跨專案現況看 `讀我-HANDOFF.txt`。
+> 對齊現況：**2026-06-15 早**。GitHub：`summer09201017-cloud/hfpc-paul-game`。
+> **逆轉奇兵三卡片關 + 系列九個卡片關**升級成「L6 等級」手繪 Canvas 動畫 + 卡片關 3 條命（原 `feat/cornelius-card`，已併）。
 > 這份是給接手的人 / AI 看的「目前到哪了、接下來做什麼」。技術細節看 `CLAUDE.md`，玩法/編輯看 `README.md`，
-> **完整跨機交接看 `讀我-HANDOFF.txt` 最上方「2026-06-14 晚」整段**（含分支表＋部署閘＋未來功能 CP 排序）。
+> **完整跨機交接看 `讀我-HANDOFF.txt` 最上方「2026-06-15 早」整段**（含 repo/站點地圖＋奇兵矩陣＋開放決策＋CP 排序）。
 
 ## 🆕 2026-06-14 晚 進度（feat/cornelius-card，未併 main）
 
