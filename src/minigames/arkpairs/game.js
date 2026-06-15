@@ -98,6 +98,7 @@ export class Game {
 
   boot() {
     this.audio.unlock()
+    this.audio.startBgm() // 背景音樂（輕柔循環）；在「開始」手勢中啟動才解得了鎖
     this.input.attach(this.canvas)
     this.last = null
     requestAnimationFrame(this._loop)

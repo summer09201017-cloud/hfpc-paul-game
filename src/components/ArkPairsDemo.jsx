@@ -9,6 +9,15 @@ export default function ArkPairsDemo() {
   const [started, setStarted] = useState(false)
   const [result, setResult] = useState(null)
   const [pairs, setPairs] = useState(8) // 幾對動物：開始前可挑 6/8/10/12
+  const [muted, setMuted] = useState(false) // 背景音樂靜音
+
+  const toggleMute = () => {
+    setMuted((m) => {
+      const next = !m
+      gameRef.current?.audio?.setMuted(next)
+      return next
+    })
+  }
 
   const enterFullscreenLandscape = () => {
     try {
@@ -59,6 +68,14 @@ export default function ArkPairsDemo() {
         style={{ position: 'absolute', top: 8, right: 8, zIndex: 10, width: 40, height: 40, fontSize: 20, borderRadius: 10, border: '1px solid #3a5160', background: 'rgba(20,30,40,0.7)', color: '#cfe3e8', cursor: 'pointer' }}
       >
         ⛶
+      </button>
+      <button
+        onClick={toggleMute}
+        aria-label={muted ? '開啟音樂' : '關閉音樂'}
+        title={muted ? '開啟音樂' : '關閉音樂'}
+        style={{ position: 'absolute', top: 8, right: 56, zIndex: 10, width: 40, height: 40, fontSize: 18, borderRadius: 10, border: '1px solid #3a5160', background: 'rgba(20,30,40,0.7)', color: '#cfe3e8', cursor: 'pointer' }}
+      >
+        {muted ? '🔇' : '🎵'}
       </button>
       <div style={{ color: '#cfe3e8', padding: '6px 12px', font: '14px system-ui' }}>
         一公一母進方舟・開發預覽（?demo=arkpairs）{result && `　→ 結果：全部上船 🌈（score ${result.score}）`}

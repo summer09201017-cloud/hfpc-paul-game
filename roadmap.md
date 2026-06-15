@@ -1,5 +1,13 @@
 # 🗺️ 保羅大富翁 — 進度藍圖（已完成 vs 真正待做）
 
+> 🛕 **2026-06-15 晚（feat/noah-minigames，PR #15，未併 main）**：挪亞方舟**兩個 in-repo 小遊戲**。
+> - `?demo=arkpairs`「一公一母進方舟」：①翻牌記憶配對（同種一公♂一母♀，母的戴 🎀）→ ②**安排房間解謎**
+>   （點兩格交換；猛獸獅🦁/虎🐯/熊🐻/狐🦊 旁邊只能放大象或飛鳥，全平安才過關，賽 11:6）。可選 6/8/10/12 對、**有背景音樂**(🎵/🔇)、保證每局有解。
+> - `?demo=arkbuild`「一步一步蓋方舟」：**操作挪亞**拿鎚子沿木板那排走，抓準在釘點 ✛ 上鎚下去才釘得上（沒對準歪掉重來）；
+>   旁邊 3 人**嘲笑**挪亞（氣氛+教導，不影響過關）；分 5 段配經文，收尾來 11:7。
+> - 嵌入契約同 sling/elijah；可重用機制抽成 skill **`match-pairs-minigame`**。大廳（hfpc-bible-games）已加「挪亞方舟」合輯卡。
+> - **待辦**：合併 PR #15 → main → Netlify 部署（大廳連結與線上才會通）；之後接真正的挪亞棋盤旅程。
+>
 > 🆕 **2026-06-15（已上線 main）**：🥉「盼望」**動作版**——以利亞重得力（收集餅🍞水💧恢復體力，王上 19）。
 > 自成一體引擎 `src/minigames/elijah/`（仿大衛甩石，約拿 fork 之外）。線上預覽 `?demo=elijah-action`，
 > 已接進**大廳「逆轉奇兵」合輯的「盼望奇兵」卡片**（hfpc-bible-games）。⚠ 教導文案 AI 草擬，牧者請過目（可隨時 revert）。
@@ -65,6 +73,10 @@
   - **1/2/4 純 Canvas 關**（跑酷／暴風雨／曠野→尼尼微）：配空殼 NullUI；同一跑酷引擎被多條旅程重用（保羅＝翻山越嶺用 L4 曠野美術 / 約拿＝逃往約帕用 L1 港口美術），HUD 地名由站點 `minigame.hudLabels` 或引擎各關預設決定。
   - **3/5/6 卡片流程關**（大魚肚禱告／尼尼微傳道／蓖麻樹）：`MiniGameModal.jsx` 的 `makeEmbedUI` 把引擎的 `showFish*/showPreach*/showGourd*` 畫成 React 卡片，按鈕回呼 `game.handleXxxAction`（嵌入契約見約拿 CLAUDE.md 第 4 點）。
   - **已用 Playwright 全自動 e2e 驗證**：約拿之旅整條 20 站、6 個小遊戲全部可玩到結束、零 JS 錯誤。
+- **🆕 挪亞方舟兩關（2026-06-15 晚，`feat/noah-minigames` / PR #15，未併 main）**：
+  - `arkpairs`「一公一母進方舟」= 翻牌記憶配對（母的戴 🎀，6/8/10/12 對可選、**有背景音樂**）+ **安排房間相鄰約束解謎**（猛獸旁只能大象/飛鳥，賽 11:6；`composeRound` 保證有解）。
+  - `arkbuild`「一步一步蓋方舟」= 操作挪亞鎚擊瞄準放木板（對準釘點才上、各排位置不同＝難度）+ 旁人嘲笑（來 11:7）。
+  - 都是 in-repo Canvas、零美術檔、可離線、嵌入契約同 sling/elijah；`?demo=arkpairs`/`?demo=arkbuild` 單獨可玩；可重用機制 = skill `match-pairs-minigame`。
 - **3D 骰子**（CSS 3D 立方體：擲骰立體翻滾、停下平滑轉到擲出面，對面相加＝7；轉 3 秒、純 CSS 不動引擎）；地圖縮放連續可調（拉桿 + 可輸入百分比，100–250%）。
 - 勝負＝**福音點數最高**（不是最先到）。
 - **一點點 RPG（資料驅動，兩條保羅旅程＋約拿頭銜都有）**：同工被動加成（第一次＝巴拿巴/馬可；第二次＝西拉/提摩太/路加/亞居拉百基拉）、屬靈裝備/恩賜（全副軍裝 弗 6：真理腰帶/信德盾牌/聖靈寶劍，靠機會卡 `addGift`；盾牌 `guard` 擋一次暫停）、分數頭銜（保羅：蒙召的人→門徒→傳道者→使徒；約拿：→回轉的人→順服的僕人→憐憫的使者）。只加分、不卡關。詳見 README「🎒 一點點 RPG」。
@@ -74,6 +86,7 @@
 **Skill 庫（全域 `~/.claude/skills/`，可跨專案重用；壓縮檔內附 claude-skills\）**
 - 大富翁三件套：`roll-and-move-game`、`game-content-validator`、`real-geography-board`。
 - 闖關三件套：`embed-minigame`、`add-challenge-station`、`arcade-game-kit`。
+- **🆕 配對解謎（2026-06-15）**：`match-pairs-minigame`（翻牌記憶配對 + 選用「相鄰約束安排解謎」；活範例 arkpairs，含「保證有解」回溯與座標換算坑）。
 - 系列／品質／交付：`bible-game-studio`（內容神學慣例）、`game-smoke-test`（上課前煙霧測試，約拿 `npm test` 是活範例，可補本專案離線檢查）、`classroom-game-deploy`、`web-launch`、`packer-theology`、`board-game-designer`、`force-landscape-pwa`。
 - **🆕 新書卷三件套（2026-06-12）**：`bible-journey-planner`（書卷→遊戲五步設計法；**但以理/出埃及記完整設計稿在它的 references/**）、`bible-rpg-items`（輕 RPG 道具/裝備/同伴/頭銜層：設計心法＋四卷書道具庫＋effect 映射表）、`bible-game-scaffold`（設計稿→新專案：加旅程 vs 開新 repo 決策、複製清單、驗證鏈、完工定義）。
 

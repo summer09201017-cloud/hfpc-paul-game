@@ -2,11 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> 📌 **現況速覽（2026-06-15 早）**：線上 main = 七旅程 + 單獨可玩的 `?demo=sling`（大衛甩石）、`?demo=elijah-action`
+> 📌 **現況速覽（2026-06-15 晚）**：線上 main = 七旅程 + 單獨可玩的 `?demo=sling`（大衛甩石）、`?demo=elijah-action`
 > （盼望·以利亞收集/恢復動作關）、`?demo=cornelius`（福音奇兵卡片關，牧者已審）；卡片關 `?demo=<key>` 走 `CardDemo`，
-> 動作關各自的入口元件（`SlingDemo`/`ElijahDemo`）由 `src/main.jsx` 依 `?demo=` 分派。
-> 🌊 紅海奔逃動作關（約拿引擎 level 8）已做好，sync 進 `src/minigames/jonah/` 並接到出埃及「過紅海」站，
-> **但在 `feat/redsea-exodus`（PR #2）尚未併 main**，待「紅海放哪」決策。**完整現況、開放決策、CP 排序 todo → `讀我-HANDOFF.txt`。**
+> 動作關各自的入口元件（`SlingDemo`/`ElijahDemo`/`ArkPairsDemo`/`ArkBuildDemo`）由 `src/main.jsx` 依 `?demo=` 分派。
+> 🛕 **挪亞方舟兩關（2026-06-15 晚）**：`?demo=arkpairs`（一公一母翻牌配對＋安排房間解謎，母的戴 🎀）、
+> `?demo=arkbuild`（操作挪亞鎚擊瞄準放木板，旁人嘲笑）——in-repo Canvas 關，**在 `feat/noah-minigames`（PR #15）尚未併 main**。
+> 大廳（hfpc-bible-games）已加「挪亞方舟」合輯卡，連結需先合併部署 PR #15 才會通。
+> 🌊 紅海奔逃動作關（約拿引擎 level 8）已做好，sync 進 `src/minigames/jonah/`，**另一分支處理中**。
+> **完整現況、開放決策、CP 排序 todo → `讀我-HANDOFF.txt`。**
 
 ## What this is
 
@@ -98,6 +101,10 @@ A station can trigger a real-time 2D mini-game by carrying a `minigame: { level,
 - **Per-game background music** (`cardAudio.js`, zero-file Web Audio): `spec.music` picks a mood track (`warm`/`tender`/`bright`/`majestic`/`solemn`); `CardGame` plays on mount, stops on unmount, with a 🎵/🔇 mute toggle (localStorage-remembered). Audio only sounds after a user gesture (browser rule) — the card container resumes it on `pointerdown`.
 
 **In-repo projectile engine (2026-06-13, `src/minigames/sling/`, branch `feat/david-sling`):** a real-time aim+power throwing minigame (David's sling vs Goliath). A station carries `minigame: { engine: 'sling', winPoints, label }`; `MiniGameModal` boots `SlingGame` on the canvas (same `boot()`/`destroy()`/`onComplete` contract as the Jonah engine). **Outside the Jonah fork** (`sync:jonah` never touches it), self-contained: `config.js` (tunables), `projectile.js` (pure physics — shared by the game loop AND `scripts/sling-physics-test.mjs`), `game.js` (fixed-timestep loop + state machine intro→aim→flying→win/miss→lose), `renderer.js` (humanoid figures + scripture beats), `input.js`, `audio.js`, `content.js`. Difficulty = tolerance-window(sec) = hit-band(deg) / sweep(deg·s⁻¹); fair floor ≈ 0.10s — tune by shrinking the hit zone in `config.js`, not by speeding the sweep. Dev preview: `?demo=sling` (mounts `SlingDemo`). The reusable core is meant for **all future throwing levels** (spear/bow/Gideon/Jericho); blueprint = the `projectile-minigame` skill. **Not yet wired to a journey** — a future David journey plugs it in as a challenge station.
+
+**In-repo Noah engines (2026-06-15, `feat/noah-minigames`, PR #15):** two self-contained Canvas minigames outside the Jonah fork (`sync:jonah` never touches them), same embed contract (`new Game(canvas,{embed,onComplete,...})`/`boot()`/`destroy()`). A station carries `minigame: { engine: 'arkpairs' | 'arkbuild', winPoints, ... }`; dev preview `?demo=arkpairs` / `?demo=arkbuild`.
+- **`src/minigames/arkpairs/` — 一公一母進方舟**: two phases. ① **memory-match** (flip cards, same species ♂+♀ — female wears 🎀 — pair up into ark rooms); ② **constraint-arrangement puzzle** (tap a room, tap another = swap; predators 獅/虎/熊/狐 may only neighbor a `safe` animal = elephant or a bird; all-peaceful wins, Isa 11:6). Each animal has `role: predator|safe|prey`; `composeRound(pairs)` **guarantees solvability** (always includes a lion + enough `safe` buffer + dog/rabbit). `opts.pairs` (6/8/10/12, default 8). Room geometry + neighbor relation are shared between renderer/game via `config.arkRoomRects()` / `roomNeighbors()` (don't duplicate the layout math — it drifts and mis-hits). Cannot lose. Reusable pattern = skill [[match-pairs-minigame]].
+- **`src/minigames/arkbuild/` — 一步一步蓋方舟**: **operate Noah** — he walks the current plank row with a hammer; tap/space when he's over the glowing nail-point ✛ to nail the plank (within `AIM.tol`); a miss wobbles and retries. Per-row nail positions differ (`config.STUDS`) = the difficulty. Three mockers stand on dry land jeering (rotating taunts, atmosphere+teaching, no scoring effect); the flood hasn't come so the ground is dry, not sea. Five sections (hull/3-deck walls/door/window/roof) each gated by a scripture beat; closes on Heb 11:7. Cannot lose.
 
 **All six Jonah levels are embeddable (2026-06-10), in two classes:**
 - **Levels 1/2/4 (pure-Canvas)** — parkour / storm / desert-run: pass the no-op `NullUI` Proxy as `ui`.
