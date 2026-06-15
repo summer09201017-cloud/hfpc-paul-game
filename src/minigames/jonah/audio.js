@@ -108,7 +108,36 @@ const HYMN = [
 ]
 const HYMN_BASS = [131, 165, 175, 196, 175, 165, 147, 131] // 每 4 拍一個根音(I–iii–IV–V…回 I)
 
-// 目前播放的曲目(關卡輕快旋律 / 聖歌),由 startMusic(track) 切換;lastTrack 供暫停後恢復沿用。
+// ---- 紅海奔逃:出 14「法老追兵在後」----
+// 急促、驅動感的小調旋律(a 小調、快板),紅海(level 8)專用——營造「快跑、海要合攏了」的緊張。
+const REDSEA_BEAT = 0.2
+const REDSEA = [
+  [440, 1], [523, 1], [440, 1], [659, 1], [587, 1], [523, 1], [494, 2],
+  [440, 1], [523, 1], [659, 1], [784, 1], [659, 1], [587, 1], [523, 2],
+  [330, 1], [440, 1], [523, 1], [440, 1], [392, 1], [330, 1], [294, 2],
+  [440, 1], [494, 1], [523, 1], [587, 1], [659, 2], [440, 2],
+]
+const REDSEA_BASS = [110, 110, 131, 131, 98, 98, 110, 110] // 低、脈動,像戰車逼近
+
+// ---- 巴蘭的驢:民 22「騎驢上路」----
+// 中東風(D 多利安)、一步一步的行路曲(中慢板),反轉奇兵(level 10)專用——有點詼諧的趕路感。
+const BALAAM_BEAT = 0.36
+const BALAAM = [
+  [294, 1], [349, 1], [392, 2], [440, 1], [392, 1], [349, 2],
+  [330, 1], [349, 1], [294, 2], [294, 1], [330, 1], [349, 1], [392, 1],
+  [440, 1], [466, 1], [440, 1], [392, 1], [349, 2], [294, 2],
+]
+const BALAAM_BASS = [147, 147, 196, 196, 147, 147, 131, 131] // D 行走低音
+
+// 曲目表:track 名 → { melody, bass, beat }。startMusic(track) 依此切換。
+const TRACKS = {
+  level: { melody: MELODY, bass: BASS, beat: BEAT },
+  hymn: { melody: HYMN, bass: HYMN_BASS, beat: HYMN_BEAT },
+  redsea: { melody: REDSEA, bass: REDSEA_BASS, beat: REDSEA_BEAT },
+  balaam: { melody: BALAAM, bass: BALAAM_BASS, beat: BALAAM_BEAT },
+}
+
+// 目前播放的曲目,由 startMusic(track) 切換;lastTrack 供暫停後恢復沿用。
 let curMelody = MELODY, curBass = BASS, curBeat = BEAT
 let curLoopBeats = MELODY.reduce((s, [, b]) => s + b, 0)
 let lastTrack = 'level'
@@ -163,10 +192,9 @@ export const Audio = {
     ensure()
     if (!ctx) return
     lastTrack = track
-    const wantHymn = track === 'hymn'
-    const changed = wantHymn ? curMelody !== HYMN : curMelody !== MELODY
-    if (wantHymn) { curMelody = HYMN; curBass = HYMN_BASS; curBeat = HYMN_BEAT }
-    else { curMelody = MELODY; curBass = BASS; curBeat = BEAT }
+    const sel = TRACKS[track] || TRACKS.level
+    const changed = curMelody !== sel.melody
+    curMelody = sel.melody; curBass = sel.bass; curBeat = sel.beat
     curLoopBeats = curMelody.reduce((s, [, b]) => s + b, 0)
     if (musicOn && !changed) return
     if (musicOn && changed) this.stopMusic() // 切換曲目:先停再起

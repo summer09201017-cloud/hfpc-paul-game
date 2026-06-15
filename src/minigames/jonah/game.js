@@ -229,7 +229,7 @@ export class Game {
     this.state = STATE.PLAYING
     this.ui.showPauseButton()
     Audio.unlock()
-    Audio.stopMusic()
+    Audio.startMusic('balaam') // 反轉奇兵:中東風行路曲(民 22 騎驢上路)
   }
 
   // 戰爭闖關原型「紅海奔逃」(出 14:13–28):自成一格的奔逃場景,重用跑酷的跳躍手感。
@@ -243,8 +243,8 @@ export class Game {
     this.ui.hide()
     this.state = STATE.PLAYING
     this.ui.showPauseButton()
-    Audio.unlock() // 解鎖音訊(分海/海合攏的悶響);奔逃時不放輕快旋律
-    Audio.stopMusic()
+    Audio.unlock() // 解鎖音訊(分海/海合攏的悶響)
+    Audio.startMusic('redsea') // 紅海:急促追逐曲(出 14 法老追兵在後),營造緊張
   }
 
   // 重玩目前這一關(失敗/暫停→重新開始 用)
