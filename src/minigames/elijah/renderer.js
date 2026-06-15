@@ -145,12 +145,34 @@ export class Renderer {
     ctx.beginPath()
     ctx.arc(x, cy - 8, 8, 0, Math.PI * 2)
     ctx.fill()
+    // 臉(慈祥):雙眼 + 微笑——以利亞灰心,天使的神情要溫柔
+    ctx.fillStyle = '#5b4636'
+    ctx.beginPath(); ctx.arc(x - 3, cy - 9, 1.2, 0, Math.PI * 2); ctx.fill()
+    ctx.beginPath(); ctx.arc(x + 3, cy - 9, 1.2, 0, Math.PI * 2); ctx.fill()
+    ctx.strokeStyle = '#5b4636'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.arc(x, cy - 6.5, 3, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke() // 微笑
     // 金光環
     ctx.strokeStyle = '#ffd966'
     ctx.lineWidth = 3
     ctx.beginPath()
     ctx.ellipse(x, cy - 20, 9, 3.5, 0, 0, Math.PI * 2)
     ctx.stroke()
+    // 手拿神所賜的餅與水,向以利亞遞出(王上 19:6「在他頭旁有一瓶水和一塊炭火燒的餅」)
+    const hy = cy + 17 // 雙手/物品高度
+    ctx.strokeStyle = '#f6f3ec'; ctx.lineWidth = 4; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(x - 7, cy + 5); ctx.lineTo(x - 16, hy); ctx.stroke() // 左臂遞餅
+    ctx.beginPath(); ctx.moveTo(x + 7, cy + 5); ctx.lineTo(x + 16, hy); ctx.stroke() // 右臂遞水
+    // 炭火燒的餅(左手):圓餅 + 一道烤紋
+    ctx.fillStyle = '#d8a86a'
+    ctx.beginPath(); ctx.ellipse(x - 18, hy, 6.2, 4.4, 0, 0, Math.PI * 2); ctx.fill()
+    ctx.strokeStyle = '#a9763f'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(x - 21, hy); ctx.lineTo(x - 15, hy); ctx.stroke()
+    // 一瓶水(右手):水瓶 + 瓶口
+    ctx.fillStyle = '#6db8df'
+    ctx.beginPath()
+    ctx.moveTo(x + 15, hy - 5); ctx.lineTo(x + 21, hy - 5); ctx.lineTo(x + 20, hy + 6); ctx.lineTo(x + 16, hy + 6)
+    ctx.closePath(); ctx.fill()
+    ctx.fillStyle = '#cdeafb'; ctx.fillRect(x + 17, hy - 8, 2.5, 3) // 瓶口
     // 未遇到:頭上 💬 提示(走過去就會對話)
     if (!met) {
       this._emoji('💬', x, footY - 92 + bob, 28, 'middle')
