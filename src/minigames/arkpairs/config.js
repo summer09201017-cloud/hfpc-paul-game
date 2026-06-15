@@ -11,8 +11,44 @@ export const RULES = {
 // 左側卡片網格區（世界座標）
 export const GRID = { x: 26, y: 66, w: 540, h: 452, gap: 14 }
 
-// 右側方舟區（配對成功的動物住進房間）
-export const ARK = { x: 590, y: 60, w: 346, h: 458 }
+// 右側方舟區（配對成功的動物住進房間）。roofH/hullH/pad/gap 供 renderer 畫殼與房間共用。
+export const ARK = { x: 590, y: 60, w: 346, h: 458, roofH: 70, hullH: 86, pad: 16, gap: 10, cols: 2 }
+
+// 方舟內每個房間的矩形（世界座標），共用給 renderer（畫）與 game（點選命中測試），避免兩邊算法漂移。
+// 回傳長度 = count 的陣列，索引 i 對應第 i 間房（col=i%2、row=floor(i/2)）。
+export function arkRoomRects(count) {
+  const { x, w, roofH, hullH, pad, gap, cols } = ARK
+  const hx = x + 14
+  const hw = w - 28
+  const hy = ARK.y + roofH
+  const hh = ARK.h - roofH - hullH
+  const rows = Math.ceil(count / cols)
+  const gridX = hx + pad
+  const gridY = hy + 14
+  const gw = hw - pad * 2
+  const gh = hh - 26
+  const cwd = (gw - (cols - 1) * gap) / cols
+  const chd = (gh - (rows - 1) * gap) / rows
+  const rects = []
+  for (let i = 0; i < count; i++) {
+    const col = i % cols
+    const row = Math.floor(i / cols)
+    rects.push({ x: gridX + col * (cwd + gap), y: gridY + row * (chd + gap), w: cwd, h: chd })
+  }
+  return rects
+}
+
+// 第 i 間房在 2 欄網格中的上下左右鄰居索引（用於猛獸鄰居規則）。
+export function roomNeighbors(i, count) {
+  const cols = ARK.cols
+  const col = i % cols
+  const ns = []
+  if (i - cols >= 0) ns.push(i - cols) // 上
+  if (i + cols < count) ns.push(i + cols) // 下
+  if (col === 0 && i + 1 < count) ns.push(i + 1) // 右
+  if (col === 1) ns.push(i - 1) // 左
+  return ns
+}
 
 // 配色（木造方舟 + 海）
 export const PALETTE = {

@@ -1,6 +1,6 @@
 // 繪製層：只讀 game 狀態、不改狀態。邏輯座標固定 960×540，依畫布父層尺寸等比縮放置中。
 // measure() 在每幀更新前被呼叫，存下 fit（scale/位移）供點擊換算成世界座標。
-import { WORLD, GRID, ARK, PALETTE } from './config.js'
+import { WORLD, GRID, ARK, PALETTE, arkRoomRects } from './config.js'
 import { CONTENT } from './content.js'
 
 const EMOJI = '"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",system-ui'
@@ -12,7 +12,6 @@ export class Renderer {
     this.fit = null
   }
 
-  // 量父層尺寸 → 設定畫布像素(含 DPR)→ 存 fit（邏輯→CSS px 的縮放與置中位移）。
   measure() {
     const parent = this.canvas.parentElement || this.canvas
     const cw = parent.clientWidth || WORLD.w
@@ -45,7 +44,9 @@ export class Renderer {
     this._scene(ctx)
     this._title(ctx, game)
     this._ark(ctx, game)
+    // 配對階段才畫左側卡片；安排階段卡片已全配對，淡淡留著當背景。
     for (const c of game.cards) this._card(ctx, c)
+    if (game.state === 'arrange' && game.unsafe && game.unsafe.size > 0) this._hint(ctx, CONTENT.unsafeHint)
     if (game.toast) this._toast(ctx, game.toast)
     if (game.beat) this._beat(ctx, game.beat)
 
@@ -60,7 +61,6 @@ export class Renderer {
     sky.addColorStop(1, PALETTE.seaDeep)
     ctx.fillStyle = sky
     ctx.fillRect(0, 0, WORLD.w, WORLD.h)
-    // 雨絲（淡）
     ctx.strokeStyle = 'rgba(255,255,255,0.18)'
     ctx.lineWidth = 1
     for (let i = 0; i < 26; i++) {
@@ -79,14 +79,18 @@ export class Renderer {
     ctx.font = `15px ${EMOJI}`
     ctx.fillStyle = '#4a3a24'
     ctx.textAlign = 'right'
-    ctx.fillText(`已上船 ${game.rooms.length} / ${game.pairs} 對`, ARK.x + ARK.w, 30)
+    const right = ARK.x + ARK.w
+    if (game.state === 'arrange') ctx.fillText('🛏️ 安排房間：猛獸旁放大象或飛鳥', right, 30)
+    else if (game.state === 'won') ctx.fillText('🌈 全部平安上船', right, 30)
+    else ctx.fillText(`已上船 ${game.rooms.length} / ${game.pairs} 對`, right, 30)
   }
 
+  // ---------- 左側翻牌 ----------
   _card(ctx, card) {
     const { x, y, w, h } = card.cell
     const cx = x + w / 2
     const cy = y + h / 2
-    const cosv = Math.cos(card.flip * Math.PI) // >0 背面朝外，<0 正面朝外
+    const cosv = Math.cos(card.flip * Math.PI)
     const sx = Math.max(0.02, Math.abs(cosv))
     ctx.save()
     ctx.translate(cx, cy)
@@ -118,18 +122,16 @@ export class Renderer {
     ctx.strokeStyle = PALETTE.cardEdge
     ctx.lineWidth = 3
     ctx.stroke()
-    // 木板紋
     ctx.strokeStyle = 'rgba(0,0,0,0.16)'
     ctx.lineWidth = 2
     for (let i = 1; i <= 2; i++) {
       ctx.beginPath(); ctx.moveTo(x + 8, y + (h * i) / 3); ctx.lineTo(x + w - 8, y + (h * i) / 3); ctx.stroke()
     }
-    // 中央小符號
     ctx.fillStyle = 'rgba(255,247,232,0.85)'
     ctx.font = `bold ${Math.round(h * 0.34)}px ${EMOJI}`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText('🌧', cx0(x, w), cy0(y, h))
+    ctx.fillText('🌧', x + w / 2, y + h / 2)
   }
 
   _cardFront(ctx, card, x, y, w, h) {
@@ -139,21 +141,18 @@ export class Renderer {
     ctx.strokeStyle = card.cardState === 'matched' ? '#5fb96b' : PALETTE.cardEdge
     ctx.lineWidth = 3
     ctx.stroke()
-    // 動物 emoji
     ctx.font = `${Math.round(h * 0.42)}px ${EMOJI}`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(card.emoji, cx0(x, w), y + h * 0.42)
-    // 母的頭上戴蝴蝶結 🎀（才像母的，小朋友一眼分辨公母）
+    ctx.fillText(card.emoji, x + w / 2, y + h * 0.42)
+    // 母的頭上戴蝴蝶結 🎀
     if (card.sex === 'f') {
       ctx.font = `${Math.round(h * 0.2)}px ${EMOJI}`
-      ctx.fillText('🎀', cx0(x, w), y + h * 0.19)
+      ctx.fillText('🎀', x + w / 2, y + h * 0.19)
     }
-    // 名稱
     ctx.fillStyle = PALETTE.ink
     ctx.font = `bold ${Math.round(h * 0.13)}px ${EMOJI}`
-    ctx.fillText(card.name, cx0(x, w), y + h * 0.78)
-    // 公母徽章（右上）
+    ctx.fillText(card.name, x + w / 2, y + h * 0.78)
     const male = card.sex === 'm'
     const bx = x + w - 18
     const by = y + 18
@@ -175,16 +174,14 @@ export class Renderer {
     ctx.stroke()
   }
 
-  // —— 方舟（配對成功的動物住進房間）——
+  // ---------- 右側方舟（殼 + 房間）----------
   _ark(ctx, game) {
-    const { x, y, w, h } = ARK
-    const roofH = 70
-    const hullH = 86
+    const { x, y, w, roofH, hullH } = ARK
     const hx = x + 14
     const hw = w - 28
     const hy = y + roofH
-    const hh = h - roofH - hullH
-    // 船身（木箱）
+    const hh = ARK.h - roofH - hullH
+    // 船身
     this._roundRect(ctx, hx, hy, hw, hh, 10)
     const g = ctx.createLinearGradient(hx, hy, hx, hy + hh)
     g.addColorStop(0, PALETTE.arkHouse)
@@ -202,7 +199,7 @@ export class Renderer {
     ctx.lineTo(x + w - 6, hy + 2)
     ctx.closePath()
     ctx.fill()
-    // 船底（hull）
+    // 船底
     ctx.fillStyle = PALETTE.arkHull
     ctx.beginPath()
     ctx.moveTo(hx - 6, hy + hh)
@@ -214,53 +211,66 @@ export class Renderer {
     ctx.strokeStyle = PALETTE.arkHullDark
     ctx.lineWidth = 3
     ctx.stroke()
-    // 方舟標籤
     ctx.fillStyle = '#fff7e8'
     ctx.font = `bold 18px ${EMOJI}`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText('🛕 方舟', x + w / 2, y + roofH / 2 + 14)
 
-    // 房間格（窗）：2 欄、依對數排列；按配對順序填入
-    const cols = 2
-    const rows = Math.ceil(game.pairs / cols)
-    const pad = 16
-    const gap = 10
-    const gridX = hx + pad
-    const gridY = hy + 14
-    const gw = hw - pad * 2
-    const gh = hh - 26
-    const cwd = (gw - (cols - 1) * gap) / cols
-    const chd = (gh - (rows - 1) * gap) / rows
+    // 房間（共用幾何）
+    const rects = arkRoomRects(game.pairs)
     for (let i = 0; i < game.pairs; i++) {
-      const col = i % cols
-      const row = Math.floor(i / cols)
-      const rx = gridX + col * (cwd + gap)
-      const ry = gridY + row * (chd + gap)
+      const r = rects[i]
       const room = game.rooms[i]
-      this._roundRect(ctx, rx, ry, cwd, chd, 8)
-      ctx.fillStyle = room ? '#fff3d6' : 'rgba(60,40,20,0.32)'
-      ctx.fill()
-      ctx.strokeStyle = PALETTE.arkHullDark
-      ctx.lineWidth = 2
-      ctx.stroke()
-      if (room) {
-        // 一公一母並肩（右邊那隻是母的，戴蝴蝶結 🎀）
-        ctx.font = `${Math.round(chd * 0.5)}px ${EMOJI}`
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText(room.emoji, rx + cwd * 0.34, ry + chd * 0.42)
-        ctx.fillText(room.emoji, rx + cwd * 0.66, ry + chd * 0.42)
-        ctx.font = `${Math.round(chd * 0.26)}px ${EMOJI}`
-        ctx.fillText('🎀', rx + cwd * 0.66, ry + chd * 0.16)
-        // ♂♀ 小標
-        ctx.font = `bold 12px ${EMOJI}`
-        ctx.fillStyle = PALETTE.male
-        ctx.fillText('♂', rx + cwd * 0.34, ry + chd * 0.82)
-        ctx.fillStyle = PALETTE.female
-        ctx.fillText('♀', rx + cwd * 0.66, ry + chd * 0.82)
-      }
+      const selected = game.selected === i
+      const unsafe = game.unsafe && game.unsafe.has(i)
+      this._room(ctx, r, room, { selected, unsafe })
     }
+  }
+
+  _room(ctx, r, room, { selected, unsafe }) {
+    this._roundRect(ctx, r.x, r.y, r.w, r.h, 8)
+    ctx.fillStyle = room ? '#fff3d6' : 'rgba(60,40,20,0.32)'
+    ctx.fill()
+    // 邊框：選取→金、危險→紅、一般→深木
+    ctx.strokeStyle = selected ? '#ffd24a' : unsafe ? '#e4452e' : PALETTE.arkHullDark
+    ctx.lineWidth = selected || unsafe ? 4 : 2
+    this._roundRect(ctx, r.x, r.y, r.w, r.h, 8)
+    ctx.stroke()
+    if (!room) return
+
+    // 一公一母並肩（右邊那隻是母的，戴蝴蝶結 🎀）
+    ctx.font = `${Math.round(r.h * 0.46)}px ${EMOJI}`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(room.emoji, r.x + r.w * 0.34, r.y + r.h * 0.44)
+    ctx.fillText(room.emoji, r.x + r.w * 0.66, r.y + r.h * 0.44)
+    ctx.font = `${Math.round(r.h * 0.24)}px ${EMOJI}`
+    ctx.fillText('🎀', r.x + r.w * 0.66, r.y + r.h * 0.18)
+    ctx.font = `bold ${Math.max(9, Math.round(r.h * 0.16))}px ${EMOJI}`
+    ctx.fillStyle = PALETTE.male
+    ctx.fillText('♂', r.x + r.w * 0.34, r.y + r.h * 0.82)
+    ctx.fillStyle = PALETTE.female
+    ctx.fillText('♀', r.x + r.w * 0.66, r.y + r.h * 0.82)
+    // 危險標記 ⚠（左上）
+    if (unsafe) {
+      ctx.font = `${Math.max(12, Math.round(r.h * 0.3))}px ${EMOJI}`
+      ctx.fillText('⚠️', r.x + r.w * 0.14, r.y + r.h * 0.22)
+    }
+  }
+
+  _hint(ctx, text) {
+    ctx.font = `bold 14px ${EMOJI}`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    const tw = Math.min(GRID.w + 10, ctx.measureText(text).width + 32)
+    const tx = GRID.x + GRID.w / 2
+    const ty = WORLD.h - 22
+    ctx.fillStyle = 'rgba(180,69,46,0.92)'
+    this._roundRect(ctx, tx - tw / 2, ty - 18, tw, 36, 18)
+    ctx.fill()
+    ctx.fillStyle = '#fff'
+    this._wrap(ctx, text, tx, ty - 8, tw - 24, 16, '#fff', `bold 13px ${EMOJI}`)
   }
 
   _toast(ctx, toast) {
@@ -271,7 +281,7 @@ export class Renderer {
     ctx.textBaseline = 'middle'
     const tw = ctx.measureText(toast.text).width + 36
     const tx = GRID.x + GRID.w / 2
-    const ty = WORLD.h - 24
+    const ty = WORLD.h - 56
     ctx.fillStyle = toast.kind === 'match' ? 'rgba(58,166,74,0.92)' : 'rgba(180,90,40,0.92)'
     this._roundRect(ctx, tx - tw / 2, ty - 18, tw, 34, 17)
     ctx.fill()
@@ -289,7 +299,7 @@ export class Renderer {
     const bh = 260
     this._roundRect(ctx, bx, by, bw, bh, 16)
     ctx.fill()
-    ctx.strokeStyle = beat.kind === 'win' ? '#7bd88f' : '#bcd'
+    ctx.strokeStyle = beat.kind === 'win' ? '#7bd88f' : beat.kind === 'arrange' ? '#ffd24a' : '#bcd'
     ctx.lineWidth = 3
     this._roundRect(ctx, bx, by, bw, bh, 16)
     ctx.stroke()
@@ -315,10 +325,10 @@ export class Renderer {
     }
     ctx.fillStyle = '#9fb6c6'
     ctx.font = `13px ${EMOJI}`
+    ctx.textAlign = 'center'
     ctx.fillText(beat.cont || '點畫面繼續', WORLD.w / 2, by + bh - 26)
   }
 
-  // 中文逐字換行（無空白），回傳結束 y。
   _wrap(ctx, text, cx, y, maxW, lh, color, font) {
     ctx.fillStyle = color
     ctx.font = font
@@ -339,7 +349,3 @@ export class Renderer {
     return y
   }
 }
-
-// 小工具：卡片中心（避免每處重算）
-function cx0(x, w) { return x + w / 2 }
-function cy0(y, h) { return y + h / 2 }
