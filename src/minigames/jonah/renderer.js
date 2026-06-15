@@ -748,12 +748,15 @@ export class Renderer {
       }
     }
 
-    // 礁石(只在過海床階段畫;依世界距離換算螢幕 x)
+    // 障礙(只在過海床階段畫;依世界距離換算螢幕 x):礁石 + 水中動物(螃蟹/海蛇/水蠍子)
     if (r.phase === 'cross' || closing) {
+      const HZ = { rock: '🪨', crab: '🦀', snake: '🐍', scorpion: '🦂' }
       for (const h of r.hazards) {
         const sx = PLAYER.x + (h.x - r.dist)
         if (sx < -40 || sx > W + 40) continue
-        this._emoji('🪨', sx, GROUND_Y + 6, 34)
+        // 螃蟹快速衝:加一點左右橫向抖動,看起來像在爬/衝
+        const wobble = h.kind === 'crab' ? Math.sin(t * 18 + h.x * 0.05) * 3 : 0
+        this._emoji(HZ[h.kind] || '🪨', sx + wobble, GROUND_Y + 6, 34)
       }
     }
 
