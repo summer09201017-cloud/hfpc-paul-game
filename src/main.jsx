@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import SlingDemo from './components/SlingDemo.jsx'
+import ElijahDemo from './components/ElijahDemo.jsx'
 import CardDemo from './components/CardDemo.jsx'
 import { CARD_GAMES } from './minigames/cards/specs'
 import './styles.css'
@@ -12,7 +13,8 @@ registerSW({ immediate: true })
 
 // 單獨玩 / 開發預覽（不影響正式桌遊流程）：
 //   ?demo=sling             → 大衛甩石（拋射動作關）
-//   ?demo=<卡片關 key>      → 任一卡片關單獨玩，例 ?demo=cornelius（福音奇兵）
+//   ?demo=elijah-action     → 盼望·以利亞重得力（收集/恢復「動作版」；卡片版仍是 ?demo=elijah）
+//   ?demo=<卡片關 key>      → 任一卡片關單獨玩，例 ?demo=cornelius（福音奇兵）、?demo=elijah（盼望卡片版）
 const demo = (() => {
   try {
     return new URLSearchParams(window.location.search).get('demo')
@@ -23,6 +25,7 @@ const demo = (() => {
 
 function pickRoot() {
   if (demo === 'sling') return <SlingDemo />
+  if (demo === 'elijah-action') return <ElijahDemo /> // 動作版；'elijah' 留給卡片版(下方 CARD_GAMES)
   if (demo && CARD_GAMES[demo]) return <CardDemo specKey={demo} />
   return <App />
 }

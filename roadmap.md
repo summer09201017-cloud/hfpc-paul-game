@@ -1,10 +1,27 @@
 # 🗺️ 保羅大富翁 — 進度藍圖（已完成 vs 真正待做）
 
-> 對齊現況：**2026-06-14 晚**。GitHub：`summer09201017-cloud/hfpc-paul-game`。
-> **本輪主戰場在 `feat/cornelius-card` 分支（未併 main）**：逆轉奇兵三卡片關 + 系列九個卡片關全部
+> 對齊現況：**2026-06-15**。GitHub：`summer09201017-cloud/hfpc-paul-game`。
+> **最新一刀在 `feat/elijah-action` 分支（未併 main）**：🥉「盼望」動作版（以利亞重得力，收集餅水恢復體力）。
+> 前一輪主戰場 `feat/cornelius-card`（未併 main）：逆轉奇兵三卡片關 + 系列九個卡片關全部
 > 升級成「L6 等級」手繪 Canvas 動畫 + 卡片關 3 條命。跨專案現況看 `讀我-HANDOFF.txt`。
 > 這份是給接手的人 / AI 看的「目前到哪了、接下來做什麼」。技術細節看 `CLAUDE.md`，玩法/編輯看 `README.md`，
 > **完整跨機交接看 `讀我-HANDOFF.txt` 最上方「2026-06-14 晚」整段**（含分支表＋部署閘＋未來功能 CP 排序）。
+
+## 🆕 2026-06-15 進度（feat/elijah-action，未併 main）
+
+- **🥉「盼望」動作版完成**：以利亞重得力（王上 19）的**收集/恢復**動作關——灰心的以利亞在曠野撿天使預備的
+  **餅🍞水💧恢復體力**、走到何烈山（19:5–8）。手感「溫柔有張力」：體力會減、餅水回補，**體力歸零不失敗**
+  （癱坐 faint→神扶他起來原地再走，19:7），呼應主題「神不催逼灰心的人」。
+- **這是 roadmap 待辦 f「收集機制換皮」的第一刀**，但刻意走**自成一體引擎**（仿大衛甩石 `sling/`），
+  不去動上游約拿 `spawner` → **零協調、零 fork 漂移**（約拿端正在做 `art-kenney-sprites`，不互相卡）。
+- **新引擎 `src/minigames/elijah/`**（8 檔，約拿 fork 之外，`sync:jonah` 不會碰）：`config.js`（STAMINA/FAINT/BOOST/NEED_MEAL 可調）、
+  `spawner.js`（🍞/💧/🥖 `recover` 換皮 + 溫和曠野障礙）、`game.js`（intro→playing→win/faint 狀態機）、
+  `renderer.js`（曠野→何烈山、體力條、羅騰樹🌳+天使👼，複用約拿 `_prophet`/`_buildings`）、`player/input/audio/content`。
+- **接線**：`?demo=elijah-action`（`ElijahDemo.jsx` + `main.jsx`）、站點 `minigame:{ engine:'elijah', winPoints, label }`（`MiniGameModal.jsx`）、
+  雙擊 `play-elijah-action.bat`、截圖驗收 `scripts/elijah-shots.mjs`。**卡片版 `?demo=elijah` 不受影響、並存**。
+- 測試：`npm test` 40 項全綠（含新引擎語法）；`npm run test:offline` 62 項全綠（build 過）；Playwright 截 intro/收集/faint/win 四幕零 JS 錯誤。
+- ⚠ 部署閘：經文和合本逐字、教導文案 AI 草擬，**牧者審核通過前不上線**（同盼望卡片版「待審」狀態）。**未接任何 journey**（引擎+預覽先就緒）。
+- 🔭 下一步重用：這套 recover/collect 引擎正是「嗎哪/拾穗/王膳」收集關的便宜底（見 skill `collect-recover-minigame`）。
 
 ## 🆕 2026-06-14 晚 進度（feat/cornelius-card，未併 main）
 
@@ -98,7 +115,7 @@
    - ~~c. 卡片流程闖關 4 關~~ **✅ 已完成（2026-06-12 下午）**：金像之夢排序（但2）、牆上的字解碼（但5）、十災順序（出7–11）、十誡配對（出20）——純 React 卡片，新框架在 `src/minigames/cards/`（specs.js 內容規格 + CardGame.jsx 播放器；站點用 `minigame.cards` 指定，**在約拿 fork 之外，sync:jonah 不會碰**）。不會失敗、答錯溫柔重試（同約拿 3/5/6 精神）。
    - ~~d. RPG 道具層~~ **✅ 已完成（2026-06-12 下午）**：照道具庫填好——但以理 6 件裝備（素菜清水/開窗禱告/解夢智慧/第四個人/封獅口天使/紫袍金鏈）＋三友＋王膳美酒陷阱卡；出埃及 7 件（摩西的杖/羔羊的血/雲柱火柱/嗎哪罐/磐石活水/法版/會幕藍圖）＋亞倫(起始)/米利暗/約書亞/戶珥＋嗎哪生蟲陷阱卡（出 16:20 還原劇情的代價）。
    - ~~e. 反思終局關 ×2~~ **✅ 已完成（2026-06-12 下午）**：神掌權五幕（但 7/9/12）接在「七十年的盼望」終點站、會幕榮光五幕（出 32–34/40）接在「會幕建成」終點站——用同一套卡片框架（cards: danielFinale / exodusFinale）。
-   - **f. 收集機制換皮（仍待做，需引擎端協調）**：撿嗎哪「多撿生蟲」、王膳考驗「接素菜閃美酒」——要重用約拿 spawner 加權寶物系統，屬上游引擎改動（嵌入契約），請與約拿引擎端（目前在做美術換皮 art-kenney-sprites）協調後再動，避免 fork 漂移。
+   - **f. 收集機制換皮（✅ 第一刀已完成，改走自成一體引擎）**：2026-06-15 做出🥉「盼望」動作版（`src/minigames/elijah/`，撿餅水恢復體力），證明「收集/恢復」關可以**不動上游約拿 spawner**、用 repo 內自成一體引擎達成（仿大衛甩石 `sling/`）——**零協調、零 fork 漂移**，這是比「改上游 spawner 再 sync」更省事的路。後續嗎哪「多撿生蟲」、王膳「接素菜閃美酒」、路得拾穗都可照這套重用（見 skill `collect-recover-minigame`）；若仍想做成上游約拿能力（讓約拿關也用），再與引擎端協調 spawn table 規格。
 1. **神學 / 題庫審核（最重要）**：`journey2.json`（第二次旅程）與 `journey-jonah.json` 的題目、卡牌，請德義老師 / 牧者依 README 的「題庫審核清單」過目後再正式上線。第二次旅程的題目是 AI 草擬，務必人工把關。
    - **✅ 2026-06-10 部分審核通過（牧者本人）**：當日「新增」的站點題目與卡片文案——含 約拿之旅新 5 站（下約帕的路上/沉入深海/魚腹禱告·仰望/曠野趕路/三日路程的大城）、尼尼微全城悔改與蓖麻樹的功課的補題、第二次旅程新 8 站（敘利亞與基利家/托魯斯山/弗呂家加拉太/尼亞波利/暗妃波里/愛琴海航路/堅革哩/地中海長航）、全副軍裝機會卡（兩條旅程）、同工/頭銜文案。**仍待審**：journey2 與 journey-jonah「原有」的題目卡牌（2026-06-10 之前草擬的部分）。
 2. ~~第三次宣教旅程~~ **✅ 已完成並上線（2026-06-11）**：`journey3.json` 20 站（以弗所三年事件群/推喇奴/士基瓦/焚書/底米丟/羅馬書/猶推古/米利都道別/亞迦布/耶路撒冷）+ 2 闖關站（高原 L4、海程 L2）+ RPG 層；`gen-map.mjs` region3 真實愛琴海地圖；宣教接力 `paul2 → paul3` 已接通；四旅程 selfplay 全綠。**✅ journey3 題目與文案 牧者審核通過（2026-06-11）。**

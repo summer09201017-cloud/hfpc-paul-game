@@ -1,4 +1,30 @@
 ============================================================
+讀我 — HANDOFF(給 HFPC / agape250 那台 PC 的 AI / 開發者)
+更新:2026-06-15(HFP 機)。最新一刀:🥉「盼望」動作版(以利亞重得力)。接手先讀正下方「2026-06-15」整段!
+============================================================
+
+■ ★ 2026-06-15(HFP 機):🥉「盼望」動作版 = 收集/恢復關(撿餅水) ★ 分支 feat/elijah-action,未併 main
+  ── 一句話 ───────────────────────────────────────────────────
+  「盼望」本來只有卡片版(?demo=elijah,逆轉奇兵之一)。這次做出它的**動作版**:以利亞重得力(王上 19)——
+  灰心的以利亞在曠野**撿天使預備的餅🍞水💧恢復體力**,走到何烈山(19:5-8)。
+  手感「溫柔有張力」:體力會減、餅水回補;**體力歸零不會失敗**——以利亞癱坐,神溫柔扶他起來原地再走(19:7)。
+
+  ── 怎麼做的(重點:不動上游約拿,零 fork 漂移)──────────────────
+  • 這是 roadmap 待辦 f「收集機制換皮」的第一刀,但**沒有改上游約拿 spawner**,而是仿「大衛甩石」開一個
+    **repo 內自成一體的引擎** src/minigames/elijah/(約拿 fork 之外,sync:jonah 永遠不會碰)。
+    → 不必跟約拿端(art-kenney-sprites)協調、不會撞 fork。嗎哪/拾穗/王膳收集關以後都照這套重用。
+  • 8 個檔:config.js(STAMINA/FAINT/BOOST/NEED_MEAL 可調手感)、spawner.js(🍞/💧/🥖 recover 換皮+溫和曠野障礙)、
+    game.js(intro→playing→win/faint 狀態機)、renderer.js(曠野→何烈山+體力條+羅騰樹🌳天使👼,複用約拿 _prophet/_buildings)、
+    player/input/audio/content.js。嵌入契約同甩石:new Game(canvas,{embed,winPoints,onComplete})+boot()+destroy()。
+  • 接線:?demo=elijah-action(ElijahDemo.jsx+main.jsx);站點 minigame:{ engine:'elijah', winPoints, label }(MiniGameModal.jsx);
+    雙擊 play-elijah-action.bat;截圖驗收 scripts/elijah-shots.mjs(window.__elijah 掛勾)。**卡片版 ?demo=elijah 並存、不受影響**。
+  • 測試:npm test 40 項全綠、npm run test:offline 62 項全綠(build 過)、Playwright 截 intro/收集/faint/win 四幕零 JS 錯誤。
+
+  ⚠ 部署閘:經文和合本逐字,但教導文案 AI 草擬 → **牧者審核通過前不要併 main**(paul main 自動部署)。**未接任何 journey**。
+  接手第一步:約牧者審「盼望動作版」文案 → 決定接成哪座站點(約拿之旅 or 新「以利亞/盼望」旅程)→ 才併 main。
+  新 skill:collect-recover-minigame(收集/恢復關藍圖,以利亞動作版為活範例)。
+
+============================================================
 讀我 — HANDOFF(給 HFPC 那台 PC 的 AI / 開發者)
 更新:2026-06-13 晚(agape250 機完成,接手請先讀正下方「2026-06-13 晚」整段!)
   本日早上:牧者審核通過,但以理/出埃及/海路到羅馬三旅程已 merge main 上線(七旅程)。
