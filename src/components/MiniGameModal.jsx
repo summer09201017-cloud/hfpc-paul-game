@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Game } from '../minigames/jonah/game'
 import { Game as SlingGame } from '../minigames/sling/game'
 import { Game as ElijahGame } from '../minigames/elijah/game'
+import { Game as ArkPairsGame } from '../minigames/arkpairs/game'
+import { Game as ArkBuildGame } from '../minigames/arkbuild/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -175,6 +177,10 @@ export default function MiniGameModal({ minigame, onComplete }) {
   // in-repo 恢復/收集引擎（src/minigames/elijah/）：站點用 minigame.engine:'elijah' 指定，Canvas 即時關，
   // 同樣在約拿 fork 之外（sync:jonah 不會碰）。撿餅水恢復體力、走到何烈山過關（王上 19）。
   const isElijah = minigame.engine === 'elijah'
+  // in-repo 挪亞方舟關（src/minigames/arkpairs|arkbuild/）：站點用 minigame.engine:'arkpairs'/'arkbuild'。
+  // arkpairs＝翻牌記憶「一公一母配對」（創 6–7）；arkbuild＝依序放木板蓋方舟（創 6:14-22）。都不會失敗。
+  const isArkPairs = minigame.engine === 'arkpairs'
+  const isArkBuild = minigame.engine === 'arkbuild'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -186,7 +192,11 @@ export default function MiniGameModal({ minigame, onComplete }) {
           ? '🪨 大衛戰歌利亞'
           : isElijah
             ? '🌅 盼望 · 以利亞重得力'
-            : LEVELS[level].title),
+            : isArkPairs
+              ? '🐘 一公一母進方舟'
+              : isArkBuild
+                ? '🔨 一步一步蓋方舟'
+                : LEVELS[level].title),
     how:
       minigame.how ||
       (cardSpec
@@ -195,7 +205,11 @@ export default function MiniGameModal({ minigame, onComplete }) {
           ? '瞄準線會上下擺動，看準歌利亞的「額頭」，按空白鍵／點畫面放手甩石！五顆石子內擊中就得勝。'
           : isElijah
             ? '灰心的以利亞在曠野趕路。空白鍵／↑／點畫面 = 跳起來撿天使預備的餅🍞和水💧把體力補回來；體力歸零也沒關係，神會再扶你起來。走到何烈山就過關。'
-            : LEVELS[level].how),
+            : isArkPairs
+              ? '神叫動物自己成對來。翻開兩張牌，找出同一種的一公♂一母♀，牠們就住進方舟的房間。把所有動物都送進方舟就過關！'
+              : isArkBuild
+                ? '神把方舟的造法都吩咐了挪亞。點畫面，一塊一塊把木板放上去；方舟會一段一段長起來，把整艘方舟蓋完就過關！'
+                : LEVELS[level].how),
   }
 
   // 卡片按鈕 → 依前綴分派給引擎對應的 handler（嵌入模式下 boot 不註冊 ui 回呼，直接呼叫公開方法）。
@@ -228,6 +242,29 @@ export default function MiniGameModal({ minigame, onComplete }) {
     if (isElijah) {
       // 恢復/收集關：自帶 renderer/input/audio，介面與約拿引擎相同（embed/onComplete/boot/destroy）。
       const game = new ElijahGame(canvasRef.current, {
+        embed: true,
+        winPoints: minigame.winPoints || 5,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
+    if (isArkPairs) {
+      // 翻牌記憶配對關：自帶 renderer/input/audio，同一套嵌入契約。pairs 可由站點覆寫動物數。
+      const game = new ArkPairsGame(canvasRef.current, {
+        embed: true,
+        winPoints: minigame.winPoints || 5,
+        pairs: minigame.pairs,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
+    if (isArkBuild) {
+      // 依序放木板蓋方舟關：同一套嵌入契約。
+      const game = new ArkBuildGame(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 5,
         onComplete: (result) => onComplete(result),
