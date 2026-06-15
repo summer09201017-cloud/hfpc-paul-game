@@ -53,23 +53,17 @@ export class Renderer {
 
     this._bgWilderness(dist)
 
-    // 開場的羅騰樹🌳 + 天使👼(在世界起點,隨前進往左捲離)
+    // 開場的羅騰樹🌳(在世界起點,隨前進往左捲離)
     const treeX = PLAYER.x + 70 - dist
     if (treeX > -120) this._broomTree(treeX)
-    const angelX = PLAYER.x + 150 - dist
-    if (angelX > -60 && angelX < VIEW.W + 60) {
-      const bob = Math.sin(this._t * 2) * 4
-      this._emoji('👼', angelX, GROUND_Y - 96 + bob, 46, 'middle')
-    }
 
     // 終點:何烈山(接近終點時從右側滑入)
     const goalX = game.goalPos(dist)
     if (goalX !== null) this._horeb(goalX)
 
-    // 懸空餅水(上下浮動)
-    for (const c of game.spawner.treasures) {
-      const bob = Math.sin((dist + c.x) * 0.02) * 4
-      this._emoji(c.emoji, c.x, c.y + bob, c.size || 32, 'middle')
+    // 天使👼(站在地上,常常遇到;頭上光環 + 還沒遇到的有 💬 提示氣泡)
+    for (const a of game.spawner.angels) {
+      this._angel(a.x, a.met)
     }
 
     // 障礙(溫和的曠野熱浪/塵霧/石頭)
@@ -111,11 +105,98 @@ export class Renderer {
 
     this._hud(game)
 
-    // 覆蓋層:開場 / 癱坐 / 過關 的劇情卡(畫在 canvas 上)
+    // 覆蓋層:開場 / 遇到天使對話 / 癱坐 / 過關 的劇情卡(畫在 canvas 上)
     if (game.state === 'intro') this._panel(CONTENT.intro, '點畫面 / 按空白鍵　起來吃吧 →')
+    else if (game.state === 'dialogue') this._dialoguePanel(game)
     else if (game.state === 'faint') this._faintPanel(game)
     else if (game.state === 'win') this._panel(CONTENT.win, CONTENT.win.cont)
     else if (game.state === 'paused') this._dimText('已暫停　·　點畫面或按 P 繼續')
+  }
+
+  // 天使:站在地上的向量小人(白袍+金光環+翅膀),met 後光環變淡;未遇到的頭上有 💬。
+  _angel(x, met) {
+    const ctx = this.ctx
+    const footY = GROUND_Y
+    const bob = Math.sin(this._t * 2 + x * 0.01) * 3
+    const cy = footY - 52 + bob
+    // 腳下到頭頂的柔和光柱
+    const glow = ctx.createRadialGradient(x, cy, 4, x, cy, 60)
+    glow.addColorStop(0, `rgba(255,248,210,${met ? 0.35 : 0.7})`)
+    glow.addColorStop(1, 'rgba(255,248,210,0)')
+    ctx.fillStyle = glow
+    ctx.fillRect(x - 60, cy - 60, 120, 120)
+    // 翅膀
+    ctx.fillStyle = 'rgba(255,255,255,0.92)'
+    ctx.beginPath()
+    ctx.ellipse(x - 16, cy + 6, 14, 22, 0.5, 0, Math.PI * 2)
+    ctx.ellipse(x + 16, cy + 6, 14, 22, -0.5, 0, Math.PI * 2)
+    ctx.fill()
+    // 白袍身體
+    ctx.fillStyle = '#f6f3ec'
+    ctx.beginPath()
+    ctx.moveTo(x - 9, cy + 2)
+    ctx.lineTo(x + 9, cy + 2)
+    ctx.lineTo(x + 13, footY)
+    ctx.lineTo(x - 13, footY)
+    ctx.closePath()
+    ctx.fill()
+    // 頭
+    ctx.fillStyle = '#e8bb8d'
+    ctx.beginPath()
+    ctx.arc(x, cy - 8, 8, 0, Math.PI * 2)
+    ctx.fill()
+    // 金光環
+    ctx.strokeStyle = '#ffd966'
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.ellipse(x, cy - 20, 9, 3.5, 0, 0, Math.PI * 2)
+    ctx.stroke()
+    // 未遇到:頭上 💬 提示(走過去就會對話)
+    if (!met) {
+      this._emoji('💬', x, footY - 92 + bob, 28, 'middle')
+    }
+  }
+
+  // 遇到天使的對話卡:天使的話「say」+ 經文出處 + 領受餅水提示 + 繼續。
+  _dialoguePanel(game) {
+    const ctx = this.ctx
+    const d = game.dialogue || { say: '', ref: '' }
+    ctx.fillStyle = 'rgba(20,14,6,0.5)'
+    ctx.fillRect(0, 0, VIEW.W, VIEW.H)
+    const cx = VIEW.W / 2
+    let y = 120
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'top'
+    // 天使大圖示
+    this._emoji('👼', cx, y, 64, 'top')
+    y += 78
+    ctx.fillStyle = '#ffe9b0'
+    ctx.font = '800 24px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.fillText('天使對以利亞說', cx, y)
+    y += 40
+    // 天使的話
+    ctx.fillStyle = '#fff6e2'
+    ctx.font = '700 22px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    y = this._wrapped(`「${d.say}」`, cx, y, 720, 30)
+    y += 8
+    // 經文出處
+    if (d.ref) {
+      ctx.fillStyle = '#cfe0a0'
+      ctx.font = '700 17px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+      ctx.fillText(d.ref, cx, y)
+      y += 30
+    }
+    // 領受餅水
+    ctx.fillStyle = 'rgba(245,238,224,0.95)'
+    ctx.font = '600 18px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.fillText(CONTENT.angelGift, cx, y)
+    y += 36
+    // 繼續(脈動)
+    ctx.globalAlpha = 0.55 + 0.45 * Math.abs(Math.sin(this._t * 4))
+    ctx.fillStyle = '#fff'
+    ctx.font = '800 20px "Noto Sans TC","Microsoft JhengHei",sans-serif'
+    ctx.fillText('👉 點畫面 / 按空白鍵　繼續前行', cx, Math.min(y + 6, VIEW.H - 40))
+    ctx.globalAlpha = 1
   }
 
   // ---- 背景:曠野(暖色晨光/黃昏天空 + 遠方沙丘 + 零星聚落 + 沙地土路 + 熱浪) ----
@@ -295,18 +376,12 @@ export class Renderer {
     ctx.textBaseline = 'middle'
     ctx.fillText('體力', sx + sW / 2, sy + sH / 2)
 
-    // 左上:吃喝了幾餐(餅水計數,過關信息會用到)
+    // 左上:遇見天使的次數(每次都領受餅水恢復體力)
     ctx.fillStyle = '#7a5320'
     ctx.font = '600 24px "Noto Sans TC","Microsoft JhengHei",sans-serif'
     ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
-    ctx.fillText(`🍞 ${game.mealsCollected || 0}`, 26, 44)
-    if (game.boostLeft > 0) {
-      ctx.fillStyle = '#c47f0a'
-      ctx.globalAlpha = 0.55 + 0.45 * Math.abs(Math.sin(game.boostLeft * 6))
-      ctx.fillText(`🥖 ${game.boostLeft.toFixed(1)}s`, 120, 44)
-      ctx.globalAlpha = 1
-    }
+    ctx.fillText(`👼 ${game.angelsMet || 0}`, 26, 44)
 
     // 低體力提示
     if (low && game.state === 'playing') {
@@ -328,7 +403,7 @@ export class Renderer {
       ctx.font = '600 17px "Noto Sans TC","Microsoft JhengHei",sans-serif'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'bottom'
-      ctx.fillText('空白 / ↑ / 點畫面 = 跳起來撿餅🍞水💧　·　走到何烈山過關', VIEW.W / 2, VIEW.H - 12)
+      ctx.fillText('空白 / ↑ / 點畫面 = 跳過障礙　·　走到天使👼面前聽祂說話、領受餅水　·　走到何烈山過關', VIEW.W / 2, VIEW.H - 12)
     }
   }
 

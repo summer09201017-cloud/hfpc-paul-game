@@ -1,7 +1,9 @@
 // 「盼望 · 以利亞重得力」動作關主迴圈 + 狀態機。
 // 嵌入契約與 sling/jonah 相同:new Game(canvas, { embed, winPoints, onComplete })、boot()、destroy()。
-// 狀態:intro(看開場經文) → playing(收集前進) → win(到何烈山) / faint(體力歸零→癱坐→自動再起,不失敗)。
-import { VIEW, GROUND_Y, PLAYER, RUN, STAMINA, FAINT, BOOST } from './config.js'
+// 狀態:intro(看開場經文) → playing(前進、躲障礙) → dialogue(遇到天使、出現對話、領受餅水)
+//        → win(到何烈山) / faint(體力歸零→癱坐→自動再起,不失敗)。
+import { VIEW, GROUND_Y, PLAYER, RUN, STAMINA, FAINT, BOOST, ANGEL } from './config.js'
+import { CONTENT } from './content.js'
 import { Player } from './player.js'
 import { Spawner } from './spawner.js'
 import { Renderer } from './renderer.js'
@@ -54,7 +56,9 @@ export class Game {
     this.speed = RUN.startSpeed
     this.goalDistance = RUN.goalDistance
     this.stamina = STAMINA.start
-    this.mealsCollected = 0
+    this.angelsMet = 0 // 遇見天使的次數(HUD 顯示)
+    this.dialogue = null // 進行中的天使對話 { say, ref }(null=沒有)
+    this._angelLineIdx = 0 // 輪流出現天使的話
     this.boostLeft = 0
     this.faintT = 0
   }
@@ -83,6 +87,9 @@ export class Game {
       }
     } else if (this.state === 'intro') {
       if (this._fire()) this._startPlay()
+    } else if (this.state === 'dialogue') {
+      // 遇到天使:停下看對話(天使的話+經文),點畫面繼續前行
+      if (this._fire()) this._endDialogue()
     } else if (this.state === 'win') {
       if (this._fire()) this._finish(true)
     } else if (this.state === 'faint') {
@@ -156,23 +163,13 @@ export class Game {
       }
     }
 
-    // 撿空中餅水(恢復體力)
-    const pb2 = this.player.hitbox()
-    for (const c of this.spawner.treasures) {
-      if (c.taken) continue
-      const cb = { x: c.x - c.r, y: c.y - c.r, w: c.r * 2, h: c.r * 2 }
-      if (!aabb(pb2, cb)) continue
-      c.taken = true
-      this.mealsCollected += 1
-      if (c.kind === 'boost') {
-        // 炭火燒的餅:體力補滿 + 短暫加速(王上 19:8 仗著這飲食的力)
-        this.stamina = STAMINA.max
-        this.boostLeft = BOOST.duration
-        Audio.sfx('boost')
-      } else {
-        const gain = c.kind === 'bread' ? STAMINA.bread : STAMINA.water
-        this.stamina = Math.min(STAMINA.max, this.stamina + gain)
-        Audio.sfx('treasure', { value: gain })
+    // 遇到天使:天使走到以利亞面前 = 停下、出現對話、領受餅水恢復體力
+    for (const a of this.spawner.angels) {
+      if (a.met) continue
+      if (a.x <= PLAYER.x + ANGEL.reach) {
+        a.met = true
+        this._meetAngel()
+        return // 進入對話,本步到此為止
       }
     }
 
@@ -181,6 +178,24 @@ export class Game {
       this.distance = this.goalDistance
       this.win()
     }
+  }
+
+  // 遇到天使:停下進對話狀態,顯示天使的話(輪流),並供應餅水恢復體力(王上 19:5–7)。
+  _meetAngel() {
+    this.angelsMet += 1
+    const lines = CONTENT.angelLines
+    this.dialogue = lines[this._angelLineIdx % lines.length]
+    this._angelLineIdx += 1
+    this.stamina = Math.min(STAMINA.max, this.stamina + ANGEL.refill)
+    this.state = 'dialogue'
+    this.acc = 0
+    Audio.sfx('boost') // 領受餅水:溫暖的上行音
+  }
+
+  _endDialogue() {
+    this.dialogue = null
+    this.state = 'playing'
+    this.acc = 0
   }
 
   // 終點何烈山從畫面右側滑入(終點前 1000px 開始);回傳 x;尚未出現則 null
