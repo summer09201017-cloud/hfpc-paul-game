@@ -18,10 +18,8 @@ export const ANIMALS = [
   { id: 'elephant', emoji: '🐘', name: '大象', role: 'safe' },
   { id: 'dove', emoji: '🕊️', name: '鴿子', role: 'safe' }, // 挪亞放出去的那隻 🕊️
   { id: 'eagle', emoji: '🦅', name: '老鷹', role: 'safe' },
-  { id: 'bird', emoji: '🐦', name: '小鳥', role: 'safe' },
   { id: 'owl', emoji: '🦉', name: '貓頭鷹', role: 'safe' },
   { id: 'penguin', emoji: '🐧', name: '企鵝', role: 'safe' },
-  { id: 'chick', emoji: '🐥', name: '小雞', role: 'safe' },
   // —— 會被吃的 prey（草食/小動物）——
   { id: 'dog', emoji: '🐶', name: '狗', role: 'prey' },
   { id: 'rabbit', emoji: '🐇', name: '小白兔', role: 'prey' },
