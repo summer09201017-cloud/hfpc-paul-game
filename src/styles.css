@@ -1469,6 +1469,24 @@ body {
   background: transparent;
   border-radius: 0;
 }
+/* Canvas 引擎關（福音/大光奇兵動作版，carddemo--game）：舞台維持遊戲 16:9（=VIEW 960:540），
+   取「塞得進可用高度的最大 16:9 框」置中——引擎是 contain-fit，舞台一旦被拉成寬而矮，就會在內部
+   留一大圈邊（手機橫向只剩中間一條）。卡片關不套這條（沿用上面 flex:1 的可捲動高卡片）。 */
+.carddemo--game .minigame__stage {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto;
+  max-height: calc(100dvh - 4.2rem);
+  max-width: calc((100dvh - 4.2rem) * 16 / 9);
+  margin: auto;
+  flex: 0 1 auto;
+}
+/* 手機橫向矮螢幕：縮小標題列，把高度盡量讓給遊戲（只作用在動作關，卡片關不動） */
+@media (orientation: landscape) and (max-height: 540px) {
+  .carddemo--game .minigame__head { margin-bottom: 0.15rem; padding-top: 0.1rem; }
+  .carddemo--game .minigame__title { font-size: clamp(1rem, 3.6vw, 1.6rem); }
+  .carddemo--game .minigame__kind { font-size: 0.78rem; padding: 0.15rem 0.6rem; }
+}
 /* 卡片本身放到最大、投影大字 */
 .carddemo .mgcard {
   max-width: min(1100px, 95vw);

@@ -308,7 +308,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
     // fill=true（單獨玩的動作關 ?demo=，如福音/大光奇兵）：用 .carddemo 滿版外框，
     //   不要 .modal__overlay 那種置中小彈窗（手機橫向會只剩 880px 框 + 兩側留白 + 開場文字被切）。
     //   桌遊內當彈窗用時 fill 留 false，維持原本置中彈窗。
-    <div className={fill ? 'carddemo' : 'modal__overlay'}>
+    //   Canvas 引擎關再加 carddemo--game：舞台維持遊戲 16:9（引擎是 contain-fit，舞台若被拉成
+    //   寬而矮，就會在內部留一大圈邊）；卡片關不加（它要可捲動的高卡片）。
+    <div className={fill ? (cardSpec ? 'carddemo' : 'carddemo carddemo--game') : 'modal__overlay'}>
       <div className="minigame">
         <div className="minigame__head">
           <span className="minigame__kind">闖關挑戰</span>
