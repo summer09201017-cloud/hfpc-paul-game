@@ -766,3 +766,230 @@ function gloryfill(ctx, w, h, t) { // 榮光充滿會幕
   rays(ctx, w, h, t, w * 0.5, 0.8)
 }
 export const EXODUS = { plagues, passover, sinai, tablets, goldcalf, intercede, glory, tabernacle, gloryfill }
+
+// ===================== 共用小圖元（聖歌奇兵 / 反轉奇兵）=====================
+// 山稜剪影（曠野/比加谷背景）
+function ridge(ctx, w, h, baseY, color, amp) {
+  ctx.fillStyle = color
+  ctx.beginPath(); ctx.moveTo(0, baseY)
+  const seg = 6
+  for (let i = 0; i <= seg; i++) ctx.lineTo((w * i) / seg, baseY - amp * (0.35 + 0.65 * Math.abs(Math.sin(i * 1.3 + 0.6))))
+  ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath(); ctx.fill()
+}
+// 手繪音符（取代 emoji 🎵）
+function note(ctx, x, y, k, color) {
+  ctx.fillStyle = color
+  ctx.beginPath(); ctx.ellipse(x, y, 4.4 * k, 3.2 * k, -0.3, 0, TAU); ctx.fill()
+  ctx.fillRect(x + 3.2 * k, y - 16 * k, 1.8 * k, 16 * k)
+  ctx.beginPath(); ctx.moveTo(x + 5 * k, y - 16 * k); ctx.quadraticCurveTo(x + 12 * k, y - 13 * k, x + 9 * k, y - 7 * k); ctx.quadraticCurveTo(x + 9 * k, y - 12 * k, x + 5 * k, y - 11 * k); ctx.closePath(); ctx.fill()
+}
+// 金幣（重金禮聘）
+function coin(ctx, x, y, r) {
+  ctx.fillStyle = '#e8b53a'; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill()
+  ctx.strokeStyle = '#b8860b'; ctx.lineWidth = r * 0.22; ctx.stroke()
+}
+// 驢（褐色，朝右；o.lie 臥倒 / o.look:'back' 回頭 / o.bigEye 大眼=看見使者）
+function donkey(ctx, x, gy, k, o = {}) {
+  const body = '#9c8156', dark = shade(body, -36)
+  const by = gy - 26 * k + (o.lie ? 12 * k : 0)
+  ctx.strokeStyle = dark; ctx.lineWidth = 4.5 * k; ctx.lineCap = 'round'
+  if (o.lie) { ctx.beginPath(); ctx.moveTo(x - 12 * k, gy); ctx.lineTo(x - 4 * k, by + 8 * k); ctx.moveTo(x + 12 * k, gy); ctx.lineTo(x + 4 * k, by + 8 * k); ctx.stroke() }
+  else { ctx.beginPath(); ctx.moveTo(x - 12 * k, by + 8 * k); ctx.lineTo(x - 12 * k, gy); ctx.moveTo(x + 12 * k, by + 8 * k); ctx.lineTo(x + 12 * k, gy); ctx.stroke() }
+  ctx.fillStyle = body; ctx.beginPath(); ctx.ellipse(x, by, 22 * k, 13 * k, 0, 0, TAU); ctx.fill()
+  ctx.strokeStyle = dark; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(x - 22 * k, by - 3 * k); ctx.lineTo(x - 31 * k, by + 4 * k); ctx.stroke() // 尾
+  const dir = o.look === 'back' ? -1 : 1, hx = x + dir * 24 * k
+  ctx.strokeStyle = body; ctx.lineWidth = 9 * k; ctx.beginPath(); ctx.moveTo(x + dir * 15 * k, by - 5 * k); ctx.lineTo(hx, by - 15 * k); ctx.stroke() // 頸
+  ctx.fillStyle = body; ctx.beginPath(); ctx.ellipse(hx + dir * 4 * k, by - 16 * k, 8 * k, 5 * k, dir * 0.3, 0, TAU); ctx.fill() // 頭
+  ctx.fillStyle = dark; ctx.beginPath(); ctx.ellipse(hx, by - 23 * k, 2.4 * k, 6 * k, dir * 0.2, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.ellipse(hx + dir * 5 * k, by - 23 * k, 2.4 * k, 6 * k, dir * 0.45, 0, TAU); ctx.fill() // 耳
+  ctx.fillStyle = '#2c2016'; ctx.beginPath(); ctx.arc(hx + dir * 5 * k, by - 16 * k, (o.bigEye ? 2.8 : 1.6) * k, 0, TAU); ctx.fill() // 眼
+  if (o.bigEye) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1 * k; ctx.beginPath(); ctx.arc(hx + dir * 5 * k, by - 16 * k, 3.6 * k, 0, TAU); ctx.stroke() }
+}
+// 拿著拔出來的刀的使者（白袍 + 翅膀 + 光暈）
+function swordAngel(ctx, x, gy, k, t) {
+  const glow = ctx.createRadialGradient(x, gy - 56 * k, 0, x, gy - 56 * k, 64 * k)
+  glow.addColorStop(0, `rgba(255,250,210,${0.55 + Math.sin(t * 2) * 0.15})`); glow.addColorStop(1, 'rgba(255,250,210,0)')
+  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, gy - 56 * k, 64 * k, 0, TAU); ctx.fill()
+  ctx.fillStyle = 'rgba(255,255,255,0.9)'
+  ctx.beginPath(); ctx.ellipse(x - 15 * k, gy - 60 * k, 9 * k, 26 * k, 0.5, 0, TAU); ctx.fill()
+  ctx.beginPath(); ctx.ellipse(x + 15 * k, gy - 60 * k, 9 * k, 26 * k, -0.5, 0, TAU); ctx.fill()
+  person(ctx, x, gy, k, { robe: '#eef1f6', headColor: '#f2e3b0', arms: 'up', face: 'awe' })
+  ctx.strokeStyle = '#cfd6e0'; ctx.lineWidth = 3.4 * k; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(x + 17 * k, gy - 64 * k); ctx.lineTo(x + 17 * k, gy - 100 * k); ctx.stroke() // 刀身
+  ctx.strokeStyle = '#8a6a3a'; ctx.lineWidth = 4 * k; ctx.beginPath(); ctx.moveTo(x + 11 * k, gy - 64 * k); ctx.lineTo(x + 23 * k, gy - 64 * k); ctx.stroke() // 護手
+}
+// 睜開的眼睛（神開人的眼）
+function openEye(ctx, x, y, k) {
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(x, y, 17 * k, 9.5 * k, 0, 0, TAU); ctx.fill()
+  ctx.strokeStyle = '#4a3a28'; ctx.lineWidth = 2 * k; ctx.stroke()
+  ctx.fillStyle = '#5b8bd0'; ctx.beginPath(); ctx.arc(x, y, 5.2 * k, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#1a1410'; ctx.beginPath(); ctx.arc(x, y, 2.4 * k, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x - 1.6 * k, y - 1.6 * k, 1.1 * k, 0, TAU); ctx.fill()
+}
+
+// ===================== 聖歌奇兵 · 約沙法唱詩得勝（代下 20）逐幕手繪 =====================
+// 1) 三國聯軍壓境（intro）
+function jhsArmy(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#5a4a6e'); sky.addColorStop(1, '#cdb6c9')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+  ridge(ctx, w, h, gy, '#7a6a8c', 30 * k)
+  ctx.fillStyle = '#6a5a40'; ctx.fillRect(0, gy, w, h - gy)
+  for (let i = 0; i < 10; i++) { // 右側一排矛+盔（壓境大軍）
+    const x = w * 0.42 + i * ((w * 0.56) / 10), sw = Math.sin(t * 2 + i * 0.5) * 2 * k
+    ctx.strokeStyle = '#3a2f2a'; ctx.lineWidth = 2.4 * k; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(x + sw, gy); ctx.lineTo(x + sw, gy - 34 * k); ctx.stroke()
+    ctx.fillStyle = '#b0b6c0'; ctx.beginPath(); ctx.moveTo(x + sw, gy - 40 * k); ctx.lineTo(x - 3 * k + sw, gy - 32 * k); ctx.lineTo(x + 3 * k + sw, gy - 32 * k); ctx.closePath(); ctx.fill()
+    ctx.fillStyle = '#7a3b2e'; ctx.beginPath(); ctx.arc(x + sw, gy - 6 * k, 5 * k, Math.PI, 0); ctx.fill()
+  }
+  person(ctx, w * 0.13, gy, k * 1.05, { robe: '#9a4ca8', head: 'crown', face: 'worry', beard: true }) // 孤單的猶大王
+}
+// 2) 定意尋求耶和華、宣告禁食
+function jhsSeek(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#3b2f63'); sky.addColorStop(0.7, '#7a5a8c'); sky.addColorStop(1, '#e3c79a')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h); rays(ctx, w, h, t, w * 0.5, 0.85)
+  ctx.fillStyle = '#5f4a36'; ctx.fillRect(0, gy, w, h - gy)
+  person(ctx, w * 0.5, gy, k * 1.15, { robe: '#9a4ca8', head: 'crown', pose: 'kneel', arms: 'pray', face: 'awe', beard: true })
+  for (const [px, sc, rb] of [[0.28, 0.85, '#6a6a8a'], [0.7, 0.85, '#7a6a5a'], [0.83, 0.78, '#8a5a6a']]) person(ctx, w * px, gy, k * sc, { robe: rb, pose: 'kneel', arms: 'pray', face: 'worry' })
+}
+// 3) 我們無力抵擋，眼目單仰望你
+function jhsLook(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#2f2a55'); sky.addColorStop(1, '#c9b6d0')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h); rays(ctx, w, h, t, w * 0.5, 1)
+  const g = ctx.createRadialGradient(w * 0.5, 0, 0, w * 0.5, 0, 130 * k); g.addColorStop(0, `rgba(255,250,220,${0.55 + Math.sin(t * 2) * 0.15})`); g.addColorStop(1, 'rgba(255,250,220,0)')
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h * 0.7)
+  ctx.fillStyle = '#5f4a36'; ctx.fillRect(0, gy, w, h - gy)
+  person(ctx, w * 0.5, gy, k * 1.22, { robe: '#9a4ca8', head: 'crown', arms: 'up', face: 'awe', beard: true })
+}
+// 4) 神藉先知雅哈悉：勝敗在乎神（發光的盾牌）
+function jhsProphet(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#4a3f70'); sky.addColorStop(1, '#d8c6a8')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#5f4a36'; ctx.fillRect(0, gy, w, h - gy)
+  person(ctx, w * 0.32, gy, k * 1.12, { robe: '#caa24a', head: 'turban', headColor: '#e8d8a8', arms: 'speak', face: 'joy', beard: true })
+  const sx = w * 0.64, sy = gy - 48 * k
+  const gl = ctx.createRadialGradient(sx, sy, 0, sx, sy, 42 * k); gl.addColorStop(0, `rgba(255,240,180,${0.5 + Math.sin(t * 2) * 0.2})`); gl.addColorStop(1, 'rgba(255,240,180,0)')
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(sx, sy, 42 * k, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#b8b6c0'; ctx.beginPath(); ctx.moveTo(sx, sy - 22 * k); ctx.lineTo(sx + 16 * k, sy - 12 * k); ctx.lineTo(sx + 16 * k, sy + 10 * k); ctx.lineTo(sx, sy + 24 * k); ctx.lineTo(sx - 16 * k, sy + 10 * k); ctx.lineTo(sx - 16 * k, sy - 12 * k); ctx.closePath(); ctx.fill()
+  ctx.strokeStyle = '#e8b53a'; ctx.lineWidth = 2.4 * k; ctx.beginPath(); ctx.moveTo(sx, sy - 22 * k); ctx.lineTo(sx, sy + 24 * k); ctx.moveTo(sx - 16 * k, sy - 1 * k); ctx.lineTo(sx + 16 * k, sy - 1 * k); ctx.stroke()
+}
+// 5) 設立歌唱的人，走在軍隊前面（order）
+function jhsChoir(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#6a5a9a'); sky.addColorStop(1, '#e8d2b0')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h); ridge(ctx, w, h, gy, '#8a6a9a', 40 * k)
+  ctx.fillStyle = '#6a5436'; ctx.fillRect(0, gy, w, h - gy)
+  for (let i = 0; i < 4; i++) {
+    const x = w * 0.22 + i * w * 0.17
+    person(ctx, x, gy, k * 0.95, { robe: '#f2efe6', headColor: '#d8c39a', arms: 'up', face: 'joy', walk: t * 5 + i })
+    note(ctx, x + 12 * k, gy - 74 * k - ((t * 30 + i * 22) % 40) * k, k, '#fff3b0')
+  }
+}
+// 6) 真正的兵器是讚美——讚美一響，敵軍自亂
+function jhsPraise(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#4a3f78'); sky.addColorStop(1, '#f0d9a8')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'
+  for (let i = 0; i < 6; i++) { const a = 0.4 + 0.4 * Math.abs(Math.sin(t * 3 + i)); ctx.fillStyle = `rgba(255,240,180,${a * 0.4})`; ctx.beginPath(); ctx.moveTo(w * 0.4, gy - 40 * k); ctx.lineTo(w, gy - 84 * k + i * 16 * k); ctx.lineTo(w, gy - 66 * k + i * 16 * k); ctx.closePath(); ctx.fill() }
+  ctx.restore()
+  ctx.fillStyle = '#5f4a36'; ctx.fillRect(0, gy, w, h - gy)
+  for (let i = 0; i < 3; i++) person(ctx, w * (0.16 + i * 0.1), gy, k * 0.95, { robe: i % 2 ? '#9a4ca8' : '#caa24a', headColor: '#e8d8a8', arms: 'up', face: 'joy' })
+  for (let i = 0; i < 5; i++) { const x = w * 0.62 + i * w * 0.07; ctx.strokeStyle = '#3a2f2a'; ctx.lineWidth = 2.4 * k; ctx.save(); ctx.translate(x, gy); ctx.rotate(0.7 + i * 0.12); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -30 * k); ctx.stroke(); ctx.restore() } // 倒下的矛
+  for (let i = 0; i < 4; i++) note(ctx, w * (0.14 + i * 0.09), gy - 92 * k - ((t * 26 + i * 28) % 64) * k, k, '#fff3b0')
+}
+// 7) 比加谷稱頌神（done）
+function jhsValley(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#5a4a8e'); sky.addColorStop(0.6, '#caa0c0'); sky.addColorStop(1, '#ffe6b0')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+  const g = ctx.createRadialGradient(w * 0.5, gy, 0, w * 0.5, gy, h * 0.75); g.addColorStop(0, `rgba(255,240,180,${0.5 + Math.sin(t * 1.5) * 0.12})`); g.addColorStop(1, 'rgba(255,240,180,0)')
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ridge(ctx, w, h, gy, '#9a7aa0', 34 * k); ctx.fillStyle = '#6a5436'; ctx.fillRect(0, gy, w, h - gy)
+  person(ctx, w * 0.5, gy, k * 1.15, { robe: '#9a4ca8', head: 'crown', arms: 'up', face: 'joy', beard: true })
+  for (const [px, sc, rb] of [[0.28, 0.9, '#caa24a'], [0.72, 0.9, '#f2efe6'], [0.15, 0.8, '#8a5a6a'], [0.85, 0.8, '#6a6a8a']]) person(ctx, w * px, gy, k * sc, { robe: rb, arms: 'up', face: 'joy' })
+  for (let i = 0; i < 5; i++) note(ctx, w * (0.2 + i * 0.15), gy - 88 * k - ((t * 24 + i * 25) % 60) * k, k, '#fff3b0')
+}
+export const JEHOSHAPHAT = { jArmy: jhsArmy, jSeek: jhsSeek, jLook: jhsLook, jProphet: jhsProphet, jChoir: jhsChoir, jPraise: jhsPraise, jValley: jhsValley }
+
+// ===================== 反轉奇兵 · 巴蘭的驢（民 22）逐幕手繪 =====================
+// 1) 巴勒重金請巴蘭咒詛（intro）
+function balHire(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#c9a96a'); sky.addColorStop(1, '#efe0bc')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#b79a5e'; ctx.fillRect(0, gy, w, h - gy)
+  person(ctx, w * 0.26, gy, k * 1.05, { robe: '#8a3b6a', head: 'crown', arms: 'reach', reach: 22, reachUp: 2, face: 'joy', beard: true })
+  person(ctx, w * 0.74, gy, k * 1.05, { robe: '#5a6a8a', head: 'turban', headColor: '#caa24a', arms: 'reach', reach: -22, face: 'worry', beard: true })
+  for (let i = 0; i < 7; i++) coin(ctx, w * 0.5 + Math.cos(i * 1.3) * 16 * k, gy - 8 * k - (i % 3) * 7 * k, 5 * k)
+  for (let i = 0; i < 5; i++) { ctx.fillStyle = `rgba(255,220,120,${0.4 + Math.sin(t * 3 + i) * 0.3})`; ctx.beginPath(); ctx.arc(w * 0.5 + Math.sin(t * 2 + i) * 20 * k, gy - 30 * k - i * 6 * k, 1.8 * k, 0, TAU); ctx.fill() }
+}
+// 2) 神說「那民是蒙福的」
+function balBlessed(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#7a9ac0'); sky.addColorStop(1, '#e8dcbe')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h); rays(ctx, w, h, t, w * 0.55, 0.8)
+  ctx.fillStyle = '#b79a5e'; ctx.fillRect(0, gy, w, h - gy)
+  const g = ctx.createRadialGradient(w * 0.55, gy - 30 * k, 0, w * 0.55, gy - 30 * k, 84 * k); g.addColorStop(0, `rgba(255,244,190,${0.55 + Math.sin(t * 2) * 0.15})`); g.addColorStop(1, 'rgba(255,244,190,0)')
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(w * 0.55, gy - 30 * k, 84 * k, 0, TAU); ctx.fill()
+  for (const [px, sc] of [[0.45, 0.8], [0.57, 0.92], [0.69, 0.8]]) person(ctx, w * px, gy, k * sc, { robe: '#caa24a', headColor: '#e8d8a8', arms: 'up', face: 'joy' })
+  person(ctx, w * 0.13, gy, k * 0.95, { robe: '#5a6a8a', head: 'turban', headColor: '#caa24a', face: 'worry', beard: true }) // 被禁止的巴蘭
+}
+// 3) 使者拿刀攔路，驢看見、巴蘭看不見
+function balAngel(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#b89a6a'); sky.addColorStop(1, '#e8d8b0')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#b79a5e'; ctx.fillRect(0, gy, w, h - gy)
+  ctx.fillStyle = '#9c8150'; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy - 10 * k); ctx.lineTo(w, gy + 22 * k); ctx.lineTo(0, gy + 30 * k); ctx.closePath(); ctx.fill()
+  swordAngel(ctx, w * 0.78, gy, k * 1.05, t)
+  donkey(ctx, w * 0.32, gy, k * 1.1, { bigEye: true })
+  person(ctx, w * 0.32, gy - 28 * k, k * 0.88, { robe: '#5a6a8a', head: 'turban', headColor: '#caa24a', face: 'worry', beard: true }) // 巴蘭騎驢、看不見
+  ctx.strokeStyle = 'rgba(90,70,40,0.5)'; ctx.lineWidth = 1.6 * k; ctx.setLineDash([4 * k, 4 * k]); ctx.beginPath(); ctx.moveTo(w * 0.41, gy - 26 * k); ctx.lineTo(w * 0.69, gy - 54 * k); ctx.stroke(); ctx.setLineDash([])
+}
+// 4) 驢三次避開、巴蘭三次打驢（order）
+function balAvoid(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#c0a06a'); sky.addColorStop(1, '#e8dcba')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#b79a5e'; ctx.fillRect(0, gy, w, h - gy)
+  ctx.fillStyle = '#a98a58'; ctx.fillRect(w * 0.66, gy - 72 * k, w * 0.1, 72 * k) // 窄路的牆
+  donkey(ctx, w * 0.4, gy, k * 1.1, { lie: true, look: 'back', bigEye: true })
+  person(ctx, w * 0.56, gy, k * 1, { robe: '#5a6a8a', head: 'turban', headColor: '#caa24a', arms: 'up', face: 'worry', beard: true })
+  ctx.strokeStyle = '#6a4a2a'; ctx.lineWidth = 3 * k; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(w * 0.56 - 14 * k, gy - 80 * k); ctx.lineTo(w * 0.56 - 2 * k, gy - 58 * k); ctx.stroke() // 杖
+}
+// 5) 神叫驢開口
+function balSpeak(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#bfa06a'); sky.addColorStop(1, '#ece0bc')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#b79a5e'; ctx.fillRect(0, gy, w, h - gy)
+  donkey(ctx, w * 0.42, gy, k * 1.15, { look: 'back', bigEye: true })
+  person(ctx, w * 0.68, gy, k * 1, { robe: '#5a6a8a', head: 'turban', headColor: '#caa24a', face: 'awe', beard: true })
+  const bx = w * 0.24, by = gy - 70 * k, pulse = 1 + Math.sin(t * 5) * 0.05
+  ctx.fillStyle = '#fffaf0'; ctx.strokeStyle = '#b89a5e'; ctx.lineWidth = 2 * k
+  ctx.beginPath(); ctx.ellipse(bx, by, 30 * k * pulse, 18 * k * pulse, 0, 0, TAU); ctx.fill(); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(bx + 12 * k, by + 12 * k); ctx.lineTo(bx + 28 * k, by + 26 * k); ctx.lineTo(bx + 22 * k, by + 10 * k); ctx.closePath(); ctx.fill()
+  ctx.fillStyle = '#8a6a3a'; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(bx - 10 * k + i * 10 * k, by, 2.6 * k, 0, TAU); ctx.fill() }
+}
+// 6) 神把話放在他口中——咒詛變祝福
+function balCurse(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#8a7ab0'); sky.addColorStop(1, '#f0e2bc')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#b79a5e'; ctx.fillRect(0, gy, w, h - gy)
+  person(ctx, w * 0.22, gy, k * 1.1, { robe: '#5a6a8a', head: 'turban', headColor: '#caa24a', arms: 'up', face: 'awe', beard: true })
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'
+  for (let i = 0; i < 6; i++) { const a = 0.4 + 0.4 * Math.abs(Math.sin(t * 2.5 + i)); const grd = ctx.createLinearGradient(w * 0.3, 0, w * 0.82, 0); grd.addColorStop(0, `rgba(120,90,150,${a * 0.3})`); grd.addColorStop(1, `rgba(255,240,170,${a * 0.5})`); ctx.fillStyle = grd; ctx.beginPath(); ctx.moveTo(w * 0.3, gy - 52 * k); ctx.lineTo(w * 0.82, gy - 92 * k + i * 12 * k); ctx.lineTo(w * 0.82, gy - 76 * k + i * 12 * k); ctx.closePath(); ctx.fill() }
+  ctx.restore()
+  for (const [px, sc] of [[0.7, 0.8], [0.83, 0.9]]) person(ctx, w * px, gy, k * sc, { robe: '#caa24a', headColor: '#e8d8a8', arms: 'up', face: 'joy' })
+}
+// 7) 神用卑微的逆轉驕傲的（done）
+function balReversal(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#9a86c0'); sky.addColorStop(0.6, '#d8c2c0'); sky.addColorStop(1, '#ffe6b8')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h); rays(ctx, w, h, t, w * 0.5, 0.7)
+  ctx.fillStyle = '#b79a5e'; ctx.fillRect(0, gy, w, h - gy)
+  donkey(ctx, w * 0.3, gy, k * 1.15, { bigEye: true, look: 'back' })
+  openEye(ctx, w * 0.5, h * 0.26, k * 1.3)
+  for (const [px, sc] of [[0.68, 0.85], [0.81, 0.78]]) person(ctx, w * px, gy, k * sc, { robe: '#caa24a', headColor: '#e8d8a8', arms: 'up', face: 'joy' })
+  for (let i = 0; i < 8; i++) { ctx.fillStyle = `rgba(255,244,190,${0.5 - i * 0.04})`; ctx.beginPath(); ctx.arc(w * 0.5 + Math.sin(t * 2 + i) * 16 * k, h * 0.26 + 30 * k + ((t * 24 + i * 20) % 60) * k, 2 * k, 0, TAU); ctx.fill() }
+}
+export const BALAAM = { bHire: balHire, bBlessed: balBlessed, bAngel: balAngel, bAvoid: balAvoid, bSpeak: balSpeak, bCurse: balCurse, bReversal: balReversal }
