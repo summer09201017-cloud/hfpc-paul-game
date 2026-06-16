@@ -799,11 +799,12 @@ export const CARD_GAMES = {
     title: '🎵 聖歌奇兵 · 約沙法唱詩得勝',
     music: 'majestic', // 莊嚴得勝
     accent: [154, 76, 168], // 詩班紫
+    canvas: 'jValley', // 預設手繪場景（沒指定自己 scene.canvas 的步驟用）
     lives: 3,
     how: '陪約沙法王面對摩押、亞捫三國聯軍——沒有刀劍，只有讚美。用選擇與排序，看神怎麼在百姓「唱歌讚美」的時候親自爭戰。',
     intro: {
       kicker: '🎵 聖歌奇兵',
-      scene: { motion: 'pulse', cast: ['👑', '⚔️', '⚔️', '⚔️'], caption: '摩押、亞捫大軍壓境' },
+      scene: { canvas: 'jArmy', caption: '摩押、亞捫大軍壓境' },
       ref: '歷代志下 20:1-3',
       line: '此後，摩押人和亞捫人，又有米烏尼人，一同來攻擊約沙法。',
       body: '三國聯軍來勢洶洶，猶大王約沙法無力抵擋。換作別人，第一件事是招兵買馬；但約沙法做了一件完全不一樣的事——這也是整關的功課：得勝，從轉向神開始。',
@@ -813,7 +814,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🙏 大軍壓境的第一步',
-        scene: { motion: 'rise', cast: ['🙏', '👑', '📿'], caption: '定意尋求耶和華、宣告禁食' },
+        scene: { canvas: 'jSeek', caption: '定意尋求耶和華、宣告禁食' },
         q: '聽見三國聯軍來攻，約沙法王第一件事做什麼？',
         choices: [
           '立刻召集軍隊，多買兵器戰車',
@@ -831,7 +832,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '👀 禱告的結尾',
-        scene: { motion: 'pulse', cast: ['🙏', '😣', '👀'], caption: '我們無力抵擋，眼目單仰望你' },
+        scene: { canvas: 'jLook', caption: '我們無力抵擋，眼目單仰望你' },
         q: '約沙法在全會眾面前禱告，最後一句怎麼說？',
         choices: [
           '「靠我的智慧，必能退敵」',
@@ -849,7 +850,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '📜 神藉先知回答',
-        scene: { motion: 'rise', cast: ['📜', '🛡️', '✨'], caption: '勝敗不在乎你們，乃在乎神' },
+        scene: { canvas: 'jProphet', caption: '勝敗不在乎你們，乃在乎神' },
         q: '神的靈降在利未人雅哈悉身上，他向驚惶的百姓宣告什麼？',
         choices: [
           '「不要懼怕，因為勝敗不在乎你們，乃在乎神」',
@@ -867,14 +868,14 @@ export const CARD_GAMES = {
       {
         kind: 'order',
         kicker: '🎶 得勝的次序',
-        scene: { motion: 'walk', cast: ['🙇', '📣', '🎶', '🎵'], target: '🏔️', caption: '清早起來，往曠野去' },
+        scene: { canvas: 'jChoir', caption: '清早起來，往曠野去' },
         prompt: '神所吩咐的得勝，是一步步來的。把次序由先到後排出來：',
         items: [
-          '🙇 約沙法和眾人俯伏，敬拜耶和華',
-          '🌄 次日清早起來，往提哥亞的曠野去',
-          '🛡️ 約沙法勸百姓：要信耶和華你們的神，就必立穩',
-          '🎶 設立歌唱的人，穿上聖潔禮服，走在軍隊前面',
-          '🎵 他們一唱歌讚美，耶和華就派伏兵擊殺敵軍',
+          '約沙法和眾人俯伏，敬拜耶和華',
+          '次日清早起來，往提哥亞的曠野去',
+          '約沙法勸百姓：要信耶和華你們的神，就必立穩',
+          '設立歌唱的人，穿上聖潔禮服，走在軍隊前面',
+          '他們一唱歌讚美，耶和華就派伏兵擊殺敵軍',
         ],
         reveal: {
           ref: '代下 20:20-22',
@@ -885,7 +886,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🎵 真正的兵器',
-        scene: { motion: 'rise', cast: ['🎵', '🎶', '🙌', '✨'], caption: '讚美一響，敵軍自亂' },
+        scene: { canvas: 'jPraise', caption: '讚美一響，敵軍自亂' },
         q: '猶大人這場仗，真正的「兵器」是什麼？',
         choices: [
           '鋒利的刀劍和戰車',
@@ -903,7 +904,7 @@ export const CARD_GAMES = {
     ],
     done: {
       kicker: '✓ 讚美得勝',
-      scene: { motion: 'rise', cast: ['🎺', '🎵', '🙌', '👑'], caption: '比加谷稱頌神' },
+      scene: { canvas: 'jValley', caption: '比加谷稱頌神' },
       ref: '代下 20:22',
       line: '眾人方唱歌讚美的時候，耶和華就派伏兵。',
       body: '面對打不贏的大軍，約沙法沒有靠刀劍，他帶著百姓讚美——神就在讚美聲中親自爭戰。我們人生中那些「無力抵擋」的時候也一樣：把眼目單單仰望神，開口讚美，看神為你施行拯救。',
@@ -918,11 +919,12 @@ export const CARD_GAMES = {
     title: '🫏 反轉奇兵 · 巴蘭的驢',
     music: 'bright', // 明亮（神開人的眼）
     accent: [138, 109, 59], // 驢褐
+    canvas: 'bReversal', // 預設手繪場景
     lives: 3,
     how: '跟著先知巴蘭和他的驢上路——看得見神使者的，竟是一頭驢。用選擇與排序，看神怎麼用最卑微的，攔阻最自以為聰明的人。',
     intro: {
       kicker: '🫏 反轉奇兵',
-      scene: { motion: 'pulse', cast: ['👑', '💰', '🧙'], caption: '巴勒重金請巴蘭咒詛以色列' },
+      scene: { canvas: 'bHire', caption: '巴勒重金請巴蘭咒詛以色列' },
       ref: '民數記 22:6',
       line: '這民比我強盛，求你來為我咒詛他們……因為我知道，你為誰祝福，誰就得福。',
       body: '摩押王巴勒重金禮聘先知巴蘭，要他咒詛神的百姓以色列。但神早就對巴蘭說過：「你不可咒詛那民，因為那民是蒙福的。」巴蘭卻為了利益，還是騎著驢上了路。',
@@ -932,7 +934,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🚫 神的態度',
-        scene: { motion: 'rise', cast: ['🚫', '🙏', '✨'], caption: '那民是蒙福的' },
+        scene: { canvas: 'bBlessed', caption: '那民是蒙福的' },
         q: '巴勒要巴蘭去咒詛以色列。神怎麼說？',
         choices: [
           '「去吧，隨你怎麼咒詛」',
@@ -950,7 +952,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🗡️ 路上的攔阻',
-        scene: { motion: 'pulse', cast: ['😇', '🗡️', '🫏', '🙈'], caption: '驢看見使者，巴蘭看不見' },
+        scene: { canvas: 'bAngel', caption: '驢看見使者，巴蘭看不見' },
         q: '巴蘭騎驢走在路上，誰站在路中間攔阻？誰先看見？',
         choices: [
           '耶和華的使者手裡拿著拔出來的刀，驢看見了、巴蘭卻看不見',
@@ -968,14 +970,14 @@ export const CARD_GAMES = {
       {
         kind: 'order',
         kicker: '🫏 三次避開',
-        scene: { motion: 'walk', cast: ['🫏', '🧙', '🗡️'], caption: '驢三次避開，巴蘭三次打驢' },
+        scene: { canvas: 'bAvoid', caption: '驢三次避開，巴蘭三次打驢' },
         prompt: '驢三次避開拔刀的使者，巴蘭卻三次打牠。把經過由先到後排出來：',
         items: [
-          '🌾 驢跨進田間躲避，巴蘭打驢，要牠回到路上',
-          '🧱 窄路上驢擠靠牆，壓傷巴蘭的腳，巴蘭又打驢',
-          '🛑 驢乾脆臥倒不走，巴蘭發怒，用杖打驢',
-          '🗣️ 耶和華叫驢開口，問巴蘭：你為何打我這三次',
-          '👁️ 耶和華開巴蘭的眼，他看見使者，低頭俯伏在地',
+          '驢跨進田間躲避，巴蘭打驢，要牠回到路上',
+          '窄路上驢擠靠牆，壓傷巴蘭的腳，巴蘭又打驢',
+          '驢乾脆臥倒不走，巴蘭發怒，用杖打驢',
+          '耶和華叫驢開口，問巴蘭：你為何打我這三次',
+          '耶和華開巴蘭的眼，他看見使者，低頭俯伏在地',
         ],
         reveal: {
           ref: '民 22:28, 31',
@@ -986,7 +988,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🗣️ 驢開口',
-        scene: { motion: 'speak', cast: ['🫏', '💬', '❗'], caption: '你竟打我這三次呢' },
+        scene: { canvas: 'bSpeak', caption: '你竟打我這三次呢' },
         q: '耶和華叫驢開口，驢對巴蘭說了什麼？',
         choices: [
           '「快點給我吃草」',
@@ -1004,7 +1006,7 @@ export const CARD_GAMES = {
       {
         kind: 'question',
         kicker: '🙌 咒詛變祝福',
-        scene: { motion: 'rise', cast: ['🙊', '🙌', '✨'], caption: '神把話放在他口中' },
+        scene: { canvas: 'bCurse', caption: '神把話放在他口中' },
         q: '巴蘭幾次想咒詛以色列，最後神讓他開口，結果說出什麼？',
         choices: [
           '他成功咒詛了以色列',
@@ -1022,7 +1024,7 @@ export const CARD_GAMES = {
     ],
     done: {
       kicker: '✓ 咒詛變祝福',
-      scene: { motion: 'rise', cast: ['🫏', '👁️', '🙌'], caption: '神用卑微的，逆轉驕傲的' },
+      scene: { canvas: 'bReversal', caption: '神用卑微的，逆轉驕傲的' },
       ref: '民 23:8',
       line: '神沒有咒詛的，我焉能咒詛？',
       body: '看得見神的是驢，眼瞎的是先知。神能用最卑微的（一頭驢）攔阻最自以為聰明的人，也能把人的咒詛逆轉成滿滿的祝福。在神面前，沒有人靠自己的聰明得勝——蒙福，是因為我們是「神所祝福的」。',
