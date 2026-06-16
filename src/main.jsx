@@ -7,6 +7,7 @@ import RedSeaDemo from './components/RedSeaDemo.jsx'
 import CardDemo from './components/CardDemo.jsx'
 import CorneliusActionDemo from './components/CorneliusActionDemo.jsx'
 import SaulActionDemo from './components/SaulActionDemo.jsx'
+import JehoshaphatActionDemo from './components/JehoshaphatActionDemo.jsx'
 import ArkPairsDemo from './components/ArkPairsDemo.jsx'
 import ArkBuildDemo from './components/ArkBuildDemo.jsx'
 import { CARD_GAMES } from './minigames/cards/specs'
@@ -22,6 +23,7 @@ registerSW({ immediate: true })
 //   ?demo=redsea            → 紅海奔逃（約拿引擎 level 8 動作關，出 14；不併保羅旅程）
 //   ?demo=cornelius-action  → 福音·出發傳福音（跑酷，約帕→該撒利亞，徒 10）
 //   ?demo=saul-action       → 大光·順服奔跑（曠野跑酷，大馬士革路→直街，徒 9）
+//   ?demo=jehoshaphat-action→ 聖歌·約沙法唱詩得勝（約拿引擎 level 9，代下 20；戰爭關搬進 paul）
 //   ?demo=arkpairs          → 挪亞·一公一母進方舟（翻牌記憶配對，創 6–7）
 //   ?demo=arkbuild          → 挪亞·一步一步蓋方舟（依序放木板，創 6:14-22）
 //   ?demo=<卡片關 key>      → 任一卡片關單獨玩，例 ?demo=cornelius（福音奇兵）
@@ -40,6 +42,7 @@ function pickRoot() {
   if (demo && CARD_GAMES[demo]) return <CardDemo specKey={demo} />
   if (demo === 'cornelius-action') return <CorneliusActionDemo />
   if (demo === 'saul-action') return <SaulActionDemo />
+  if (demo === 'jehoshaphat-action') return <JehoshaphatActionDemo />
   if (demo === 'arkpairs') return <ArkPairsDemo />
   if (demo === 'arkbuild') return <ArkBuildDemo />
   return <App />
