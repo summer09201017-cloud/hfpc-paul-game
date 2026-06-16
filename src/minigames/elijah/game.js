@@ -163,7 +163,18 @@ export class Game {
       }
     }
 
-    // 遇到天使:天使走到以利亞面前 = 停下、出現對話、領受餅水恢復體力
+    // 跳起來吃天使在空中預備的餅🍞水💧 → 恢復體力（王上 19:6；這一關的核心收集機制）
+    const pp = this.player.hitbox()
+    for (const p of this.spawner.pickups) {
+      if (p.got) continue
+      if (aabb(pp, { x: p.x - p.r, y: p.y - p.r, w: p.r * 2, h: p.r * 2 })) {
+        p.got = true
+        this.stamina = Math.min(STAMINA.max, this.stamina + (p.kind === 'bread' ? STAMINA.bread : STAMINA.water))
+        Audio.sfx('boost')
+      }
+    }
+
+    // 遇到天使:天使走到以利亞面前 = 停下、出現對話、在前方空中預備餅水
     for (const a of this.spawner.angels) {
       if (a.met) continue
       if (a.x <= PLAYER.x + ANGEL.reach) {
@@ -186,10 +197,11 @@ export class Game {
     const lines = CONTENT.angelLines
     this.dialogue = lines[this._angelLineIdx % lines.length]
     this._angelLineIdx += 1
-    this.stamina = Math.min(STAMINA.max, this.stamina + ANGEL.refill)
+    // 天使不直接補滿——而是在前方空中預備餅🍞水💧,讓以利亞跳起來吃(王上 19:6)。
+    this.spawner.dropMeal()
     this.state = 'dialogue'
     this.acc = 0
-    Audio.sfx('boost') // 領受餅水:溫暖的上行音
+    Audio.sfx('boost') // 天使顯現:溫暖的上行音
   }
 
   _endDialogue() {

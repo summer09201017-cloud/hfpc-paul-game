@@ -20,11 +20,25 @@ export class Spawner {
   reset() {
     this.obstacles = []
     this.angels = []
+    this.pickups = [] // 天使來過後撒在空中的餅🍞水💧(跳起來吃,恢復體力)
     this.distSinceObstacle = 0
     this.nextObstacleGap = 700
     this.distSinceAngel = 0
     this.nextAngelGap = ANGEL.firstAt // 第一位天使很快出現
     this._firstAngelDone = false
+  }
+
+  // 遇到天使後呼叫:在前方空中撒下幾個餅🍞水💧,排成「跳起來才吃得到」的高度。
+  dropMeal() {
+    for (let i = 0; i < 4; i++) {
+      this.pickups.push({
+        x: VIEW.W + 40 + i * 84, // 在畫面右側外,隨世界往左進場
+        y: GROUND_Y - (62 + (i % 2) * 40), // 高低交錯(跳起來吃)
+        kind: i % 2 === 0 ? 'bread' : 'water',
+        r: 16,
+        got: false,
+      })
+    }
   }
 
   update(dt, speed, distanceTraveled, goalDistance) {
@@ -66,7 +80,9 @@ export class Spawner {
     // ---- 移動 + 移除出界 ----
     for (const o of this.obstacles) o.x -= dx
     for (const a of this.angels) a.x -= dx
+    for (const p of this.pickups) p.x -= dx
     this.obstacles = this.obstacles.filter((o) => o.x > -80)
     this.angels = this.angels.filter((a) => a.x > -80)
+    this.pickups = this.pickups.filter((p) => p.x > -60 && !p.got)
   }
 }
