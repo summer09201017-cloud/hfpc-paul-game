@@ -2,14 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> 📌 **現況速覽（2026-06-15 晚）**：線上 main = 七旅程 + 單獨可玩的 `?demo=sling`（大衛甩石）、`?demo=elijah-action`
-> （盼望·以利亞收集/恢復動作關）、`?demo=cornelius`（福音奇兵卡片關，牧者已審）；卡片關 `?demo=<key>` 走 `CardDemo`，
-> 動作關各自的入口元件（`SlingDemo`/`ElijahDemo`/`ArkPairsDemo`/`ArkBuildDemo`）由 `src/main.jsx` 依 `?demo=` 分派。
-> 🛕 **挪亞方舟兩關（2026-06-15 晚）**：`?demo=arkpairs`（一公一母翻牌配對＋安排房間解謎，母的戴 🎀）、
-> `?demo=arkbuild`（操作挪亞鎚擊瞄準放木板，旁人嘲笑）——in-repo Canvas 關，**在 `feat/noah-minigames`（PR #15）尚未併 main**。
-> 大廳（hfpc-bible-games）已加「挪亞方舟」合輯卡，連結需先合併部署 PR #15 才會通。
-> 🌊 紅海奔逃動作關（約拿引擎 level 8）已做好，sync 進 `src/minigames/jonah/`，**另一分支處理中**。
-> **完整現況、開放決策、CP 排序 todo → `讀我-HANDOFF.txt`。**
+> 📌 **現況速覽（2026-06-17，全部已併 main 並自動部署）**：線上 = 七旅程 + 多個單獨可玩的 `?demo=`：
+> 動作關 `?demo=sling`（大衛甩石）/ `elijah-action`（盼望·以利亞，遇天使後**跳吃空中餅水**回體力）/
+> `cornelius-action`（福音跑酷）/ `saul-action`（大光跑酷）/ `jehoshaphat-action`（**聖歌·約沙法,戰爭關已搬進 paul**，敵軍放大有表情）/
+> `arkpairs`（挪亞配對,難度旋鈕+星等）/ `arkbuild`（挪亞蓋舟）/ `redsea`（紅海）；
+> 卡片關 `?demo=<key>` 走 `CardDemo`（cornelius/elijah/saul/**jehoshaphat/balaam**/danielFinale/exodusFinale… **全部 L6 手繪 Canvas、無 emoji 小劇場**）。
+> 入口分派在 `src/main.jsx`（`SlingDemo`/`ElijahDemo`/`RedSeaDemo`/`CorneliusActionDemo`/`SaulActionDemo`/`JehoshaphatActionDemo`/`ArkPairsDemo`/`ArkBuildDemo`/`CardDemo`）。
+> 🖥️ **動作關手機全螢幕已一條龍處理**（16:9 取最大框、遊玩時隱藏標題列讓遊戲最大、⛶ 全螢幕鈕 + 暫停鈕、開場框可捲動不被切、挖孔安全區鋪暖底）——
+> 走 `MiniGameModal` 的 `fill` 參數 + `.carddemo--game`/`.carddemo--playing`；心法見 skill **`embed-fullscreen-fit`**（debug 「黑邊/不夠大/沒暫停鈕/開場框被切」先讀它）。
+> ⚔️ **戰爭關永久家 = 本 repo**：聖歌(level 9)已搬進來當 `?demo=jehoshaphat-action`；摩西/巴蘭仍在 `hfpc-war-games`（手動部署的原型站），可比照搬入。
+> **完整「已完成 vs 待做」+ CP 排序 → `roadmap.md` 最上方 2026-06-17 段 與 `docs/未來功能與skill點子-CP排序.md`。**
 
 ## What this is
 
