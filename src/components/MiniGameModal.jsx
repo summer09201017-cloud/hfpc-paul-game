@@ -162,7 +162,7 @@ function makeEmbedUI(setCard) {
 
 // 把約拿的即時小遊戲嵌進保羅彈窗：掛一個 canvas，啟動引擎（嵌入模式），
 // 過關 / 失敗時呼叫 onComplete({ won, score, level })，由外層換算成福音點數。
-export default function MiniGameModal({ minigame, onComplete }) {
+export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   const canvasRef = useRef(null)
   const gameRef = useRef(null)
   const [started, setStarted] = useState(false)
@@ -305,7 +305,10 @@ export default function MiniGameModal({ minigame, onComplete }) {
   }, [])
 
   return (
-    <div className="modal__overlay">
+    // fill=true（單獨玩的動作關 ?demo=，如福音/大光奇兵）：用 .carddemo 滿版外框，
+    //   不要 .modal__overlay 那種置中小彈窗（手機橫向會只剩 880px 框 + 兩側留白 + 開場文字被切）。
+    //   桌遊內當彈窗用時 fill 留 false，維持原本置中彈窗。
+    <div className={fill ? 'carddemo' : 'modal__overlay'}>
       <div className="minigame">
         <div className="minigame__head">
           <span className="minigame__kind">闖關挑戰</span>

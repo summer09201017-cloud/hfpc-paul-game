@@ -1413,12 +1413,21 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* safe center：內容放得下就置中；放不下（手機橫向矮舞台）改靠上並可捲動，
+     「開始挑戰」鈕永遠點得到，不會被切到畫面外。 */
+  justify-content: safe center;
+  overflow-y: auto;
   gap: 1rem;
   padding: 1.2rem;
   text-align: center;
   background: rgba(8, 30, 42, 0.82);
   color: #fff;
+}
+.minigame__intro > * { flex: 0 0 auto; }
+/* 手機橫向矮螢幕：縮小開場說明與留白，盡量一頁放得下 */
+@media (orientation: landscape) and (max-height: 540px) {
+  .minigame__intro { gap: 0.5rem; padding: 0.7rem 1rem; }
+  .minigame__how { font-size: clamp(0.85rem, 3.2vw, 1.1rem); line-height: 1.45; }
 }
 .minigame__how {
   font-size: clamp(1rem, 2vw, 1.25rem);
