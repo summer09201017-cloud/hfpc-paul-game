@@ -56,9 +56,11 @@ export default function ArkBuildDemo() {
       >
         ⛶
       </button>
-      <div style={{ color: '#cfe3e8', padding: '6px 12px', font: '14px system-ui' }}>
-        一步一步蓋方舟・開發預覽（?demo=arkbuild）{result && `　→ 結果：方舟蓋好了 🌈（score ${result.score}）`}
-      </div>
+      {(!started || result) && (
+        <div style={{ color: '#cfe3e8', padding: '6px 12px', font: '14px system-ui' }}>
+          🔨 一步一步蓋方舟{result && `　→ 結果：方舟蓋好了 🌈（score ${result.score}）`}
+        </div>
+      )}
       <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
         <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
         {!started && (

@@ -79,10 +79,12 @@ export default function ArkPairsDemo() {
       >
         {muted ? '🔇' : '🎵'}
       </button>
-      <div style={{ color: '#cfe3e8', padding: '6px 12px', font: '14px system-ui' }}>
-        一公一母進方舟・開發預覽（?demo=arkpairs）
-        {result && `　→ 結果：全部上船 🌈 ${'⭐'.repeat(result.stars || 0)}（用時 ${result.secs}s・翻錯 ${result.misses}・score ${result.score}）`}
-      </div>
+      {(!started || result) && (
+        <div style={{ color: '#cfe3e8', padding: '6px 12px', font: '14px system-ui' }}>
+          🐘 一公一母進方舟
+          {result && `　→ 結果：全部上船 🌈 ${'⭐'.repeat(result.stars || 0)}（用時 ${result.secs}s・翻錯 ${result.misses}・score ${result.score}）`}
+        </div>
+      )}
       <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
         <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
         {!started && (
