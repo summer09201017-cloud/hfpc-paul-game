@@ -221,10 +221,27 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
     else if (act.startsWith('gourd-')) g.handleGourdAction(act, ds)
   }
 
+  // 進裝置全螢幕並鎖橫向（fill 模式的單獨玩動作關用）：在使用者手勢中呼叫才有效。
+  //   手機 App 內建瀏覽器可能擋 Fullscreen API（呼叫失敗就靜默忽略，CSS 仍會盡量滿版）。
+  const enterFullscreenLandscape = () => {
+    try {
+      const el = document.documentElement
+      if (!document.fullscreenElement && el.requestFullscreen) {
+        const p = el.requestFullscreen()
+        if (p && p.then) p.then(() => { try { screen.orientation?.lock?.('landscape') } catch {} }).catch(() => {})
+        else { try { screen.orientation?.lock?.('landscape') } catch {} }
+      }
+    } catch {}
+  }
+  const toggleFullscreen = () => {
+    try { document.fullscreenElement ? document.exitFullscreen() : enterFullscreenLandscape() } catch {}
+  }
+
   // 在使用者點「開始挑戰」的手勢中啟動：此時 canvas 已排版好（renderer 量得到尺寸），
   // 音訊也能在手勢中解鎖。
   const begin = () => {
     if (started || gameRef.current) return
+    if (fill) enterFullscreenLandscape() // 單獨玩動作關：開始就進全螢幕鎖橫向（手勢中最易成功）
     setStarted(true)
     sound.stopBgm() // 暫停保羅背景音樂，避免和小遊戲音效打架
     if (cardSpec) return // 卡片流程關：純 React，不啟動引擎
@@ -311,6 +328,11 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
     //   Canvas 引擎關再加 carddemo--game：舞台維持遊戲 16:9（引擎是 contain-fit，舞台若被拉成
     //   寬而矮，就會在內部留一大圈邊）；卡片關不加（它要可捲動的高卡片）。
     <div className={fill ? (cardSpec ? 'carddemo' : 'carddemo carddemo--game') : 'modal__overlay'}>
+      {fill && (
+        <button className="carddemo__fs" onClick={toggleFullscreen} aria-label="全螢幕" title="全螢幕">
+          ⛶
+        </button>
+      )}
       <div className="minigame">
         <div className="minigame__head">
           <span className="minigame__kind">闖關挑戰</span>
