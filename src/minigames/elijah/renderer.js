@@ -71,6 +71,13 @@ export class Renderer {
       this._emoji(o.emoji, o.x, GROUND_Y + 4, o.size)
     }
 
+    // 天使在空中預備的餅🍞水💧(跳起來吃,恢復體力;王上 19:6)——輕輕上下飄,帶一點亮光
+    for (const p of game.spawner.pickups || []) {
+      const bob = Math.sin(game.distance * 0.03 + p.x * 0.02) * 4
+      this._emoji('✨', p.x, p.y + bob, p.r * 1.1, 'middle')
+      this._emoji(p.kind === 'bread' ? '🍞' : '💧', p.x, p.y + bob, p.r * 1.8, 'middle')
+    }
+
     // 衝刺中(撿到炭火燒的餅🥖):以利亞身後拖出速度線
     if (game.boostLeft > 0 && game.speed > 1) {
       const ctx = this.ctx
