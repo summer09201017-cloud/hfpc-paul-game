@@ -166,6 +166,7 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   const canvasRef = useRef(null)
   const gameRef = useRef(null)
   const [started, setStarted] = useState(false)
+  const [paused, setPaused] = useState(false) // fill 動作關的暫停鈕狀態
   const [card, setCard] = useState(null) // 3/5/6 卡片流程關目前顯示的卡（null=遊戲畫面）
 
   // 純 React 卡片流程關（in-repo，src/minigames/cards/）：站點用 minigame.cards 指定規格，
@@ -235,6 +236,13 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   }
   const toggleFullscreen = () => {
     try { document.fullscreenElement ? document.exitFullscreen() : enterFullscreenLandscape() } catch {}
+  }
+  // 暫停/繼續（fill 動作關用；引擎的 pause/resume 在嵌入下 ui 呼叫是空殼、安全）。
+  const togglePause = () => {
+    const g = gameRef.current
+    if (!g || !g.pause) return
+    if (paused) { g.resume(); setPaused(false) }
+    else { g.pause(); setPaused(true) }
   }
 
   // 在使用者點「開始挑戰」的手勢中啟動：此時 canvas 已排版好（renderer 量得到尺寸），
@@ -327,7 +335,20 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
     //   桌遊內當彈窗用時 fill 留 false，維持原本置中彈窗。
     //   Canvas 引擎關再加 carddemo--game：舞台維持遊戲 16:9（引擎是 contain-fit，舞台若被拉成
     //   寬而矮，就會在內部留一大圈邊）；卡片關不加（它要可捲動的高卡片）。
-    <div className={fill ? (cardSpec ? 'carddemo' : 'carddemo carddemo--game') : 'modal__overlay'}>
+    <div
+      className={
+        fill
+          ? cardSpec
+            ? 'carddemo'
+            : `carddemo carddemo--game${started ? ' carddemo--playing' : ''}` // 開始後隱藏標題列，遊戲放到最大
+          : 'modal__overlay'
+      }
+    >
+      {fill && started && !cardSpec && (
+        <button className="carddemo__pause" onClick={togglePause} aria-label={paused ? '繼續' : '暫停'} title={paused ? '繼續' : '暫停'}>
+          {paused ? '▶' : '⏸'}
+        </button>
+      )}
       {fill && (
         <button className="carddemo__fs" onClick={toggleFullscreen} aria-label="全螢幕" title="全螢幕">
           ⛶
