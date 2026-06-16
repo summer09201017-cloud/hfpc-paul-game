@@ -432,7 +432,7 @@ export class Renderer {
       ctx.font = '600 17px "Noto Sans TC","Microsoft JhengHei",sans-serif'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'bottom'
-      ctx.fillText('空白 / ↑ / 點畫面 = 跳過障礙　·　走到天使👼面前聽祂說話、領受餅水　·　走到何烈山過關', VIEW.W / 2, VIEW.H - 12)
+      ctx.fillText('空白 / ↑ / 點畫面 = 跳　·　遇見天使👼後,跳起來吃空中的餅🍞水💧恢復體力　·　走到何烈山過關', VIEW.W / 2, VIEW.H - 12)
     }
   }
 
