@@ -47,5 +47,5 @@ export default function CorneliusActionDemo() {
     )
   }
 
-  return <MiniGameModal key={runKey} minigame={minigame} onComplete={setResult} />
+  return <MiniGameModal key={runKey} minigame={minigame} onComplete={setResult} fill />
 }
