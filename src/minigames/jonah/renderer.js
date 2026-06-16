@@ -1204,19 +1204,47 @@ export class Renderer {
       for (let i = 0; i < 4; i++) {
         const idx = zi * 4 + i
         const down = idx / 12 < j.ambush
-        const x = z.x + (i - 1.5) * 18
+        const x = z.x + (i - 1.5) * 24 // 放大後加寬間距，避免互相重疊
         ctx.fillStyle = z.c
         if (down) {
-          ctx.save(); ctx.translate(x, valleyY + 4); ctx.rotate(1.4)
-          ctx.fillRect(-4, -12, 9, 22); ctx.beginPath(); ctx.arc(0, -16, 4.6, 0, Math.PI * 2); ctx.fill(); ctx.restore()
+          // 倒下的(自相擊殺)：放大 + 暈眩 ✕ 眼
+          ctx.save(); ctx.translate(x, valleyY + 6); ctx.rotate(1.4)
+          ctx.fillRect(-5.5, -16, 12, 30); ctx.beginPath(); ctx.arc(0, -21, 6.2, 0, Math.PI * 2); ctx.fill()
+          ctx.strokeStyle = '#1a1414'; ctx.lineWidth = 1.3; ctx.lineCap = 'round'
+          ctx.beginPath(); ctx.moveTo(-3.4, -23); ctx.lineTo(-1, -20.5); ctx.moveTo(-1, -23); ctx.lineTo(-3.4, -20.5) // ✕ 左眼
+          ctx.moveTo(1.2, -23); ctx.lineTo(3.6, -20.5); ctx.moveTo(3.6, -23); ctx.lineTo(1.2, -20.5); ctx.stroke() // ✕ 右眼
+          ctx.restore()
         } else {
           const bob = Math.sin(t * 7 + idx) * 2
-          const by = valleyY - 24 + bob
-          ctx.fillRect(x - 4, by, 9, 24)
-          ctx.beginPath(); ctx.arc(x, by - 4, 4.6, 0, Math.PI * 2); ctx.fill()
-          ctx.fillStyle = '#1a1414'; ctx.fillRect(x - 2.6, by - 5.2, 1.7, 1.7); ctx.fillRect(x + 0.9, by - 5.2, 1.7, 1.7) // 兇惡小眼
-          ctx.strokeStyle = '#cfd6df'; ctx.lineWidth = 2.5; ctx.lineCap = 'round' // 互砍的刀
-          ctx.beginPath(); ctx.moveTo(x + 4.5, by + 4); ctx.lineTo(x + 15, by - 11); ctx.stroke()
+          const by = valleyY - 30 + bob // 身體加高
+          // 身體 + 頭(都放大 ~1.35×)
+          ctx.fillRect(x - 5.5, by, 12, 30)
+          ctx.beginPath(); ctx.arc(x, by - 6, 6.2, 0, Math.PI * 2); ctx.fill()
+          // 臉:眉 + 眼 + 嘴(依 idx 變化三種表情，讓敵軍「兇得有戲」)
+          const face = idx % 3
+          ctx.fillStyle = '#1a1414'
+          ctx.fillRect(x - 3.6, by - 8.4, 2.4, 2.4); ctx.fillRect(x + 1.2, by - 8.4, 2.4, 2.4) // 兩眼(放大)
+          ctx.strokeStyle = '#1a1414'; ctx.lineWidth = 1.4; ctx.lineCap = 'round'
+          if (face === 2) {
+            // 驚慌:八字眉上挑 + 圓張大嘴(O)
+            ctx.beginPath(); ctx.moveTo(x - 4.2, by - 10.6); ctx.lineTo(x - 1, by - 9.4); ctx.moveTo(x + 4.2, by - 10.6); ctx.lineTo(x + 1, by - 9.4); ctx.stroke()
+            ctx.beginPath(); ctx.arc(x, by - 2.4, 2.3, 0, Math.PI * 2); ctx.fill()
+          } else {
+            // 兇惡:怒眉下壓(內低外高)
+            ctx.beginPath(); ctx.moveTo(x - 4.4, by - 10.8); ctx.lineTo(x - 1, by - 9.2); ctx.moveTo(x + 4.4, by - 10.8); ctx.lineTo(x + 1, by - 9.2); ctx.stroke()
+            if (face === 0) {
+              // 怒吼:張開的方嘴 + 上排牙齒
+              ctx.fillRect(x - 2.8, by - 3.4, 5.6, 3.2)
+              ctx.fillStyle = '#fff'; ctx.fillRect(x - 2.4, by - 3.4, 1.4, 1.3); ctx.fillRect(x - 0.3, by - 3.4, 1.4, 1.3); ctx.fillRect(x + 1.8, by - 3.4, 1, 1.3)
+            } else {
+              // 咬牙冷笑:橫一條嘴 + 兩道牙縫
+              ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - 3, by - 2.2); ctx.lineTo(x + 3, by - 2.2); ctx.stroke()
+              ctx.strokeStyle = '#fff'; ctx.lineWidth = 0.8
+              ctx.beginPath(); ctx.moveTo(x - 1, by - 3.2); ctx.lineTo(x - 1, by - 1.2); ctx.moveTo(x + 1, by - 3.2); ctx.lineTo(x + 1, by - 1.2); ctx.stroke()
+            }
+          }
+          ctx.strokeStyle = '#cfd6df'; ctx.lineWidth = 2.8; ctx.lineCap = 'round' // 互砍的刀(放大)
+          ctx.beginPath(); ctx.moveTo(x + 6, by + 5); ctx.lineTo(x + 19, by - 13); ctx.stroke()
         }
       }
     })
