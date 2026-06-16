@@ -66,9 +66,11 @@ export default function RedSeaDemo() {
       >
         ⛶
       </button>
-      <div style={{ color: '#bfe0ef', padding: '6px 12px', font: '14px system-ui' }}>
-        🌊 紅海奔逃（出 14）・開發預覽（?demo=redsea）{result && `　→ 結果：${result.won ? '過了紅海 🎉' : '追兵追上了'}（score ${result.score}）`}
-      </div>
+      {(!started || result) && (
+        <div style={{ color: '#bfe0ef', padding: '6px 12px', font: '14px system-ui' }}>
+          🌊 紅海奔逃（出 14）{result && `　→ 結果：${result.won ? '過了紅海 🎉' : '追兵追上了'}（score ${result.score}）`}
+        </div>
+      )}
       <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
         <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
         {!started && (

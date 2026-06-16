@@ -60,9 +60,11 @@ export default function ElijahDemo() {
       >
         ⛶
       </button>
-      <div style={{ color: '#f0dcb0', padding: '6px 12px', font: '14px system-ui' }}>
-        盼望・以利亞重得力（動作版）・開發預覽（?demo=elijah-action）{result && `　→ 結果：${result.won ? '到了何烈山 ⛰️' : '未完成'}（score ${result.score}）`}
-      </div>
+      {(!started || result) && (
+        <div style={{ color: '#f0dcb0', padding: '6px 12px', font: '14px system-ui' }}>
+          🌅 盼望・以利亞重得力{result && `　→ 結果：${result.won ? '到了何烈山 ⛰️' : '未完成'}（score ${result.score}）`}
+        </div>
+      )}
       <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
         <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
         {!started && (
