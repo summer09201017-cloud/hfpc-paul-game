@@ -6,6 +6,7 @@ import journey4 from '../data/journey4.json'
 import journeyJonah from '../data/journey-jonah.json'
 import journeyExodus from '../data/journey-exodus.json'
 import journeyDaniel from '../data/journey-daniel.json'
+import journeyNoah from '../data/journey-noah.json'
 import regionMapPaul from '../data/region-map.json'
 import regionMapPaul2 from '../data/region-map2.json'
 import regionMapPaul3 from '../data/region-map3.json'
@@ -13,6 +14,7 @@ import regionMapPaul4 from '../data/region-map4.json'
 import regionMapJonah from '../data/region-map-jonah.json'
 import regionMapExodus from '../data/region-map-exodus.json'
 import regionMapDaniel from '../data/region-map-daniel.json'
+import regionMapNoah from '../data/region-map-noah.json'
 import * as engine from '../core/engine'
 import { sound } from '../audio/sound'
 import { enterImmersive } from '../immersive'
@@ -27,6 +29,7 @@ const JOURNEYS = [
   { key: 'jonah', journey: journeyJonah, map: regionMapJonah, nextKey: null },
   { key: 'exodus', journey: journeyExodus, map: regionMapExodus, nextKey: null }, // 出埃及記（真實地理：尼羅河三角洲→西奈）
   { key: 'daniel', journey: journeyDaniel, map: regionMapDaniel, nextKey: null }, // 但以理（手繪時間軸棋盤，不走 gen-map）
+  { key: 'noah', journey: journeyNoah, map: regionMapNoah, nextKey: null }, // 挪亞方舟（手繪洪水時間軸棋盤，不走 gen-map；接 arkbuild/arkpairs 兩個現成關）
 ]
 
 const ROLL_MS = 3000 // 跑馬燈轉動時間（3 秒）
