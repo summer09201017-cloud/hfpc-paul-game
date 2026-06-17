@@ -21,7 +21,7 @@ function ensure() {
   if (!AC) return
   ctx = new AC()
   master = ctx.createGain()
-  master.gain.value = muted ? 0 : 0.2
+  master.gain.value = muted ? 0 : 0.3
   master.connect(ctx.destination)
 }
 
@@ -70,7 +70,7 @@ export function stop() {
 export function toggleMute() {
   muted = !muted
   try { localStorage.setItem('cardMusicMuted', muted ? '1' : '0') } catch {}
-  if (master) master.gain.value = muted ? 0 : 0.2
+  if (master) master.gain.value = muted ? 0 : 0.3
   return muted
 }
 
