@@ -1,7 +1,16 @@
 import { useState } from 'react'
 
+// 深連結預選：?journey=<key>（大廳卡片 / play-*.bat 用）。對不到就用第一條（保羅）。
+function initialJourneyKey(journeys) {
+  try {
+    const q = new URLSearchParams(window.location.search).get('journey')
+    if (q && journeys.some((j) => j.key === q)) return q
+  } catch {}
+  return journeys[0].key
+}
+
 export default function SetupScreen({ journeys, onStart }) {
-  const [journeyKey, setJourneyKey] = useState(journeys[0].key)
+  const [journeyKey, setJourneyKey] = useState(() => initialJourneyKey(journeys))
   const [count, setCount] = useState(2)
   const [names, setNames] = useState(['', '', '', ''])
 
