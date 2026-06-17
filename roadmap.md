@@ -1,6 +1,27 @@
 # 🗺️ 保羅大富翁 — 進度藍圖（已完成 vs 真正待做）
 
-> ## ⭐ 對齊現況：2026-06-17（給 agape250 那台 PC 的 AI 先讀這段）
+> ## ⭐ 對齊現況：2026-06-18（agape250 的 AI 先讀這段）
+>
+> **挪亞記大富翁 三階段全部上線（main 已併、自動部署）：**
+> - 階段1 骨架（#36）：`?journey=noah` 14 站手繪洪水板 + 接 arkbuild/arkpairs 兩現成關 + 信心點數 + 機會命運卡 + 輕RPG。
+> - 階段2 終局（#37）：🌈 彩虹之約 **L6 手繪五幕卡片關**（noahCovenant：出方舟→築壇→恩典之約→彩虹為記→方舟預表基督），接站14。
+> - 階段3 大廳：「挪亞方舟」合輯加「**完整旅程**」卡 → `?journey=noah`（大廳 repo）。
+> - 順手修：`SetupScreen` 本來**沒讀 `?journey=`**（大廳所有旅程深連結都失效、落在保羅）→ 已修，所有深連結直達；新增 `play-noah.bat`。
+>
+> **新 Claude Code 工具（`.claude/` + 全域 skills，給開發 AI 用）：**
+> - slash `/playtest <key>`（手機橫向截圖驗收一鍵化）、agent `bible-content-reviewer`（內容送審清單）、
+>   hook（.bat CRLF + journey/specs 改動提醒 validate）、skill `bible-card-finale`（五幕終局關心法）。
+> - 完整 slash/agent/hook/MCP 的 CP 排序清單 → `docs/未來功能與skill點子-CP排序.md` 最後一段。
+>
+> **真正待做（CP 排序見 docs/未來功能與skill點子-CP排序.md）：**
+> - 挪亞題庫/教導文案、彩虹卡片文案：**AI 草擬，請牧者用 `bible-content-reviewer` 過目**（已上線可隨時 revert）。
+> - 巴蘭/摩西動作版仍在 war-games（手動部署）→ 可比照聖歌搬進 paul（`?demo=`）。
+> - 通關獎狀、離線啟動選單、投影計分板（各半天，高 CP）。
+> - 實機驗：動作關全螢幕挖孔黑條、第一次按 ⛶ 是否置中（ResizeObserver 版）。
+>
+> ---
+>
+> ## 對齊現況：2026-06-17（給 agape250 那台 PC 的 AI 先讀這段）
 >
 > **線上 main = 全部已合併、Netlify 自動部署。** 本輪(06-15 晚～06-17)做完並上線的:
 >

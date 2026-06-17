@@ -71,6 +71,33 @@
 
 ---
 
+## 🧰 Claude Code 工具：slash 指令 / Agent / Hook / MCP（2026-06-18 起，CP 排序）
+
+> 這些是「給開發這個系列的 AI 用」的工具，放在 paul repo `.claude/`（打開 repo 就生效）＋全域 `~/.claude/skills/`。
+> ✅ = 本輪已建立。
+
+| 類型 | 名稱 | 做什麼 | CP / 現況 |
+|---|---|---|---|
+| slash | `/playtest <key>` | 啟動 dev + Playwright 手機橫向截圖一個 `?demo=`/`?journey=` + 回報 console 錯誤（把我一直在做的零美術檔驗收一鍵化）| ✅ 已建立（`.claude/commands/playtest.md`）|
+| agent | `bible-content-reviewer` | 唯讀審查 journey/卡片/題庫的經文(和合本)+神學(改革宗)+慣例，產牧者送審清單 | ✅ 已建立（`.claude/agents/`）|
+| hook | `.bat` / 內容守門 | 改到 `.bat` 提醒 CRLF+ASCII；改到 `journey*.json`/`specs.js` 提醒跑 validate/selfplay（非阻斷）| ✅ 已建立（`.claude/settings.json`）|
+| skill | `bible-card-finale` | L6 手繪五幕反思終局關（noahCovenant/danielFinale 模式）| ✅ 已建立 |
+| skill | `embed-fullscreen-fit` | 手機全螢幕嵌入固定比例 Canvas 關 | ✅ 已建立 |
+| skill | `difficulty-knob` | 難度旋鈕 + ⭐星等 | ✅ 已建立 |
+| slash | `/new-journey <書卷>` | 串起 bible-journey-planner→scaffold→validate→selfplay，一鍵開新書卷骨架 | 0.5d（待做，高 CP）|
+| slash | `/review-content <檔>` | 直接叫 `bible-content-reviewer` agent 審某檔、輸出送審清單 | 0.3d（待做）|
+| agent | `scene-screenshot-verifier` | 改完場景自動跑 dynamic-import 網格截圖 + mock-ctx，回報哪一幕壞 | 0.5d（待做）|
+| hook | Stop hook：自動 `npm run validate` | 每次回合結束若 journey/specs 有改動就自動驗一次（要小心別太吵）| 0.3d（待做，可選）|
+| MCP | **GitHub MCP** | 開 PR / push / 合併 / issue（本系列所有 PR 都靠它）| ✅ 已在用 |
+| MCP | **Playwright MCP** | 讓 AI 直接「開瀏覽器點來點去＋截圖」驗收，比手寫 Playwright 腳本更省 | 裝了很值得（教室實機驗收）|
+| MCP | **Google Drive / Sheets MCP** | 報名表/成績/題庫送審表（搭 `gsheet-write`）| 牧會行政實用 |
+| MCP | **Filesystem / Memory MCP** | 跨 session 記專案決策（已有本機 memory；MCP memory 可共享）| 可選 |
+| MCP | **Context7 MCP** | 查 React/Vite/Netlify 最新文件（避免用到過時 API）| 可選、低成本 |
+
+> 建議優先：先用 `/playtest`（每天都會用）＋ `bible-content-reviewer`（解審核瓶頸）＋ Playwright MCP（實機驗收）。
+
+---
+
 ## ⚠️ 開發紀律（務必遵守，踩過的坑）
 
 1. **走 PR + `gh pr merge`，不直推 main**（classifier 會擋）；本機 git 身分設 `summer09201017-cloud <summer09201017@gmail.com>`。
