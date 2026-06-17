@@ -11,7 +11,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > 🖥️ **動作關手機全螢幕已一條龍處理**（16:9 取最大框、遊玩時隱藏標題列讓遊戲最大、⛶ 全螢幕鈕 + 暫停鈕、開場框可捲動不被切、挖孔安全區鋪暖底）——
 > 走 `MiniGameModal` 的 `fill` 參數 + `.carddemo--game`/`.carddemo--playing`；心法見 skill **`embed-fullscreen-fit`**（debug 「黑邊/不夠大/沒暫停鈕/開場框被切」先讀它）。
 > ⚔️ **戰爭關永久家 = 本 repo**：聖歌(level 9)已搬進來當 `?demo=jehoshaphat-action`；摩西/巴蘭仍在 `hfpc-war-games`（手動部署的原型站），可比照搬入。
-> **完整「已完成 vs 待做」+ CP 排序 → `roadmap.md` 最上方 2026-06-17 段 與 `docs/未來功能與skill點子-CP排序.md`。**
+> 🚢 **挪亞記大富翁已上線（2026-06-18）**：`?journey=noah`（14 站手繪洪水板 + arkbuild/arkpairs 闖關站 + 🌈 noahCovenant 五幕卡片終局關）。`?journey=` 深連結預選已修好（之前 SetupScreen 沒讀、大廳連結都落在保羅）。
+> 🧰 **本 repo `.claude/` 有給開發 AI 的工具**：slash `/playtest <key>`（手機橫向截圖驗收）、agent `bible-content-reviewer`（內容送審）、hook（.bat CRLF / journey·specs 改動提醒 validate）。
+> **完整「已完成 vs 待做」+ CP 排序（含 slash/agent/hook/MCP）→ `roadmap.md` 最上方 2026-06-18 段 與 `docs/未來功能與skill點子-CP排序.md`。**
 
 ## What this is
 

@@ -6,6 +6,25 @@ GitHub 帳號：summer09201017-cloud。GitHub 是唯一真相；桌面 zip 只�
 ============================================================
 
 ════════════════════════════════════════════════════════════
+★ 最新對齊：2026-06-18（先讀這段）
+════════════════════════════════════════════════════════════
+  挪亞記大富翁 三階段全部上線（自動部署）：
+  • ?journey=noah 完整旅程（14 站手繪洪水板 + arkbuild/arkpairs 闖關站 + 🌈彩虹之約 L6 五幕卡片終局關）。
+  • 大廳「挪亞方舟」合輯加「完整旅程」卡 → ?journey=noah。
+  • 修好 SetupScreen 沒讀 ?journey= 的潛在 bug（大廳所有旅程深連結本來都落在保羅，現已直達）；加 play-noah.bat。
+  新 Claude Code 工具（paul repo .claude/ + 全域 ~/.claude/skills/，打開 repo 即生效）：
+  • slash /playtest <key>（手機橫向截圖驗收一鍵化）
+  • agent bible-content-reviewer（題庫/卡片/旅程 經文+神學 送審清單，牧者把關前先跑）
+  • hook（改 .bat 提醒 CRLF+ASCII；改 journey*.json/specs.js 提醒跑 validate/selfplay）
+  • skill bible-card-finale（五幕手繪終局關心法）；另有 embed-fullscreen-fit、difficulty-knob。
+  • slash/agent/hook/MCP 完整 CP 排序清單 → paul docs/未來功能與skill點子-CP排序.md 最後一段。
+    建議優先裝：Playwright MCP（實機點按截圖驗收）；GitHub MCP 已在用。
+  待做（CP 排序見 paul docs）：挪亞文案待牧者審（用 bible-content-reviewer）；巴蘭/摩西動作版搬進 paul；
+    通關獎狀/離線選單/投影計分板；實機驗動作關全螢幕挖孔黑條與置中。
+  鐵律不變：走 PR 不直推 main；大廳連 paul ?demo=/?journey= 要「先部署 paul 再併大廳」否則 404；
+    卡片關一律 L6 手繪、動作關遊玩時隱藏標題；零美術檔改完用 /playtest 截圖驗收。
+
+════════════════════════════════════════════════════════════
 ★ 最新對齊：2026-06-17（agape250 的 AI 先讀這段；以下全部已併 main、自動部署、線上可玩）
 ════════════════════════════════════════════════════════════
   本輪（06-15 晚～06-17）做完並上線：

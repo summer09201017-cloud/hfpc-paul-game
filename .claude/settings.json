@@ -1,0 +1,20 @@
+{
+  "_comment": "HFPC 保羅大富翁 專案 hooks（非阻斷、純提醒，針對本專案踩過的雷）。打開此 repo 的 Claude Code 會自動套用。",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat | grep -q '\\.bat' && echo '[hook] .bat 檔：務必純英文 ASCII + CRLF 換行，否則 Windows 雙擊閃退。轉 CRLF: sed -i \"s/\\r$//; s/$/\\r/\" x.bat；驗 ASCII: LC_ALL=C grep -c \"[^ -~\\t]\" x.bat 應為 0。' ; exit 0"
+          },
+          {
+            "type": "command",
+            "command": "cat | grep -qE 'journey[^\"]*\\.json|cards/specs\\.js' && echo '[hook] 改到旅程內容/卡片規格：記得跑  npm run validate （站點/題庫/卡片 key）＋ npm run test:selfplay （新旅程要 1200 場全結束）。零美術檔場景再用 ?demo= 截圖驗收。' ; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}
