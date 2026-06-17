@@ -331,17 +331,26 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
 
   // 全螢幕 / 轉向後重新置中（fill 動作關）：進全螢幕＋鎖橫向是非同步的，
   //   旋轉/版面定案前引擎就量了畫布尺寸 → 遊戲偏左上、要按第二次全螢幕才正。
-  //   這裡在 fullscreenchange / orientationchange 後補送 window 'resize'（引擎都監聽它 → renderer.resize()），
-  //   用 rAF + 兩個延遲蓋掉旋轉/轉場的安定時間。對逐幀量測的引擎(arkpairs)無害。
+  //   ★ 最強做法：用 ResizeObserver 盯「遊戲容器(.minigame__stage)」的實際尺寸——
+  //     它一變(不管旋轉/轉場多慢)就補送 window 'resize'(引擎都監聽 → renderer.resize() 重量測置中)，
+  //     不靠猜時間（之前用定時器在慢裝置上太早）。再加 fullscreenchange/orientationchange + 幾個延遲當保險。
+  //     refit 只改 canvas 不改 stage，不會觸發 ResizeObserver 迴圈。對逐幀量測的引擎(arkpairs)無害。
   useEffect(() => {
     if (!fill) return
     const refit = () => { try { window.dispatchEvent(new Event('resize')) } catch {} }
-    const onChange = () => { requestAnimationFrame(refit); setTimeout(refit, 250); setTimeout(refit, 600) }
+    const onChange = () => { requestAnimationFrame(refit); setTimeout(refit, 120); setTimeout(refit, 350); setTimeout(refit, 700) }
     document.addEventListener('fullscreenchange', onChange)
     window.addEventListener('orientationchange', onChange)
+    let ro = null
+    const stage = canvasRef.current?.parentElement
+    if (stage && typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(refit) // 容器尺寸一變(全螢幕/旋轉安定的那一刻)就重新置中
+      ro.observe(stage)
+    }
     return () => {
       document.removeEventListener('fullscreenchange', onChange)
       window.removeEventListener('orientationchange', onChange)
+      if (ro) ro.disconnect()
     }
   }, [fill])
 
