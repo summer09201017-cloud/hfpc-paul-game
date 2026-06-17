@@ -329,6 +329,22 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
     }
   }, [])
 
+  // 全螢幕 / 轉向後重新置中（fill 動作關）：進全螢幕＋鎖橫向是非同步的，
+  //   旋轉/版面定案前引擎就量了畫布尺寸 → 遊戲偏左上、要按第二次全螢幕才正。
+  //   這裡在 fullscreenchange / orientationchange 後補送 window 'resize'（引擎都監聽它 → renderer.resize()），
+  //   用 rAF + 兩個延遲蓋掉旋轉/轉場的安定時間。對逐幀量測的引擎(arkpairs)無害。
+  useEffect(() => {
+    if (!fill) return
+    const refit = () => { try { window.dispatchEvent(new Event('resize')) } catch {} }
+    const onChange = () => { requestAnimationFrame(refit); setTimeout(refit, 250); setTimeout(refit, 600) }
+    document.addEventListener('fullscreenchange', onChange)
+    window.addEventListener('orientationchange', onChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', onChange)
+      window.removeEventListener('orientationchange', onChange)
+    }
+  }, [fill])
+
   return (
     // fill=true（單獨玩的動作關 ?demo=，如福音/大光奇兵）：用 .carddemo 滿版外框，
     //   不要 .modal__overlay 那種置中小彈窗（手機橫向會只剩 880px 框 + 兩側留白 + 開場文字被切）。
