@@ -1106,3 +1106,95 @@ function balReversal(ctx, w, h, t) {
   for (let i = 0; i < 8; i++) { ctx.fillStyle = `rgba(255,244,190,${0.5 - i * 0.04})`; ctx.beginPath(); ctx.arc(w * 0.5 + Math.sin(t * 2 + i) * 16 * k, h * 0.26 + 30 * k + ((t * 24 + i * 20) % 60) * k, 2 * k, 0, TAU); ctx.fill() }
 }
 export const BALAAM = { bHire: balHire, bBlessed: balBlessed, bAngel: balAngel, bAvoid: balAvoid, bSpeak: balSpeak, bCurse: balCurse, bReversal: balReversal }
+
+// ===================== 挪亞 · 彩虹之約 五幕(創 8–9)逐幕手繪 =====================
+// 共用小道具:方舟(船身+艙+屋頂,可開門)、彩虹、動物剪影
+function arkShape(ctx, x, gy, k, o = {}) {
+  ctx.fillStyle = '#7a4f2a' // 船身
+  ctx.beginPath(); ctx.moveTo(x - 34 * k, gy - 22 * k); ctx.quadraticCurveTo(x, gy + 2 * k, x + 34 * k, gy - 22 * k)
+  ctx.lineTo(x + 28 * k, gy - 40 * k); ctx.lineTo(x - 28 * k, gy - 40 * k); ctx.closePath(); ctx.fill()
+  ctx.fillStyle = '#c89b5a'; ctx.fillRect(x - 22 * k, gy - 64 * k, 44 * k, 24 * k) // 艙
+  ctx.fillStyle = '#8a4b2f'; ctx.beginPath(); ctx.moveTo(x - 26 * k, gy - 64 * k); ctx.lineTo(x, gy - 80 * k); ctx.lineTo(x + 26 * k, gy - 64 * k); ctx.closePath(); ctx.fill() // 屋頂
+  if (o.door) { ctx.fillStyle = o.shut ? '#5a3a20' : '#2e2018'; ctx.fillRect(x - 6 * k, gy - 40 * k, 12 * k, 22 * k) } // 一道門
+}
+function rainbowArcs(ctx, cx, cy, r, k, t) {
+  const cols = ['#c0503a', '#d89a3a', '#d8c24a', '#5a9a6a', '#4a7fb0', '#6a5a9c']
+  ctx.lineCap = 'round'
+  const a = 0.65 + Math.sin(t * 1.5) * 0.15
+  cols.forEach((c, i) => { ctx.strokeStyle = c; ctx.globalAlpha = a; ctx.lineWidth = 4 * k; ctx.beginPath(); ctx.arc(cx, cy, (r - i * 4) * k, Math.PI, 0); ctx.stroke() })
+  ctx.globalAlpha = 1
+}
+// 手繪動物剪影(不用 emoji):身 + 四腿 + 頭
+function beast(ctx, x, gy, k, color) {
+  ctx.fillStyle = color
+  ctx.fillRect(x - 9 * k, gy - 9 * k, 2.6 * k, 9 * k); ctx.fillRect(x + 6 * k, gy - 9 * k, 2.6 * k, 9 * k) // 腿
+  ctx.beginPath(); ctx.ellipse(x, gy - 9 * k, 11 * k, 6 * k, 0, 0, TAU); ctx.fill() // 身
+  ctx.beginPath(); ctx.ellipse(x + 11 * k, gy - 13 * k, 4.2 * k, 3.6 * k, 0, 0, TAU); ctx.fill() // 頭
+}
+
+// 1) 出方舟:全家八口與眾活物出來,踏上洗淨的新世界
+function noahExit(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#bfe0ef'); sky.addColorStop(1, '#e9f4dc'); ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#9bb36a'; ctx.fillRect(0, gy, w, h - gy) // 洗淨的青地
+  arkShape(ctx, w * 0.24, gy, k * 1.05, { door: true, shut: false }) // 方舟開門
+  // 一隊動物(手繪剪影)+ 家人往右走出來
+  beast(ctx, w * 0.4, gy, k, '#8a7a5a'); beast(ctx, w * 0.5, gy, k, '#9c8a6a'); beast(ctx, w * 0.6, gy, k, '#b0a890')
+  dove(ctx, w * 0.7, gy - 18 * k, k, t) // 鴿子
+  person(ctx, w * 0.82, gy, k * 1.0, { robe: '#7a6a9c', beard: true, arms: 'up', face: 'joy', walk: t * 4 })
+  person(ctx, w * 0.9, gy, k * 0.9, { robe: '#9c5a6a', face: 'joy', walk: t * 4 + 1 })
+  rays(ctx, w, h, t, w * 0.5, 0.5)
+}
+// 2) 築壇獻祭:挪亞築壇獻燔祭,耶和華聞那馨香之氣
+function noahAltar(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#b7c9d8'); sky.addColorStop(1, '#e7ddc6'); ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#9bb36a'; ctx.fillRect(0, gy, w, h - gy)
+  // 石壇 + 火
+  const ax = w * 0.5
+  ctx.fillStyle = '#8a8076'; ctx.fillRect(ax - 22 * k, gy - 26 * k, 44 * k, 26 * k)
+  ctx.fillStyle = '#7a7066'; for (let i = 0; i < 3; i++) ctx.fillRect(ax - 22 * k, gy - 26 * k + i * 9 * k, 44 * k, 1.5 * k)
+  flame(ctx, ax - 6 * k, gy - 26 * k, k * 1.1, t, 1); flame(ctx, ax + 6 * k, gy - 26 * k, k * 1.1, t, 2)
+  // 上升的馨香之氣 + 天上悅納的光
+  for (let i = 0; i < 7; i++) { const p = (t * 0.5 + i / 7) % 1; ctx.fillStyle = `rgba(220,220,230,${0.5 * (1 - p)})`; ctx.beginPath(); ctx.arc(ax + Math.sin(t * 2 + i) * 10 * k, gy - 40 * k - p * 70 * k, (2 + i % 2) * k, 0, TAU); ctx.fill() }
+  rays(ctx, w, h, t, ax, 0.7)
+  person(ctx, w * 0.74, gy, k * 1.0, { robe: '#7a6a9c', side: 'right', beard: true, pose: 'kneel', arms: 'pray', face: 'awe' })
+}
+// 3) 神的應許:不再用洪水滅絕(雲中的光與話)
+function noahPromise(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#7aa0c8'); sky.addColorStop(1, '#dfeecb'); ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#9bb36a'; ctx.fillRect(0, gy, w, h - gy)
+  // 雲 + 從雲降下的應許之光
+  ctx.fillStyle = 'rgba(255,255,255,0.85)'
+  for (const [cx, cy, r] of [[0.34, 0.2, 26], [0.42, 0.24, 32], [0.62, 0.18, 30], [0.7, 0.24, 22]]) { ctx.beginPath(); ctx.arc(w * cx, h * cy, r * k, 0, TAU); ctx.fill() }
+  rays(ctx, w, h, t, w * 0.5, 0.9)
+  const gl = ctx.createRadialGradient(w * 0.5, h * 0.22, 0, w * 0.5, h * 0.22, 70 * k); gl.addColorStop(0, `rgba(255,250,210,${0.6 + Math.sin(t * 2) * 0.2})`); gl.addColorStop(1, 'rgba(255,250,210,0)'); ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(w * 0.5, h * 0.22, 70 * k, 0, TAU); ctx.fill()
+  dove(ctx, w * 0.5, h * 0.42 + Math.sin(t * 2) * 4 * k, k * 1.2, t) // 平安的鴿子
+  person(ctx, w * 0.5, gy, k * 1.0, { robe: '#7a6a9c', beard: true, arms: 'up', face: 'awe' })
+}
+// 4) 彩虹為記:神把弓掛在雲中,看見就記念永約(預設場景)
+function noahRainbow(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#9ec4e0'); sky.addColorStop(1, '#eaf4d8'); ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+  ridge(ctx, w, h, gy, '#86a05a', 30 * k); ctx.fillStyle = '#9bb36a'; ctx.fillRect(0, gy, w, h - gy)
+  rainbowArcs(ctx, w * 0.5, gy + 6 * k, 56, k, t) // 大彩虹橫跨
+  arkShape(ctx, w * 0.5, gy, k * 0.9, { door: true, shut: false })
+  // 仰望的一家人
+  person(ctx, w * 0.3, gy, k * 0.95, { robe: '#7a6a9c', side: 'left', beard: true, arms: 'up', face: 'joy' })
+  person(ctx, w * 0.7, gy, k * 0.9, { robe: '#9c5a6a', side: 'right', arms: 'up', face: 'joy' })
+}
+// 5) 方舟的指向:一道門、神親自關門——預表基督(約 10:9)
+function noahArkDoor(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.86
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#6a86b0'); sky.addColorStop(0.6, '#c9b6c0'); sky.addColorStop(1, '#f0e6cc'); ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#9bb36a'; ctx.fillRect(0, gy, w, h - gy)
+  arkShape(ctx, w * 0.5, gy, k * 1.25, { door: true, shut: true }) // 方舟,門關上
+  // 門上的十字光(預表基督——唯一的門)
+  const dx = w * 0.5, dyc = gy - 36 * k
+  const gl = ctx.createRadialGradient(dx, dyc, 0, dx, dyc, 40 * k); gl.addColorStop(0, `rgba(255,244,190,${0.55 + Math.sin(t * 2.5) * 0.2})`); gl.addColorStop(1, 'rgba(255,244,190,0)'); ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(dx, dyc, 40 * k, 0, TAU); ctx.fill()
+  ctx.strokeStyle = 'rgba(255,240,180,0.95)'; ctx.lineWidth = 3 * k; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(dx, dyc - 18 * k); ctx.lineTo(dx, dyc + 16 * k); ctx.moveTo(dx - 11 * k, dyc - 6 * k); ctx.lineTo(dx + 11 * k, dyc - 6 * k); ctx.stroke()
+  rays(ctx, w, h, t, dx, 0.7)
+}
+export const NOAH = { noahExit, noahAltar, noahPromise, noahRainbow, noahArkDoor }
