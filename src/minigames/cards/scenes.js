@@ -71,19 +71,22 @@ function person(ctx, x, gy, k, o = {}) {
   ctx.lineTo(x + 10 * k, bodyTop); ctx.lineTo(x - 10 * k, bodyTop); ctx.closePath(); ctx.fill()
   // 腰帶
   ctx.fillStyle = shade(robe, -50); ctx.fillRect(x - 14 * k, bodyBot - 22 * k, 28 * k, 4 * k)
-  // 手臂(依手勢)
+  // 手臂(依手勢)——加長 + 末端一律畫手掌(投影看得清楚;原本太短)
   ctx.strokeStyle = robe; ctx.lineWidth = 6 * k; ctx.lineCap = 'round'
   const sh = bodyTop + 6 * k // 肩
+  let La, Ra // 左右手端點
+  if (o.arms === 'up') { La = [x - 21 * k, sh - 30 * k]; Ra = [x + 21 * k, sh - 30 * k] }
+  else if (o.arms === 'pray') { La = [x - 2 * k, sh + 13 * k]; Ra = [x + 2 * k, sh + 13 * k] }
+  else if (o.arms === 'reach') { La = [x - 17 * k, sh + 18 * k]; Ra = [x + (o.reach || 26) * k, sh - (o.reachUp || 8) * k] }
+  else if (o.arms === 'speak') { La = [x - 20 * k, sh + 13 * k]; Ra = [x + 24 * k, sh - 16 * k] }
+  else { La = [x - 17 * k, sh + 27 * k]; Ra = [x + 17 * k, sh + 27 * k] } // 垂下(加長)
   ctx.beginPath()
-  if (o.arms === 'up') { ctx.moveTo(x - 9 * k, sh); ctx.lineTo(x - 16 * k, sh - 20 * k); ctx.moveTo(x + 9 * k, sh); ctx.lineTo(x + 16 * k, sh - 20 * k) }
-  else if (o.arms === 'pray') { ctx.moveTo(x - 9 * k, sh); ctx.lineTo(x - 1 * k, sh + 8 * k); ctx.moveTo(x + 9 * k, sh); ctx.lineTo(x + 1 * k, sh + 8 * k) }
-  else if (o.arms === 'reach') { ctx.moveTo(x - 9 * k, sh); ctx.lineTo(x - 13 * k, sh + 14 * k); ctx.moveTo(x + 9 * k, sh); ctx.lineTo(x + (o.reach || 22) * k, sh - (o.reachUp || 6) * k) }
-  else if (o.arms === 'speak') { ctx.moveTo(x - 9 * k, sh); ctx.lineTo(x - 14 * k, sh + 10 * k); ctx.moveTo(x + 9 * k, sh); ctx.lineTo(x + 17 * k, sh - 12 * k) }
-  else { ctx.moveTo(x - 9 * k, sh); ctx.lineTo(x - 12 * k, sh + 18 * k); ctx.moveTo(x + 9 * k, sh); ctx.lineTo(x + 12 * k, sh + 18 * k) }
+  ctx.moveTo(x - 9 * k, sh); ctx.lineTo(La[0], La[1])
+  ctx.moveTo(x + 9 * k, sh); ctx.lineTo(Ra[0], Ra[1])
   ctx.stroke()
-  if (o.arms === 'reach') { // 伸手(拉人起來)畫出手掌端點
-    ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(x + (o.reach || 22) * k, sh - (o.reachUp || 6) * k, 3.5 * k, 0, TAU); ctx.fill()
-  }
+  ctx.fillStyle = skin // 兩手手掌
+  ctx.beginPath(); ctx.arc(La[0], La[1], 3.5 * k, 0, TAU); ctx.fill()
+  ctx.beginPath(); ctx.arc(Ra[0], Ra[1], 3.5 * k, 0, TAU); ctx.fill()
   // 頭
   ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(x, hy, headR, 0, TAU); ctx.fill()
   // 頭飾
@@ -92,12 +95,22 @@ function person(ctx, x, gy, k, o = {}) {
     ctx.fillStyle = '#d96a3a'; ctx.fillRect(x - 2 * k, hy - headR - 8 * k, 4 * k, 8 * k) // 盔冠
   } else if (o.head === 'crown') {
     ctx.fillStyle = '#e8b53a'; ctx.fillRect(x - headR, hy - headR - 4 * k, headR * 2, 5 * k)
-  } else { // 頭巾
-    ctx.fillStyle = o.headColor || shade(robe, 60); ctx.beginPath(); ctx.arc(x, hy - 1 * k, headR, Math.PI, 0); ctx.fill()
-    ctx.fillStyle = shade(o.headColor || shade(robe, 60), -30); ctx.fillRect(x - headR, hy - 2 * k, headR * 2, 3 * k)
+  } else { // 頭巾(加長:有垂到肩的巾尾)
+    const tc = o.headColor || shade(robe, 60)
+    ctx.fillStyle = tc; ctx.beginPath(); ctx.arc(x, hy - 1 * k, headR, Math.PI, 0); ctx.fill()
+    ctx.fillStyle = shade(tc, -22); ctx.fillRect(x - headR, hy - 2 * k, headR * 2, 4 * k) // 額帶
+    // 巾尾垂到肩(右側)——讓頭巾更長、更像中東頭巾
+    ctx.fillStyle = shade(tc, -10); ctx.beginPath()
+    ctx.moveTo(x + headR - 2 * k, hy - 2 * k); ctx.lineTo(x + headR + 3 * k, hy + 17 * k)
+    ctx.lineTo(x + headR - 7 * k, hy + 17 * k); ctx.lineTo(x + headR - 8 * k, hy - 2 * k); ctx.closePath(); ctx.fill()
   }
-  // 鬍子(o.beard)
-  if (o.beard) { ctx.fillStyle = '#cfcabf'; ctx.beginPath(); ctx.moveTo(x - 5 * k, hy + 4 * k); ctx.lineTo(x + 5 * k, hy + 4 * k); ctx.lineTo(x, hy + 12 * k); ctx.closePath(); ctx.fill() }
+  // 鬍子(o.beard)——加長、加寬、顏色更明顯(灰白長鬚)
+  if (o.beard) {
+    ctx.fillStyle = '#c4bdaf'
+    ctx.beginPath(); ctx.moveTo(x - 8 * k, hy + 3 * k); ctx.lineTo(x + 8 * k, hy + 3 * k)
+    ctx.quadraticCurveTo(x + 5 * k, hy + 14 * k, x, hy + 19 * k)
+    ctx.quadraticCurveTo(x - 5 * k, hy + 14 * k, x - 8 * k, hy + 3 * k); ctx.closePath(); ctx.fill()
+  }
   // 臉:眼 + 眉 + 嘴(表情明顯——投影看得到)
   const ex = 4 * k, ey = hy + 0.5 * k, er = 2 * k
   ctx.fillStyle = '#2c2016'
@@ -379,24 +392,46 @@ function tree(ctx, x, gy, k) { // 羅騰樹:細幹 + 稀疏灌叢
   ctx.fillStyle = '#869a52'
   for (const [dx, dy, r] of [[-15, -52, 17], [11, -58, 19], [24, -48, 14], [-2, -68, 16]]) { ctx.beginPath(); ctx.ellipse(x + dx * k, gy + dy * k, r * k, r * 0.7 * k, 0, 0, TAU); ctx.fill() }
 }
-function sleeper(ctx, x, gy, k, robe = '#7a6a9c') { // 側臥睡覺(頭朝左)
+function sleeper(ctx, x, gy, k, robe = '#7a6a9c') { // 側臥睡覺(頭朝左)——有手與腿
+  // 腿(屈膝側臥,在身體右側)
+  ctx.strokeStyle = shade(robe, -34); ctx.lineWidth = 6 * k; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(x + 16 * k, gy - 9 * k); ctx.lineTo(x + 30 * k, gy - 10 * k); ctx.lineTo(x + 26 * k, gy - 1 * k); ctx.stroke() // 上腿+小腿屈膝
+  ctx.beginPath(); ctx.moveTo(x + 12 * k, gy - 7 * k); ctx.lineTo(x + 24 * k, gy - 6 * k); ctx.lineTo(x + 20 * k, gy); ctx.stroke()
+  // 身體
   ctx.fillStyle = robe; ctx.beginPath(); ctx.ellipse(x, gy - 9 * k, 30 * k, 9 * k, 0, 0, TAU); ctx.fill()
+  // 手(搭在身前,從肩伸到頭旁)+ 手掌
+  ctx.strokeStyle = shade(robe, -10); ctx.lineWidth = 5 * k
+  ctx.beginPath(); ctx.moveTo(x - 6 * k, gy - 12 * k); ctx.lineTo(x - 22 * k, gy - 7 * k); ctx.stroke()
+  ctx.fillStyle = '#e8bb8d'; ctx.beginPath(); ctx.arc(x - 23 * k, gy - 7 * k, 3.2 * k, 0, TAU); ctx.fill() // 手掌
+  // 頭 + 鬍子 + 閉眼
   ctx.fillStyle = '#e8bb8d'; ctx.beginPath(); ctx.arc(x - 30 * k, gy - 13 * k, 9 * k, 0, TAU); ctx.fill()
-  ctx.fillStyle = '#cfcabf'; ctx.beginPath(); ctx.arc(x - 35 * k, gy - 11 * k, 3 * k, 0, TAU); ctx.fill()
-  ctx.strokeStyle = '#2c2016'; ctx.lineWidth = 1.6 * k; ctx.beginPath(); ctx.moveTo(x - 33 * k, gy - 14 * k); ctx.lineTo(x - 28 * k, gy - 14 * k); ctx.stroke()
+  ctx.fillStyle = '#c4bdaf'; ctx.beginPath(); ctx.arc(x - 35 * k, gy - 10 * k, 3.4 * k, 0, TAU); ctx.fill()
+  ctx.strokeStyle = '#2c2016'; ctx.lineWidth = 1.6 * k; ctx.beginPath(); ctx.moveTo(x - 33 * k, gy - 14 * k); ctx.lineTo(x - 28 * k, gy - 14 * k); ctx.stroke() // 閉眼
 }
 function zzz(ctx, x, y, k, t) {
   ctx.fillStyle = 'rgba(70,70,110,0.85)'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
   for (let i = 0; i < 3; i++) { const p = (t * 0.5 + i / 3) % 1; ctx.globalAlpha = 1 - p; ctx.font = `700 ${(12 + i * 3) * k}px sans-serif`; ctx.fillText('Z', x + i * 9 * k + p * 10 * k, y - i * 11 * k - p * 16 * k) } ctx.globalAlpha = 1
 }
-function angelFig(ctx, x, gy, k, t) { // 發光的天使
-  const glow = ctx.createRadialGradient(x, gy - 55 * k, 0, x, gy - 55 * k, 46 * k)
-  glow.addColorStop(0, `rgba(255,250,210,${0.6 + Math.sin(t * 3) * 0.2})`); glow.addColorStop(1, 'rgba(255,250,210,0)')
-  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, gy - 55 * k, 46 * k, 0, TAU); ctx.fill()
-  ctx.fillStyle = 'rgba(255,255,255,0.92)'
-  ctx.beginPath(); ctx.ellipse(x - 15 * k, gy - 58 * k, 9 * k, 21 * k, -0.4, 0, TAU); ctx.ellipse(x + 15 * k, gy - 58 * k, 9 * k, 21 * k, 0.4, 0, TAU); ctx.fill()
+function angelFig(ctx, x, gy, k, t) { // 發光的天使——翅膀更大、會發光
+  // 強烈的榮光(呼吸)
+  const pulse = 0.7 + Math.sin(t * 3) * 0.25
+  const glow = ctx.createRadialGradient(x, gy - 58 * k, 0, x, gy - 58 * k, 72 * k)
+  glow.addColorStop(0, `rgba(255,250,205,${pulse})`); glow.addColorStop(0.5, `rgba(255,247,190,${pulse * 0.5})`); glow.addColorStop(1, 'rgba(255,247,190,0)')
+  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, gy - 58 * k, 72 * k, 0, TAU); ctx.fill()
+  // 大翅膀(發光描邊 + 羽紋)
+  const flap = Math.sin(t * 2) * 0.12
+  for (const s of [-1, 1]) {
+    ctx.save(); ctx.translate(x + s * 17 * k, gy - 60 * k); ctx.rotate(s * (0.42 + flap))
+    ctx.fillStyle = 'rgba(255,255,255,0.95)'
+    ctx.beginPath(); ctx.ellipse(0, 0, 14 * k, 34 * k, 0, 0, TAU); ctx.fill()
+    ctx.strokeStyle = `rgba(255,240,170,${pulse})`; ctx.lineWidth = 2 * k; ctx.stroke() // 發光描邊
+    ctx.strokeStyle = 'rgba(200,205,220,0.6)'; ctx.lineWidth = 1 * k // 羽紋
+    for (let r = -2; r <= 2; r++) { ctx.beginPath(); ctx.moveTo(0, r * 10 * k); ctx.lineTo(0, r * 10 * k + 22 * k); ctx.stroke() }
+    ctx.restore()
+  }
   person(ctx, x, gy, k, { robe: '#f4f1e6', head: 'turban', headColor: '#f0e6c8', face: 'calm' })
-  ctx.strokeStyle = '#e8c34a'; ctx.lineWidth = 2.2 * k; ctx.beginPath(); ctx.arc(x, gy - 112 * k, 9 * k, 0, TAU); ctx.stroke()
+  // 光環(發光)
+  ctx.strokeStyle = `rgba(232,195,74,${pulse})`; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.arc(x, gy - 118 * k, 10 * k, 0, TAU); ctx.stroke()
 }
 function cityRight(ctx, w, gy, k) {
   ctx.fillStyle = '#c8a06a'
@@ -419,8 +454,17 @@ function despair(ctx, w, h, t) { // 1) 羅騰樹下灰心求死
   ctx.fillStyle = '#c9a86e'; ctx.fillRect(0, gy, w, h - gy)
   tree(ctx, w * 0.6, gy, k * 1.35)
   person(ctx, w * 0.44, gy, k * 1.05, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, pose: 'kneel', arms: 'pray', face: 'worry' })
-  // 低垂的嘆息點
-  for (let i = 0; i < 4; i++) { const p = (t * 0.4 + i / 4) % 1; ctx.fillStyle = `rgba(110,100,140,${0.4 * (1 - p)})`; ctx.beginPath(); ctx.arc(w * 0.44 - 14 * k, gy - 60 * k - p * 20 * k, 2 * k, 0, TAU); ctx.fill() }
+  // 哭得很傷心:兩道淚珠不斷從臉落下 + 低垂的嘆息
+  const px = w * 0.44, fy = gy - 60 * k
+  ctx.fillStyle = 'rgba(120,175,225,0.95)'
+  for (const ex of [-4.6, 4.6]) for (let i = 0; i < 4; i++) {
+    const p = ((t * 0.9 + i / 4) % 1)
+    const dy = fy + 2 * k + p * 30 * k
+    ctx.beginPath(); ctx.moveTo(px + ex * k, dy - 3.5 * k)
+    ctx.quadraticCurveTo(px + ex * k + 2.2 * k, dy, px + ex * k, dy + 2.2 * k)
+    ctx.quadraticCurveTo(px + ex * k - 2.2 * k, dy, px + ex * k, dy - 3.5 * k); ctx.fill()
+  }
+  for (let i = 0; i < 4; i++) { const p = (t * 0.4 + i / 4) % 1; ctx.fillStyle = `rgba(110,100,140,${0.35 * (1 - p)})`; ctx.beginPath(); ctx.arc(px - 16 * k, fy - 6 * k - p * 22 * k, 2 * k, 0, TAU); ctx.fill() }
 }
 function broomtree(ctx, w, h, t) { // 2) 神第一步:讓他睡(天使將臨)
   const k = h / 240, gy = h * 0.86; eliSky(ctx, w, h)
@@ -438,9 +482,21 @@ function angelfood(ctx, w, h, t) { // 3) 天使送餅送水
   tree(ctx, w * 0.16, gy, k)
   angelFig(ctx, w * 0.66, gy, k * 1.05, t)
   person(ctx, w * 0.4, gy, k * 1.0, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, pose: 'kneel', arms: 'reach', reach: 14, reachUp: 4, face: 'awe' })
-  // 餅 + 水罐
-  ctx.fillStyle = '#caa05a'; ctx.beginPath(); ctx.ellipse(w * 0.5, gy - 8 * k, 9 * k, 5 * k, 0, 0, TAU); ctx.fill()
-  ctx.fillStyle = '#7a5a8c'; ctx.beginPath(); ctx.moveTo(w * 0.54, gy - 18 * k); ctx.lineTo(w * 0.565, gy - 18 * k); ctx.lineTo(w * 0.57, gy - 2 * k); ctx.lineTo(w * 0.535, gy - 2 * k); ctx.closePath(); ctx.fill()
+  // 炭火燒的餅(圓麵包:烤色+割紋+一點炭火)
+  const bx = w * 0.5, by = gy - 7 * k
+  ctx.fillStyle = '#dca96a'; ctx.beginPath(); ctx.ellipse(bx, by, 12 * k, 7.5 * k, 0, 0, TAU); ctx.fill()
+  ctx.fillStyle = '#c0863f'; ctx.beginPath(); ctx.ellipse(bx, by - 1 * k, 12 * k, 4.5 * k, 0, Math.PI, 0); ctx.fill() // 上半烤色
+  ctx.strokeStyle = '#9c6630'; ctx.lineWidth = 1.4 * k; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(bx - 6 * k, by - 1.5 * k); ctx.lineTo(bx + 6 * k, by - 1.5 * k); ctx.moveTo(bx - 3 * k, by + 1.5 * k); ctx.lineTo(bx + 3 * k, by + 1.5 * k); ctx.stroke() // 割紋
+  ctx.fillStyle = 'rgba(255,150,60,0.5)'; ctx.beginPath(); ctx.ellipse(bx, by + 7 * k, 10 * k, 2.5 * k, 0, 0, TAU); ctx.fill() // 底下炭火微光
+  // 一瓶水(陶罐:罐身+頸+把手+口中的水)
+  const wx = w * 0.57, wy = gy - 8 * k
+  ctx.fillStyle = '#b97a4a'; ctx.beginPath(); ctx.ellipse(wx, wy, 9 * k, 11 * k, 0, 0, TAU); ctx.fill() // 罐身
+  ctx.fillRect(wx - 4 * k, wy - 20 * k, 8 * k, 10 * k) // 頸
+  ctx.fillStyle = '#a06a3e'; ctx.fillRect(wx - 5 * k, wy - 21 * k, 10 * k, 3 * k) // 口沿
+  ctx.strokeStyle = '#b97a4a'; ctx.lineWidth = 2.6 * k; ctx.beginPath(); ctx.arc(wx + 9 * k, wy - 13 * k, 5.5 * k, -1.3, 1.3); ctx.stroke() // 把手
+  ctx.fillStyle = '#5aa6d8'; ctx.beginPath(); ctx.ellipse(wx, wy - 19 * k, 3.6 * k, 1.8 * k, 0, 0, TAU); ctx.fill() // 罐口的水
+  ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.ellipse(wx - 3 * k, wy - 2 * k, 2 * k, 5 * k, 0.3, 0, TAU); ctx.fill() // 罐身反光
 }
 function stillvoice(ctx, w, h, t) { // 4) 何烈山:風/震/火過去,微小的聲音
   const k = h / 240, gy = h * 0.86
@@ -449,10 +505,27 @@ function stillvoice(ctx, w, h, t) { // 4) 何烈山:風/震/火過去,微小的�
   ctx.fillStyle = '#6a6256'; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w * 0.4, h * 0.2); ctx.lineTo(w, gy); ctx.closePath(); ctx.fill()
   ctx.fillStyle = '#2e2a26'; ctx.beginPath(); ctx.ellipse(w * 0.4, gy - 4 * k, 26 * k, 34 * k, 0, Math.PI, 0); ctx.fill()
   ctx.fillStyle = '#3a3530'; ctx.fillRect(0, gy, w, h - gy)
-  // 風線(上)+ 火(右)——表示風震火都過去了
-  ctx.strokeStyle = 'rgba(230,236,245,0.5)'; ctx.lineWidth = 2 * k
-  for (let i = 0; i < 4; i++) { const yy = h * 0.2 + i * 12 * k; const off = (t * 120) % (w * 0.5); ctx.beginPath(); ctx.moveTo(w * 0.55 - off, yy); ctx.lineTo(w * 0.95 - off, yy); ctx.stroke() }
-  flame(ctx, w * 0.8, gy - 4 * k, k, t, 1); flame(ctx, w * 0.86, gy - 4 * k, k, t, 2)
+  // 烈風(更強更多:整片橫掃的長風線,速度快)
+  ctx.lineCap = 'round'
+  for (let i = 0; i < 11; i++) {
+    const yy = h * 0.1 + i * 13 * k
+    const off = (t * 320 + i * 60) % (w * 1.4)
+    ctx.strokeStyle = `rgba(230,238,248,${0.3 + (i % 3) * 0.18})`; ctx.lineWidth = (1.4 + (i % 3)) * k
+    ctx.beginPath(); ctx.moveTo(w * 1.1 - off, yy); ctx.lineTo(w * 1.1 - off - (60 + (i % 4) * 30) * k, yy + 3 * k); ctx.stroke()
+  }
+  // 地震(更強:落石 + 龜裂 + 山體微震)
+  const quake = Math.sin(t * 26) * 2.2 * k
+  ctx.fillStyle = '#5a534a'
+  for (let i = 0; i < 7; i++) {
+    const rx = w * (0.12 + i * 0.12) + quake, p = ((t * 0.7 + i / 7) % 1)
+    const ry = h * 0.28 + p * (gy - h * 0.28)
+    ctx.save(); ctx.translate(rx, ry); ctx.rotate(t * 4 + i)
+    ctx.fillRect(-4 * k, -4 * k, 8 * k, 8 * k); ctx.restore()
+  }
+  ctx.strokeStyle = 'rgba(40,36,32,0.7)'; ctx.lineWidth = 2 * k // 地面龜裂
+  ctx.beginPath(); ctx.moveTo(w * 0.15, gy + 8 * k); ctx.lineTo(w * 0.28 + quake, gy + 2 * k); ctx.lineTo(w * 0.42, gy + 12 * k); ctx.lineTo(w * 0.6 + quake, gy + 4 * k); ctx.stroke()
+  // 大火(更多更大:右側一整排火舌)
+  for (let i = 0; i < 5; i++) flame(ctx, w * (0.66 + i * 0.07), gy - 4 * k, k * (1.3 + (i % 2) * 0.4), t, i)
   // 以利亞在洞口
   person(ctx, w * 0.4, gy, k * 0.95, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, face: 'awe' })
   // 微小聲音的柔光(由洞口向以利亞)
@@ -460,12 +533,29 @@ function stillvoice(ctx, w, h, t) { // 4) 何烈山:風/震/火過去,微小的�
   sv.addColorStop(0, 'rgba(255,250,220,0.9)'); sv.addColorStop(1, 'rgba(255,250,220,0)')
   ctx.fillStyle = sv; ctx.beginPath(); ctx.arc(w * 0.4, gy - 40 * k, 30 * k, 0, TAU); ctx.fill()
 }
-function remnant(ctx, w, h, t) { // 5) 還有七千人未曾向巴力屈膝(你不孤單)
+function remnant(ctx, w, h, t) { // 5) 還有七千人未曾向巴力屈膝(你不孤單)——一大群歡樂唱詩
   const k = h / 240, gy = h * 0.86; eliSky(ctx, w, h)
   ctx.fillStyle = '#bcae84'; ctx.fillRect(0, gy, w, h - gy)
-  const colors = ['#3a6a9c', '#a8553a', '#6a8a52', '#8a6a9c', '#c2873a', '#4a7a8a']
-  for (let r = 0; r < 2; r++) for (let i = 0; i < 6; i++) { const x = w * 0.34 + i * 42 * k - r * 20 * k; person(ctx, x, gy - r * 16 * k, k * (0.7 - r * 0.1), { robe: colors[(i + r) % 6], head: 'turban', face: 'calm' }) }
-  person(ctx, w * 0.16, gy, k * 1.05, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, face: 'awe' })
+  const colors = ['#3a6a9c', '#a8553a', '#6a8a52', '#8a6a9c', '#c2873a', '#4a7a8a', '#9c6a3a', '#5a8a7a']
+  // 三排一大群人(後排小、前排大);多數高舉手歡唱、笑臉
+  for (let r = 0; r < 3; r++) {
+    const n = 8 - r, sc = k * (0.82 - r * 0.16), by = gy - r * 22 * k
+    for (let i = 0; i < n; i++) {
+      const x = w * 0.3 + i * 40 * k - r * 16 * k + Math.sin(t * 3 + i + r) * 1.5 * k // 微微擺動(唱詩)
+      person(ctx, x, by, sc, { robe: colors[(i + r * 2) % colors.length], head: 'turban', arms: (i + r) % 2 ? 'up' : 'pray', face: 'joy' })
+    }
+  }
+  // 飄浮的音符(歡樂唱詩歌)
+  ctx.fillStyle = 'rgba(90,70,40,0.85)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+  for (let i = 0; i < 7; i++) {
+    const p = ((t * 0.5 + i / 7) % 1)
+    ctx.globalAlpha = 0.85 * (1 - p)
+    ctx.font = `${(14 + (i % 3) * 5) * k}px serif`
+    ctx.fillText(i % 2 ? '♪' : '♫', w * (0.28 + i * 0.09), gy - 70 * k - p * 70 * k)
+  }
+  ctx.globalAlpha = 1
+  // 以利亞(在旁,終於知道自己不孤單,欣慰)
+  person(ctx, w * 0.13, gy, k * 1.05, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, arms: 'up', face: 'joy' })
 }
 function renew(ctx, w, h, t) { // 6) 重新得力:日出 + 把外袍披在以利沙身上
   const k = h / 240, gy = h * 0.86
@@ -473,10 +563,22 @@ function renew(ctx, w, h, t) { // 6) 重新得力:日出 + 把外袍披在以利
   const sun = ctx.createRadialGradient(w * 0.5, gy, 0, w * 0.5, gy, (90 + Math.sin(t * 1.5) * 10) * k); sun.addColorStop(0, 'rgba(255,238,170,0.95)'); sun.addColorStop(1, 'rgba(255,238,170,0)')
   ctx.fillStyle = sun; ctx.beginPath(); ctx.arc(w * 0.5, gy, 100 * k, 0, TAU); ctx.fill()
   ctx.fillStyle = '#bca06a'; ctx.fillRect(0, gy, w, h - gy)
-  person(ctx, w * 0.4, gy, k * 1.1, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, arms: 'reach', reach: 22, reachUp: 6, face: 'joy' }) // 以利亞
-  // 披在以利沙身上的外袍(連兩人之間)
-  ctx.strokeStyle = '#6a4a8c'; ctx.lineWidth = 7 * k; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(w * 0.4 + 22 * k, gy - 60 * k); ctx.lineTo(w * 0.56, gy - 50 * k); ctx.stroke()
+  person(ctx, w * 0.4, gy, k * 1.1, { robe: '#7a6a9c', head: 'turban', headColor: '#caa05a', beard: true, arms: 'reach', reach: 30, reachUp: 30, face: 'joy' }) // 以利亞(高舉手向以利沙)
   person(ctx, w * 0.6, gy, k * 1.0, { robe: '#3a7a5a', head: 'turban', face: 'joy' }) // 以利沙
+  // 以利亞手中的膏油角瓶,傾倒在以利沙頭上
+  const ex = w * 0.4 + 30 * k, ey = gy - 60 * k - 30 * k * 1.1 // 以利亞伸出的手端(約略)
+  const hx = w * 0.6, hhy = gy - 86 * k // 以利沙頭頂
+  ctx.save(); ctx.translate(hx - 6 * k, hhy - 16 * k); ctx.rotate(0.9) // 角瓶傾斜對準頭頂
+  ctx.fillStyle = '#7a5230'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(16 * k, -2 * k, 22 * k, 6 * k); ctx.quadraticCurveTo(14 * k, 8 * k, 0, 9 * k); ctx.closePath(); ctx.fill() // 牛角瓶
+  ctx.fillStyle = '#5a3a20'; ctx.fillRect(20 * k, 3 * k, 4 * k, 4 * k) // 瓶口
+  ctx.restore()
+  // 倒下的金色膏油 + 落在頭上的油珠 + 微光
+  ctx.strokeStyle = 'rgba(232,188,74,0.95)'; ctx.lineWidth = 3 * k; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(hx - 1 * k, hhy - 22 * k); ctx.lineTo(hx, hhy - 2 * k); ctx.stroke()
+  ctx.fillStyle = 'rgba(232,188,74,0.95)'
+  for (let i = 0; i < 3; i++) { const p = ((t * 1.1 + i / 3) % 1); ctx.beginPath(); ctx.arc(hx, hhy - 20 * k + p * 18 * k, 2.4 * k, 0, TAU); ctx.fill() }
+  const gl = ctx.createRadialGradient(hx, hhy, 0, hx, hhy, 26 * k); gl.addColorStop(0, `rgba(255,236,170,${0.55 + Math.sin(t * 3) * 0.2})`); gl.addColorStop(1, 'rgba(255,236,170,0)')
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(hx, hhy, 26 * k, 0, TAU); ctx.fill()
 }
 export const ELIJAH = { despair, broomtree, angelfood, stillvoice, remnant, renew }
 

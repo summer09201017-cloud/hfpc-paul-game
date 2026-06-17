@@ -917,7 +917,7 @@ export const CARD_GAMES = {
   // 反向 RPG：看得見神使者的是「驢」，眼瞎的是聰明的先知——神用最卑微的攔阻最自以為是的人。
   balaam: {
     title: '🫏 反轉奇兵 · 巴蘭的驢',
-    music: 'bright', // 明亮（神開人的眼）
+    music: 'solemn', // 肅穆（神攔阻；與大光 saul 的 bright 區隔，5 奇兵各不同曲風）
     accent: [138, 109, 59], // 驢褐
     canvas: 'bReversal', // 預設手繪場景
     lives: 3,
