@@ -57,7 +57,11 @@ function person(ctx, x, gy, k, o = {}) {
   // 腿(跪/站)
   ctx.strokeStyle = shade(robe, -40); ctx.lineWidth = 5 * k; ctx.lineCap = 'round'
   if (kneel) {
-    ctx.beginPath(); ctx.moveTo(x - 6 * k, bodyBot - 6 * k); ctx.lineTo(x - 12 * k, gy); ctx.lineTo(x - 2 * k, gy); ctx.stroke()
+    // 跪姿:兩條腿(跪坐,左右各一條彎折到地)
+    ctx.beginPath()
+    ctx.moveTo(x - 7 * k, bodyBot - 6 * k); ctx.lineTo(x - 12 * k, gy); ctx.lineTo(x - 2 * k, gy)
+    ctx.moveTo(x + 7 * k, bodyBot - 6 * k); ctx.lineTo(x + 12 * k, gy); ctx.lineTo(x + 2 * k, gy)
+    ctx.stroke()
   } else {
     const stride = o.walk ? Math.sin(o.walk) * 7 * k : 0
     ctx.beginPath()
@@ -98,17 +102,9 @@ function person(ctx, x, gy, k, o = {}) {
   } else if (o.head === 'bare') {
     // 不戴頭巾(如天使):露出頭、短髮
     ctx.fillStyle = '#7a6346'; ctx.beginPath(); ctx.arc(x, hy - 2 * k, headR, Math.PI, -0.1); ctx.fill()
-  } else { // 白頭巾 + 飄起的巾尾(依 side 在頭的左/右、離臉有一點距離、向外上方飄)
-    const white = '#f4f1e6', side = o.side === 'left' ? -1 : 1
-    ctx.fillStyle = white; ctx.beginPath(); ctx.arc(x, hy - 1 * k, headR, Math.PI, 0); ctx.fill() // 頭巾罩
-    ctx.fillStyle = '#dcd6c6'; ctx.fillRect(x - headR, hy - 2 * k, headR * 2, 4 * k) // 額帶
-    const bx = x + side * (headR + 5 * k) // 巾尾起點:離臉一點距離
-    ctx.fillStyle = white; ctx.beginPath()
-    ctx.moveTo(bx, hy - 5 * k)
-    ctx.quadraticCurveTo(bx + side * 15 * k, hy - 11 * k, bx + side * 11 * k, hy + 9 * k)
-    ctx.quadraticCurveTo(bx + side * 4 * k, hy + 3 * k, bx, hy + 11 * k)
-    ctx.quadraticCurveTo(bx - side * 3 * k, hy + 2 * k, bx, hy - 5 * k)
-    ctx.closePath(); ctx.fill()
+  } else { // 白頭巾(不加長:只有白色頭罩 + 額帶,無垂尾)
+    ctx.fillStyle = '#f4f1e6'; ctx.beginPath(); ctx.arc(x, hy - 1 * k, headR, Math.PI, 0); ctx.fill()
+    ctx.fillStyle = '#dcd6c6'; ctx.fillRect(x - headR, hy - 2 * k, headR * 2, 4 * k)
   }
   // 鬍子(o.beard)——加長、加寬、顏色更明顯(灰白長鬚)
   if (o.beard) {
@@ -577,11 +573,11 @@ function renew(ctx, w, h, t) { // 6) 重新得力:日出 + 把外袍披在以利
   const sun = ctx.createRadialGradient(w * 0.5, gy, 0, w * 0.5, gy, (90 + Math.sin(t * 1.5) * 10) * k); sun.addColorStop(0, 'rgba(255,238,170,0.95)'); sun.addColorStop(1, 'rgba(255,238,170,0)')
   ctx.fillStyle = sun; ctx.beginPath(); ctx.arc(w * 0.5, gy, 100 * k, 0, TAU); ctx.fill()
   ctx.fillStyle = '#bca06a'; ctx.fillRect(0, gy, w, h - gy)
-  // 兩人靠近:以利亞(左,站著伸手拿瓶)+ 以利沙(右,跪下低頭領受)
-  person(ctx, w * 0.45, gy, k * 1.1, { robe: '#7a6a9c', side: 'left', beard: true, arms: 'reach', reach: 26, reachUp: 22, face: 'joy' }) // 以利亞
-  person(ctx, w * 0.6, gy, k * 1.0, { robe: '#3a7a5a', side: 'right', pose: 'kneel', arms: 'pray', face: 'joy' }) // 以利沙(跪)
+  // 兩人非常靠近:以利亞(左,站著伸手拿瓶)+ 以利沙(右,跪下低頭領受)
+  person(ctx, w * 0.46, gy, k * 1.1, { robe: '#7a6a9c', side: 'left', beard: true, arms: 'reach', reach: 24, reachUp: 22, face: 'joy' }) // 以利亞
+  person(ctx, w * 0.55, gy, k * 1.0, { robe: '#3a7a5a', side: 'right', pose: 'kneel', arms: 'pray', face: 'joy' }) // 以利沙(跪,緊鄰)
   // 以利沙跪著的頭頂(kneel:H≈78*sc,sc=k*1.0)
-  const hx = w * 0.6, hhy = gy - 74 * k
+  const hx = w * 0.55, hhy = gy - 74 * k
   // 以利亞手中的膏油角瓶,傾在以利沙頭頂正上方
   ctx.save(); ctx.translate(hx - 4 * k, hhy - 20 * k); ctx.rotate(0.95)
   ctx.fillStyle = '#7a5230'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(16 * k, -2 * k, 22 * k, 6 * k); ctx.quadraticCurveTo(14 * k, 8 * k, 0, 9 * k); ctx.closePath(); ctx.fill() // 牛角瓶
