@@ -1,4 +1,5 @@
 import { getTitle } from '../core/engine'
+import { downloadCertificate } from '../certificate'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
@@ -35,6 +36,24 @@ export default function GameOverScreen({ status, scoreLabel, journey, nextJourne
                 <span className="rankrow__score">
                   {p.gospelPoints} {scoreLabel}
                 </span>
+                {/* 通關獎狀：每位玩家可下載一張「○○完成○○之旅」的 PNG（兒童營儀式感、可列印） */}
+                <button
+                  className="rankrow__cert"
+                  title="領取通關獎狀（下載圖片）"
+                  aria-label={`領取 ${p.name} 的通關獎狀`}
+                  onClick={() =>
+                    downloadCertificate({
+                      name: p.name,
+                      journeyTitle: journey ? journey.title : '聖經闖關',
+                      subtitle: journey ? journey.subtitle : '',
+                      score: p.gospelPoints,
+                      scoreLabel,
+                      titleName: title ? title.name : '',
+                    })
+                  }
+                >
+                  🏆 獎狀
+                </button>
               </div>
             )
           })}
