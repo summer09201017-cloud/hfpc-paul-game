@@ -12,6 +12,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > 走 `MiniGameModal` 的 `fill` 參數 + `.carddemo--game`/`.carddemo--playing`；心法見 skill **`embed-fullscreen-fit`**（debug 「黑邊/不夠大/沒暫停鈕/開場框被切」先讀它）。
 > ⚔️ **戰爭關永久家 = 本 repo**：聖歌(level 9)已搬進來當 `?demo=jehoshaphat-action`；摩西/巴蘭仍在 `hfpc-war-games`（手動部署的原型站），可比照搬入。
 > 🚢 **挪亞記大富翁已上線（2026-06-18）**：`?journey=noah`（14 站手繪洪水板 + arkbuild/arkpairs 闖關站 + 🌈 noahCovenant 五幕卡片終局關）。`?journey=` 深連結預選已修好（之前 SetupScreen 沒讀、大廳連結都落在保羅）。
+> 🏆 **通關獎狀（2026-06-18 晚，PR #39）**：結束畫面每位玩家可下載一張 PNG 獎狀（`src/certificate.js`，純 Canvas、零美術檔、可離線/列印）；任何旅程通用（帶旅程名/頭銜/分數/日期）。
+> 📐 **桌遊內卡片關已滿版（2026-06-18 晚，PR #40）**：卡片關（`minigame.cards`）一律走 `.carddemo` 滿版（不分 `fill`）——以前桌遊內走 `.modal__overlay` 置中小框、字被擠窄（每列 ~8 字），現在跟 `?demo=`／聖歌·反轉動作版一樣寬（~21 字）、只剩一顆按鈕、右上有 ⛶；桌遊內 Canvas 關（配對/蓋舟）維持原置中彈窗。`.carddemo` 加 `z-index:60` 才蓋得住棋盤。
 > 🧰 **本 repo `.claude/` 有給開發 AI 的工具**：slash `/playtest <key>`（手機橫向截圖驗收）、agent `bible-content-reviewer`（內容送審）、hook（.bat CRLF / journey·specs 改動提醒 validate）。
 > **完整「已完成 vs 待做」+ CP 排序（含 slash/agent/hook/MCP）→ `roadmap.md` 最上方 2026-06-18 段 與 `docs/未來功能與skill點子-CP排序.md`。**
 
