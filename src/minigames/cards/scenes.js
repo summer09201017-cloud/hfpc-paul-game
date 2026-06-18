@@ -97,8 +97,13 @@ function person(ctx, x, gy, k, o = {}) {
   if (o.head === 'helmet') { // 羅馬軍官盔
     ctx.fillStyle = '#b9482e'; ctx.beginPath(); ctx.arc(x, hy - 2 * k, headR + 1 * k, Math.PI, 0); ctx.fill()
     ctx.fillStyle = '#d96a3a'; ctx.fillRect(x - 2 * k, hy - headR - 8 * k, 4 * k, 8 * k) // 盔冠
-  } else if (o.head === 'crown') {
-    ctx.fillStyle = '#e8b53a'; ctx.fillRect(x - headR, hy - headR - 4 * k, headR * 2, 5 * k)
+  } else if (o.head === 'crown') { // 皇冠:冠帶 + 三個冠尖 + 寶石(看得出是皇冠)
+    const cyB = hy - headR + 1 * k
+    ctx.fillStyle = '#e8b53a'; ctx.fillRect(x - headR, cyB - 4 * k, headR * 2, 6 * k) // 冠帶
+    ctx.beginPath()
+    for (let j = -1; j <= 1; j++) { const cx2 = x + j * headR * 0.82; ctx.moveTo(cx2 - 5 * k, cyB - 4 * k); ctx.lineTo(cx2, cyB - 14 * k); ctx.lineTo(cx2 + 5 * k, cyB - 4 * k) }
+    ctx.fill() // 三個冠尖
+    ctx.fillStyle = '#c0394b'; for (let j = -1; j <= 1; j++) { ctx.beginPath(); ctx.arc(x + j * headR * 0.82, cyB - 12 * k, 1.8 * k, 0, TAU); ctx.fill() } // 寶石
   } else if (o.head === 'bare') {
     // 不戴頭巾(如天使):露出頭、短髮
     ctx.fillStyle = '#7a6346'; ctx.beginPath(); ctx.arc(x, hy - 2 * k, headR, Math.PI, -0.1); ctx.fill()
@@ -603,20 +608,32 @@ function journey(ctx, w, h, t) { // 1) 掃羅怒氣往大馬士革
   person(ctx, base + 40 * k, gy, k * 0.95, { robe: '#8a5a3a', head: 'turban', walk: t * 7 + 1 })
   person(ctx, base + 18 * k, gy, k * 0.95, { robe: '#6a6a8a', head: 'turban', walk: t * 7 + 2 })
   person(ctx, base, gy, k * 1.15, { robe: '#7a2e2e', head: 'turban', beard: true, walk: t * 7, face: 'worry' }) // 掃羅(怒)
+  // 掃羅手裡拎著綁人的鎖鏈——往大馬士革去捉拿信耶穌的人(徒 9:1-2)
+  const swing = Math.sin(t * 7) * 6 * k
+  for (let i = 0; i < 6; i++) { const u = i / 5, cx2 = base + 15 * k + (33 * k + swing - 15 * k) * u, cy2 = gy - 44 * k + (40 * k) * u; ctx.strokeStyle = i % 2 ? '#9a9aa2' : '#6a6a72'; ctx.lineWidth = 1.8 * k; ctx.beginPath(); ctx.ellipse(cx2, cy2, 3.4 * k, 2.2 * k, (i % 2) * 0.7, 0, TAU); ctx.stroke() }
 }
-function light(ctx, w, h, t) { // 2) 大馬士革路上的大光,仆倒在地
+function light(ctx, w, h, t) { // 2) 大馬士革路上的大光「四面照著」,掃羅仆倒在地(徒 9:3-4)
   const k = h / 240, gy = h * 0.86
   ctx.fillStyle = '#e8dcc0'; ctx.fillRect(0, 0, w, h)
   ctx.fillStyle = '#c9aa78'; ctx.fillRect(0, gy, w, h - gy)
-  // 同伴呆站
-  person(ctx, w * 0.74, gy, k * 0.95, { robe: '#6a6a8a', head: 'turban', face: 'awe' })
-  fallen(ctx, w * 0.42, gy, k * 1.15, '#7a2e2e') // 掃羅仆倒
-  // 大光:由天而降的強光 + 白閃
-  const cx = w * 0.42
-  const beam = ctx.createRadialGradient(cx, h * 0.05, 0, cx, h * 0.05, (140 + Math.sin(t * 6) * 16) * k)
-  beam.addColorStop(0, `rgba(255,255,255,${0.85 + Math.sin(t * 6) * 0.12})`); beam.addColorStop(0.5, 'rgba(255,250,220,0.5)'); beam.addColorStop(1, 'rgba(255,250,220,0)')
-  ctx.fillStyle = beam; ctx.beginPath(); ctx.arc(cx, h * 0.05, 150 * k, 0, TAU); ctx.fill()
-  rays(ctx, w, h, t, cx, 1)
+  const cx = w * 0.42, cy = gy - 46 * k
+  // 1) 大光先畫在人物後面:放大約兩倍(150→300)、四面射出、中心不死白(免得蓋住掃羅)
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'
+  const R = (300 + Math.sin(t * 6) * 30) * k
+  ctx.strokeStyle = `rgba(255,250,210,${0.42 + Math.sin(t * 5) * 0.16})`; ctx.lineCap = 'round'
+  for (let i = 0; i < 12; i++) { const a = (i / 12) * TAU + t * 0.3; ctx.lineWidth = (i % 3 === 0 ? 5 : 2.4) * k; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * 30 * k, cy + Math.sin(a) * 30 * k); ctx.lineTo(cx + Math.cos(a) * R * 0.95, cy + Math.sin(a) * R * 0.95); ctx.stroke() }
+  const glow = ctx.createRadialGradient(cx, cy, 12 * k, cx, cy, R)
+  glow.addColorStop(0, `rgba(255,255,255,${0.5 + Math.sin(t * 6) * 0.08})`); glow.addColorStop(0.32, 'rgba(255,252,232,0.34)'); glow.addColorStop(1, 'rgba(255,250,220,0)')
+  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.fill(); ctx.restore()
+  // 2) 旁邊的人(更多)——驚惶站立、遮眼、退縮(畫在光之上才看得見)
+  person(ctx, w * 0.7, gy, k * 0.98, { robe: '#6a6a8a', head: 'turban', arms: 'up', face: 'awe' })
+  person(ctx, w * 0.8, gy, k * 0.92, { robe: '#7a8a52', head: 'turban', face: 'awe' })
+  person(ctx, w * 0.89, gy, k * 0.86, { robe: '#8a6a4a', head: 'turban', arms: 'up', face: 'worry' })
+  person(ctx, w * 0.16, gy, k * 0.9, { robe: '#6a6a8a', head: 'turban', arms: 'up', face: 'awe' })
+  person(ctx, w * 0.08, gy, k * 0.82, { robe: '#9c7a4a', head: 'turban', face: 'worry' })
+  // 3) 掃羅仆倒(最上層,確保可見)+ 由天而降主光束
+  fallen(ctx, cx, gy, k * 1.15, '#7a2e2e')
+  rays(ctx, w, h, t, cx, 0.7)
 }
 function blind(ctx, w, h, t) { // 3) 瞎眼三天,禁食禱告(被人牽著)
   const k = h / 240, gy = h * 0.86
@@ -947,12 +964,17 @@ function jhsArmy(ctx, w, h, t) {
   ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
   ridge(ctx, w, h, gy, '#7a6a8c', 30 * k)
   ctx.fillStyle = '#6a5a40'; ctx.fillRect(0, gy, w, h - gy)
-  for (let i = 0; i < 10; i++) { // 右側一排矛+盔（壓境大軍）
+  for (let i = 0; i < 10; i++) { // 右側一排大軍:手持兵器(交替 劍 / 刀)+ 盔
     const x = w * 0.42 + i * ((w * 0.56) / 10), sw = Math.sin(t * 2 + i * 0.5) * 2 * k
-    ctx.strokeStyle = '#3a2f2a'; ctx.lineWidth = 2.4 * k; ctx.lineCap = 'round'
-    ctx.beginPath(); ctx.moveTo(x + sw, gy); ctx.lineTo(x + sw, gy - 34 * k); ctx.stroke()
-    ctx.fillStyle = '#b0b6c0'; ctx.beginPath(); ctx.moveTo(x + sw, gy - 40 * k); ctx.lineTo(x - 3 * k + sw, gy - 32 * k); ctx.lineTo(x + 3 * k + sw, gy - 32 * k); ctx.closePath(); ctx.fill()
-    ctx.fillStyle = '#7a3b2e'; ctx.beginPath(); ctx.arc(x + sw, gy - 6 * k, 5 * k, Math.PI, 0); ctx.fill()
+    ctx.lineCap = 'round'
+    if (i % 2 === 0) { // 直劍(高舉)
+      ctx.strokeStyle = '#cdd2da'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.moveTo(x + sw, gy - 8 * k); ctx.lineTo(x + sw + 2 * k, gy - 44 * k); ctx.stroke()
+      ctx.strokeStyle = '#8a6a3a'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.moveTo(x + sw - 5 * k, gy - 12 * k); ctx.lineTo(x + sw + 6 * k, gy - 12 * k); ctx.stroke()
+    } else { // 彎刀(刀)
+      ctx.strokeStyle = '#cdd2da'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.arc(x + sw - 12 * k, gy - 18 * k, 22 * k, -0.5, 0.5); ctx.stroke()
+      ctx.strokeStyle = '#8a6a3a'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.moveTo(x + sw - 4 * k, gy - 8 * k); ctx.lineTo(x + sw + 4 * k, gy - 14 * k); ctx.stroke()
+    }
+    ctx.fillStyle = '#7a3b2e'; ctx.beginPath(); ctx.arc(x + sw, gy - 6 * k, 5 * k, Math.PI, 0); ctx.fill() // 盔
   }
   person(ctx, w * 0.13, gy, k * 1.05, { robe: '#9a4ca8', head: 'crown', face: 'worry', beard: true }) // 孤單的猶大王
 }
@@ -1009,8 +1031,30 @@ function jhsPraise(ctx, w, h, t) {
   for (let i = 0; i < 6; i++) { const a = 0.4 + 0.4 * Math.abs(Math.sin(t * 3 + i)); ctx.fillStyle = `rgba(255,240,180,${a * 0.4})`; ctx.beginPath(); ctx.moveTo(w * 0.4, gy - 40 * k); ctx.lineTo(w, gy - 84 * k + i * 16 * k); ctx.lineTo(w, gy - 66 * k + i * 16 * k); ctx.closePath(); ctx.fill() }
   ctx.restore()
   ctx.fillStyle = '#5f4a36'; ctx.fillRect(0, gy, w, h - gy)
-  for (let i = 0; i < 3; i++) person(ctx, w * (0.16 + i * 0.1), gy, k * 0.95, { robe: i % 2 ? '#9a4ca8' : '#caa24a', headColor: '#e8d8a8', arms: 'up', face: 'joy' })
-  for (let i = 0; i < 5; i++) { const x = w * 0.62 + i * w * 0.07; ctx.strokeStyle = '#3a2f2a'; ctx.lineWidth = 2.4 * k; ctx.save(); ctx.translate(x, gy); ctx.rotate(0.7 + i * 0.12); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -30 * k); ctx.stroke(); ctx.restore() } // 倒下的矛
+  // 左:猶大讚美(往右挪一點,左上角讓給天使)
+  for (let i = 0; i < 3; i++) person(ctx, w * (0.2 + i * 0.1), gy, k * 0.95, { robe: i % 2 ? '#9a4ca8' : '#caa24a', headColor: '#e8d8a8', arms: 'up', face: 'joy' })
+  // 左上:天使手裡拿著劍(耶和華的伏兵——神親自爭戰,代下 20:22)
+  const ax = w * 0.1, afy = gy - 40 * k
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'
+  const ag = ctx.createRadialGradient(ax, afy - 46 * k, 0, ax, afy - 46 * k, 80 * k); ag.addColorStop(0, `rgba(255,250,220,${0.5 + Math.sin(t * 3) * 0.12})`); ag.addColorStop(1, 'rgba(255,250,220,0)')
+  ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(ax, afy - 46 * k, 80 * k, 0, TAU); ctx.fill(); ctx.restore()
+  ctx.fillStyle = 'rgba(255,255,255,0.9)'
+  ctx.beginPath(); ctx.moveTo(ax, afy - 78 * k); ctx.quadraticCurveTo(ax - 42 * k, afy - 96 * k, ax - 28 * k, afy - 44 * k); ctx.quadraticCurveTo(ax - 15 * k, afy - 62 * k, ax, afy - 64 * k); ctx.fill()
+  ctx.beginPath(); ctx.moveTo(ax, afy - 78 * k); ctx.quadraticCurveTo(ax + 42 * k, afy - 96 * k, ax + 28 * k, afy - 44 * k); ctx.quadraticCurveTo(ax + 15 * k, afy - 62 * k, ax, afy - 64 * k); ctx.fill()
+  person(ctx, ax, afy, k * 1.0, { robe: '#f4f1e6', head: 'bare', arms: 'reach', reach: 16, reachUp: 20, face: 'calm' })
+  const hx2 = ax + 16 * k, hy2 = afy - 95 * k // 右手位置
+  ctx.strokeStyle = '#eef2f8'; ctx.lineWidth = 3.2 * k; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(hx2 - 2 * k, hy2 + 8 * k); ctx.lineTo(hx2 + 16 * k, hy2 - 24 * k); ctx.stroke() // 劍身
+  ctx.strokeStyle = '#caa05a'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.moveTo(hx2 - 7 * k, hy2 + 2 * k); ctx.lineTo(hx2 + 6 * k, hy2 + 9 * k); ctx.stroke() // 護手
+  // 右:摩押、亞捫許多人倒地(有頭、手、腿)+ 地上掉落的刀劍
+  for (let i = 0; i < 4; i++) {
+    const ex = w * 0.6 + i * w * 0.095, dir = i % 2 ? 1 : -1, rb = ['#5a3030', '#6a4a3a', '#5a3a4a', '#4a3a5a'][i]
+    ctx.strokeStyle = '#cdd2da'; ctx.lineWidth = 2.2 * k; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(ex - dir * 16 * k, gy - 2 * k); ctx.lineTo(ex - dir * 34 * k, gy - 6 * k); ctx.stroke() // 落地的刀劍
+    ctx.strokeStyle = shade(rb, -20); ctx.lineWidth = 4 * k; ctx.beginPath(); ctx.moveTo(ex - dir * 10 * k, gy - 6 * k); ctx.lineTo(ex - dir * 24 * k, gy - 2 * k); ctx.moveTo(ex - dir * 10 * k, gy - 9 * k); ctx.lineTo(ex - dir * 24 * k, gy - 11 * k); ctx.stroke() // 兩腿
+    ctx.fillStyle = rb; ctx.beginPath(); ctx.ellipse(ex, gy - 7 * k, 20 * k, 7 * k, dir * 0.12, 0, TAU); ctx.fill() // 身
+    ctx.strokeStyle = rb; ctx.lineWidth = 3.5 * k; ctx.beginPath(); ctx.moveTo(ex + dir * 8 * k, gy - 9 * k); ctx.lineTo(ex + dir * 16 * k, gy - 20 * k); ctx.moveTo(ex + dir * 6 * k, gy - 6 * k); ctx.lineTo(ex + dir * 18 * k, gy - 3 * k); ctx.stroke() // 兩手
+    ctx.fillStyle = '#e8bb8d'; ctx.beginPath(); ctx.arc(ex + dir * 16 * k, gy - 20 * k, 2.6 * k, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(ex + dir * 22 * k, gy - 9 * k, 7 * k, 0, TAU); ctx.fill() // 手 + 頭
+    ctx.fillStyle = '#8a4030'; ctx.beginPath(); ctx.arc(ex + dir * 22 * k, gy - 11 * k, 8 * k, Math.PI, 0); ctx.fill() // 盔
+  }
   for (let i = 0; i < 4; i++) note(ctx, w * (0.14 + i * 0.09), gy - 92 * k - ((t * 26 + i * 28) % 64) * k, k, '#fff3b0')
 }
 // 7) 比加谷稱頌神（done）
