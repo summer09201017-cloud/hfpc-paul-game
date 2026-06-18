@@ -1444,6 +1444,8 @@ body {
   /* 淺色滿版底,不要四周黑邊 */
   background: radial-gradient(130% 100% at 50% 0%, #fbf4e2 0%, #f1e6cb 70%, #e7d8b4 100%);
   overflow: auto;
+  /* 桌遊內開卡片關時要蓋住棋盤(棋盤面板有 z-index:8、彈窗 50)；?demo= 單獨玩時無害 */
+  z-index: 60;
 }
 /* 外框、舞台都填滿整個畫面,並去掉深色/letterbox(PC 上不需要黑邊與 16:9 留白) */
 .carddemo .minigame {
