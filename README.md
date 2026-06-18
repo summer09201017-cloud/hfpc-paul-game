@@ -4,10 +4,14 @@
 
 > 🌐 **線上版：https://hfpc-paul-game.netlify.app/**（push `main` 即自動重新部署；可在手機「加入主畫面」安裝、離線玩）
 >
-> ⭐ **2026-06-17 現況**：8 個動作關 `?demo=`（sling/elijah-action/cornelius-action/saul-action/**jehoshaphat-action**/arkpairs/arkbuild/redsea）
-> 在手機已是「滿版、無黑邊、遊玩時隱藏標題、有 ⛶ 全螢幕鈕＋暫停鈕」；全部卡片關皆 **L6 手繪 Canvas**。
-> 戰爭關「永久家」已開始搬進本 repo（聖歌 `?demo=jehoshaphat-action`）。
-> **完整「已完成 vs 待做」見 `roadmap.md` 最上方 2026-06-17 段；CP 排序待辦見 `docs/未來功能與skill點子-CP排序.md`；手機全螢幕心法見 `docs/skills/embed-fullscreen-fit.md`。**
+> ⭐ **2026-06-18（晚）現況**：
+> - 🏆 **通關獎狀**：玩到結束畫面，**每位玩家**一顆「🏆 獎狀」鈕 → 下載一張「○○完成《○○》」PNG（可存手機/列印給孩子）。任何旅程通用、純 Canvas、可離線。
+> - 📐 **桌遊內卡片關已滿版**：以前在桌遊裡玩卡片關，未全螢幕每列只 ~8 字（被擠窄）；現在跟單獨玩 `?demo=`／聖歌·反轉動作版一樣寬（~21 字）、只剩一顆按鈕、右上有 ⛵全螢幕鈕。
+> - 🚢 **挪亞記大富翁**：`?journey=noah`（14 站手繪洪水板 + 蓋方舟/配對闖關站 + 🌈 彩虹之約五幕卡片終局）。
+> - 8 個動作關 `?demo=`（sling/elijah-action/cornelius-action/saul-action/**jehoshaphat-action**/arkpairs/arkbuild/redsea）在手機「滿版、無黑邊、遊玩時隱藏標題、有 ⛶＋暫停鈕」；全部卡片關皆 **L6 手繪 Canvas**。
+> - ✅ 實機驗全螢幕挖孔/置中：牧者實機確認 OK。
+>
+> **完整「已完成 vs 待做」見 `roadmap.md` 最上方 2026-06-18（晚）段；CP 排序待辦見 `docs/未來功能與skill點子-CP排序.md`；手機全螢幕心法見 `docs/skills/embed-fullscreen-fit.md`。**
 >
 > 🆕 **2026-06-15（已上線 main）**：暑假兒童營「逆轉奇兵」——🕊️**福音奇兵卡片版 `?demo=cornelius`**（牧者已審）
 > 與 🌅**盼望奇兵動作版 `?demo=elijah-action`**（以利亞重得力，收集餅水恢復，王上 19）已上線；另有 🪨大衛甩石 `?demo=sling`。
