@@ -357,16 +357,19 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   return (
     // fill=true（單獨玩的動作關 ?demo=，如福音/大光奇兵）：用 .carddemo 滿版外框，
     //   不要 .modal__overlay 那種置中小彈窗（手機橫向會只剩 880px 框 + 兩側留白 + 開場文字被切）。
-    //   桌遊內當彈窗用時 fill 留 false，維持原本置中彈窗。
     //   Canvas 引擎關再加 carddemo--game：舞台維持遊戲 16:9（引擎是 contain-fit，舞台若被拉成
     //   寬而矮，就會在內部留一大圈邊）；卡片關不加（它要可捲動的高卡片）。
+    //   ★ 卡片關（cardSpec）一律走 .carddemo 滿版（不管 fill）：純 React 內容滿版才好讀——
+    //     桌遊內以前 fill=false 走 .modal__overlay 置中小框，手機上每列字太少（窄而擠）；
+    //     現在跟 ?demo= 單獨玩、跟聖歌/反轉動作版一樣「一顆開始鈕 → 大畫面」，每列字數一致。
+    //     桌遊內的 Canvas 關（配對/蓋舟等，非 cardSpec）維持原本置中彈窗。
     <div
       className={
-        fill
-          ? cardSpec
-            ? 'carddemo'
-            : `carddemo carddemo--game${started ? ' carddemo--playing' : ''}` // 開始後隱藏標題列，遊戲放到最大
-          : 'modal__overlay'
+        cardSpec
+          ? 'carddemo'
+          : fill
+            ? `carddemo carddemo--game${started ? ' carddemo--playing' : ''}` // 開始後隱藏標題列，遊戲放到最大
+            : 'modal__overlay'
       }
     >
       {fill && started && !cardSpec && (
@@ -374,7 +377,7 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
           {paused ? '▶' : '⏸'}
         </button>
       )}
-      {fill && (
+      {(fill || cardSpec) && (
         <button className="carddemo__fs" onClick={toggleFullscreen} aria-label="全螢幕" title="全螢幕">
           ⛶
         </button>
