@@ -32,7 +32,7 @@ const JOURNEYS = [
   { key: 'exodus', journey: journeyExodus, map: regionMapExodus, nextKey: null }, // 出埃及記（真實地理：尼羅河三角洲→西奈）
   { key: 'daniel', journey: journeyDaniel, map: regionMapDaniel, nextKey: null }, // 但以理（手繪時間軸棋盤，不走 gen-map）
   { key: 'noah', journey: journeyNoah, map: regionMapNoah, nextKey: null }, // 挪亞方舟（手繪洪水時間軸棋盤，不走 gen-map；接 arkbuild/arkpairs 兩個現成關）
-  { key: 'peter', journey: journeyPeter, map: regionMapPeter, nextKey: null }, // 彼得跟隨主的一生（手繪加利利→耶路撒冷→海邊蛇形棋盤，不走 gen-map；signature 水面行走待接『彼得走海』）
+  { key: 'peter', journey: journeyPeter, map: regionMapPeter, nextKey: null }, // 彼得跟隨主的一生（真實地理棋盤=聖地 gen-map，可放大；同地事件沿湖岸/繞耶路撒冷錯開；signature 水面行走待接『彼得走海』）
 ]
 
 const ROLL_MS = 3000 // 跑馬燈轉動時間（3 秒）
