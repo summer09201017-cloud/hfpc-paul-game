@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import MiniGameModal from './MiniGameModal'
+import ActionScripture from './ActionScripture'
 
 // 福音奇兵 · 動作版「出發傳福音」(徒 10):彼得順服聖靈的差遣,從約帕一路跑到外邦人哥尼流的家(該撒利亞)。
 //   反向 RPG:沒有攻擊鍵——得勝不是打倒誰,是順服聖靈、跨過猶太人與外邦人之間的牆,把福音帶給萬民。
@@ -37,6 +38,7 @@ export default function CorneliusActionDemo() {
                   : '再試一次——聖靈說:不要疑惑,只管去(徒 10:20)'}
                 {typeof result.score === 'number' ? `（得分 ${result.score}）` : ''}
               </p>
+              <ActionScripture verse="我真看出　神是不偏待人。原來，各國中那敬畏主、行義的人都為主所悅納。" refLabel="使徒行傳 10:34-35" refSpoken="經文出自使徒行傳第十章三十四到三十五節" />
               <button className="btn btn--primary" onClick={replay}>
                 再玩一次 ↻
               </button>
