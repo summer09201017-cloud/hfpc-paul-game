@@ -9,6 +9,7 @@ import { Spawner } from './spawner.js'
 import { Renderer } from './renderer.js'
 import { Input } from './input.js'
 import { Audio } from './audio.js'
+import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
 
 const STEP = 1 / 60 // 固定時間步長,讓物理在任何更新率下都一致
 const INVULN = 1.0 // 碰到熱浪/塵霧後的無敵秒數
@@ -39,6 +40,7 @@ export class Game {
   }
 
   boot() {
+    initSpeech()
     Audio.unlock()
     this.input.attach(this.canvas)
     this.renderer.resize()
@@ -274,12 +276,14 @@ export class Game {
   _finish(won) {
     if (this._done) return
     this._done = true
+    if (won) speakScripture(CONTENT.win?.line)
     this.stopped = true
     this.onComplete({ won, score: won ? this.winPoints : 0, level: 'elijah' })
   }
 
   // React 卸載時呼叫:停迴圈、移除監聽、停音樂。
   destroy() {
+    stopSpeech()
     this.stopped = true
     if (this._onResize) window.removeEventListener('resize', this._onResize)
     if (this.input && this.input.detach) this.input.detach()

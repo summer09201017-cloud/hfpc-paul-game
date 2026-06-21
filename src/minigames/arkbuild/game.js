@@ -8,6 +8,7 @@ import { CONTENT } from './content.js'
 import { Renderer } from './renderer.js'
 import { Input } from './input.js'
 import { BuildAudio } from './audio.js'
+import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
 
 const SECTION_ORDER = ['hull', 'walls', 'door', 'window', 'roof']
 const SWEEP_MIN = BOX.left - AIM.margin
@@ -87,6 +88,7 @@ export class Game {
   }
 
   boot() {
+    initSpeech()
     this.audio.unlock()
     this.input.attach(this.canvas)
     this.last = null
@@ -202,10 +204,12 @@ export class Game {
   _finish() {
     if (this.finished) return
     this.finished = true
+    speakScripture(CONTENT.win?.line || CONTENT.intro?.line)
     this.onComplete({ won: true, score: this.winPoints, level: 'arkbuild' })
   }
 
   destroy() {
+    stopSpeech()
     this.stopped = true
     this.input.detach()
     this.audio.destroy()
