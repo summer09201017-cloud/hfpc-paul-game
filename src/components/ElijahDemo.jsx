@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Game as ElijahGame } from '../minigames/elijah/game'
+import ActionScripture from './ActionScripture'
 
 // 「盼望 · 以利亞重得力(動作版)」的開發預覽(不在正式遊戲流程內):開 ?demo=elijah-action 單獨玩、調手感。
 // (卡片版仍是 ?demo=elijah。)之後做旅程或當挑戰站時,站點用 minigame:{ engine:'elijah', winPoints } 接進棋盤即可。
@@ -76,12 +77,17 @@ export default function ElijahDemo() {
           </button>
         )}
         {result && (
-          <button
-            onClick={replay}
-            style={{ position: 'absolute', right: 16, bottom: 16, padding: '8px 16px', borderRadius: 10, border: '2px solid #b9863f', background: '#fffdf7', cursor: 'pointer' }}
-          >
-            再玩一次 ↻
-          </button>
+          <>
+            <div style={{ position: 'absolute', left: '50%', top: '44%', transform: 'translate(-50%,-50%)', maxWidth: '78%', background: 'rgba(255,253,247,0.96)', color: '#2c2417', padding: '14px 18px', borderRadius: 14, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+              <ActionScripture verse="他就起來吃了喝了，仗著這飲食的力，走了四十晝夜，到了神的山，就是何烈山。" refLabel="王上 19:8" refSpoken="經文出自列王紀上第十九章第八節" />
+            </div>
+            <button
+              onClick={replay}
+              style={{ position: 'absolute', right: 16, bottom: 16, padding: '8px 16px', borderRadius: 10, border: '2px solid #b9863f', background: '#fffdf7', cursor: 'pointer' }}
+            >
+              再玩一次 ↻
+            </button>
+          </>
         )}
       </div>
     </div>

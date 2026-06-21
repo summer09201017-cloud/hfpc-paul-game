@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import MiniGameModal from './MiniGameModal'
+import ActionScripture from './ActionScripture'
 
 // 聖歌奇兵 · 動作版「約沙法唱詩得勝」(代下 20):面對摩押/亞捫/西珥三國聯軍，
 //   約沙法不靠刀劍，設立詩班走在軍隊前面讚美——神就設伏兵、敵軍自相擊殺。
@@ -40,6 +41,7 @@ export default function JehoshaphatActionDemo() {
                   : '再試一次——不要懼怕，因為勝敗在乎神（代下 20:15）'}
                 {typeof result.score === 'number' ? `（得分 ${result.score}）` : ''}
               </p>
+              <ActionScripture verse="眾人方唱歌讚美的時候，耶和華就派伏兵擊殺那來攻擊猶大人的，他們就被打敗了。" refLabel="歷代志下 20:22" refSpoken="經文出自歷代志下第二十章第二十二節" />
               <button className="btn btn--primary" onClick={replay}>
                 再玩一次 ↻
               </button>

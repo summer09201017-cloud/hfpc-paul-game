@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import MiniGameModal from './MiniGameModal'
+import ActionScripture from './ActionScripture'
 
 // 大光奇兵 · 動作版「順服奔跑」(徒 9):掃羅在大馬士革路上被大光照射、仆倒、三日眼瞎,
 //   悔改順服後,循著神的差遣往「直街」去見亞拿尼亞——眼睛得開,從逼迫者變成奔跑傳道的人。
@@ -38,6 +39,7 @@ export default function SaulActionDemo() {
                   : '再試一次——主說:起來,進城去(徒 9:6)'}
                 {typeof result.score === 'number' ? `（得分 ${result.score}）` : ''}
               </p>
+              <ActionScripture verse="主耶穌打發我來，叫你能看見，又被聖靈充滿。掃羅就能看見，於是起來受了洗。" refLabel="使徒行傳 9:17-18" refSpoken="經文出自使徒行傳第九章十七到十八節" />
               <button className="btn btn--primary" onClick={replay}>
                 再玩一次 ↻
               </button>
