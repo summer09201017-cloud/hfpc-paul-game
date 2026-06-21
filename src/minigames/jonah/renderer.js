@@ -719,8 +719,9 @@ export class Renderer {
 
     // 兩道水牆的內緣(open 越大、走廊越寬;closing 時 open→0、牆合攏)
     const skyTop = 54
-    const topWallBot = lerp(GROUND_Y - 18, skyTop + 30, open) // 上水牆的下緣
-    const botWallTop = lerp(GROUND_Y + 26, H - 22, open) // 下水牆的上緣
+    // open=0(海未開 / closing 末)時兩牆在 GROUND_Y 完全闔上 → 蓋住海床上的追兵;open=1 全開。
+    const topWallBot = lerp(GROUND_Y, skyTop + 30, open) // 上水牆的下緣
+    const botWallTop = lerp(GROUND_Y, H - 22, open) // 下水牆的上緣
 
     // ── 乾海床走廊(走廊內:上半霧氣、下半濕沙;摩西向海伸杖,海中出現乾地)──
     const corr = ctx.createLinearGradient(0, topWallBot, 0, botWallTop)
@@ -807,6 +808,34 @@ export class Renderer {
       }
       ctx.stroke()
     }
+    // closing:全部追兵在水牆之前繪製 → 海水從上下合攏把他們沖走、人仰馬翻、淹沒(出 14:28)。
+    //   k 越大:被沖得越散(左右晃+往左沖)、越往下沉、翻覆角度越大(人仰馬翻),最後被合攏的水牆蓋掉。
+    if (closing) {
+      const k = Math.min(1, r.closeT / REDSEA.closeTime)
+      for (let i = 0; i < 7; i++) {
+        const baseCx = PLAYER.x - 64 - i * 52
+        if (baseCx < -90) continue
+        const sway = Math.sin(t * 5 + i * 1.7) * 12 * k // 被水推得左右晃
+        const cx = baseCx - 44 * k + sway // 整體被往左沖開
+        const sink = 20 * k // 往下沉沒
+        const tumble = (i % 2 ? 1 : -1) * k * (0.7 + 0.5 * Math.sin(t * 3 + i)) // 翻覆(人仰馬翻)
+        ctx.save()
+        ctx.translate(cx, GROUND_Y + 4 + sink)
+        ctx.rotate(tumble)
+        this._chariot(0, 0, t * 0.2 + i, 1.0) // 輪子幾乎停(被困)
+        ctx.restore()
+        // 翻覆濺起的水花
+        if (k > 0.15) {
+          ctx.fillStyle = `rgba(228,244,252,${0.6 * k})`
+          for (let s = 0; s < 4; s++) {
+            const a = s * 1.7 + t * 5 + i
+            ctx.beginPath()
+            ctx.arc(cx + Math.cos(a) * 22 * k, GROUND_Y - 18 + Math.sin(a) * 16 * k, 2.5 + (s % 2) * 2, 0, Math.PI * 2)
+            ctx.fill()
+          }
+        }
+      }
+    }
     drawWall(topWallBot, true) // 上水牆
     drawWall(botWallTop, false) // 下水牆
 
@@ -814,8 +843,8 @@ export class Renderer {
     if (r.phase === 'cross' || r.phase === 'stand') {
       const near = 1 - Math.max(0, Math.min(1, r.lead / REDSEA.chaseGapMax)) // 0=遠 .. 1=逼近
       const baseX = PLAYER.x - 80 - lerp(230, 30, near)
-      for (let i = 0; i < 3; i++) {
-        const cx = baseX - i * 46
+      for (let i = 0; i < 5; i++) { // 追兵多一些(2026-06-15:3→5)
+        const cx = baseX - i * 44
         if (cx < -50) continue
         this._chariot(cx, GROUND_Y + 4, t + i, 0.92 + near * 0.16)
       }
@@ -848,13 +877,18 @@ export class Renderer {
   }
 
   // 單輛戰車(法老追兵):馬 emoji + 車身 + 兩輪 + 兵與長矛。s=縮放。
+  //   追兵往右追(以色列在右邊),所以馬要「面向右、尾巴朝左」——🐎 預設面左,故水平翻轉。
   _chariot(x, footY, t, s) {
     const ctx = this.ctx
     ctx.save()
     ctx.translate(x, footY)
     ctx.scale(s, s)
-    // 馬(emoji,面向右)
-    this._emoji('🐎', 16, 6, 40)
+    // 馬:水平翻轉讓牠面向右(頭朝右、尾巴朝左 = 往以色列方向追)
+    ctx.save()
+    ctx.translate(16, 6)
+    ctx.scale(-1, 1)
+    this._emoji('🐎', 0, 0, 40)
+    ctx.restore()
     // 車身
     ctx.fillStyle = '#5a3a22'
     roundRect(ctx, -22, -26, 30, 18, 4)
@@ -877,9 +911,21 @@ export class Renderer {
     // 兵(紅袍火柴人)+ 長矛
     ctx.fillStyle = '#9c3b3b'
     ctx.fillRect(-12, -46, 6, 22)
+    ctx.fillStyle = '#d8a878' // 臉膚色頭
     ctx.beginPath()
     ctx.arc(-9, -50, 5, 0, Math.PI * 2)
     ctx.fill()
+    // 兇狠的表情(面向右邊追逐方向):怒眉 + 瞪眼 + 咬牙吶喊
+    ctx.fillStyle = '#2a1414'
+    ctx.beginPath(); ctx.arc(-7.6, -50.5, 0.95, 0, Math.PI * 2); ctx.fill() // 前眼(偏右)
+    ctx.beginPath(); ctx.arc(-10.6, -50.5, 0.8, 0, Math.PI * 2); ctx.fill() // 後眼
+    ctx.strokeStyle = '#2a1414'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(-12, -53); ctx.lineTo(-9.2, -51.6); ctx.stroke() // 怒眉(內低外高)
+    ctx.beginPath(); ctx.moveTo(-9.2, -51.6); ctx.lineTo(-6, -52.8); ctx.stroke()
+    ctx.beginPath(); ctx.arc(-7.4, -47.4, 1.4, 0.05 * Math.PI, 0.95 * Math.PI); ctx.stroke() // 張口吶喊
+    // 頭盔(深色弧蓋住頭頂,顯得像兵)
+    ctx.fillStyle = '#6b2f2f'
+    ctx.beginPath(); ctx.arc(-9, -50.5, 5.2, Math.PI * 1.05, Math.PI * 2.0); ctx.fill()
     ctx.strokeStyle = '#caa83a'
     ctx.lineWidth = 2.5
     ctx.beginPath()

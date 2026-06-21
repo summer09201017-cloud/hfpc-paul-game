@@ -9,6 +9,7 @@ import { composeRound, CONTENT, isSafeNeighbor, isPredator } from './content.js'
 import { Renderer } from './renderer.js'
 import { Input } from './input.js'
 import { PairsAudio } from './audio.js'
+import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
 
 const FLIP_SPEED = 6 // 翻牌動畫速度（每秒 flip 量；~0.17s 翻完）
 
@@ -102,6 +103,7 @@ export class Game {
   }
 
   boot() {
+    initSpeech()
     this.audio.unlock()
     this.audio.startBgm() // 背景音樂（輕柔循環）；在「開始」手勢中啟動才解得了鎖
     this.input.attach(this.canvas)
@@ -289,6 +291,7 @@ export class Game {
   _win() {
     this.state = 'won'
     this.selected = null
+    speakScripture(CONTENT.win?.line)
     this.unsafe = new Set()
     this.stars = starsForMisses(this.misses, this.pairs, this.diff) // 依翻錯次數給 1–3 星
     this.audio.win()
@@ -311,6 +314,7 @@ export class Game {
   }
 
   destroy() {
+    stopSpeech()
     this.stopped = true
     this.input.detach()
     this.audio.destroy()

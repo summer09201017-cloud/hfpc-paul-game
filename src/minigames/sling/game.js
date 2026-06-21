@@ -6,6 +6,7 @@ import { launchVelocity, stepProjectile, segmentHitsRect, deg2rad } from './proj
 import { Renderer } from './renderer.js'
 import { Input } from './input.js'
 import { SlingAudio } from './audio.js'
+import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
 
 const STEP = 1 / 60
 const MISS_AUTO_SEC = 1.6 // 落空提示停留多久自動換下一顆（也可點畫面快轉）
@@ -44,6 +45,7 @@ export class Game {
   }
 
   boot() {
+    initSpeech()
     this.audio.unlock()
     this.input.attach(this.canvas)
     this.last = null
@@ -129,6 +131,7 @@ export class Game {
   _win() {
     this.state = 'win'
     this.audio.hit()
+    speakScripture(CONTENT.win?.line)
     this.audio.win()
     this.beat = {
       kind: 'win',
@@ -181,6 +184,7 @@ export class Game {
   }
 
   destroy() {
+    stopSpeech()
     this.stopped = true
     this.input.detach()
     this.audio.destroy()
