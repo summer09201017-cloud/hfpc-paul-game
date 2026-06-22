@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> 🔴 **未解 BUG(2026-06-22,接手請先讀)**：`?journey=paul2` 桌機 Chrome,**拖曳地圖會整片變海藍 / 放大會整頁變白**
+> (整頁單色、DOM 還在、無痕也會、Playwright 重現不出 → 疑似特定顯卡驅動的 GPU 合成失敗)。完整調查、已排除項、
+> 下一步候選(先試移除 `MapBackground.jsx` 的 `vectorEffect="non-scaling-stroke"`;先用 `chrome://settings/system` 關硬體加速確認是不是 GPU)
+> 全寫在 **`docs/已知問題-paul2-地圖拖曳放大變色.md`**。本輪已做:3D 骰子→2D(`DicePanel.jsx`)、`sync:paulsilas`、保羅西拉嵌入同步最新版。
+
 > 📌 **現況速覽（2026-06-17，全部已併 main 並自動部署）**：線上 = 七旅程 + 多個單獨可玩的 `?demo=`：
 > 動作關 `?demo=sling`（大衛甩石）/ `elijah-action`（盼望·以利亞，遇天使後**跳吃空中餅水**回體力）/
 > `cornelius-action`（福音跑酷）/ `saul-action`（大光跑酷）/ `jehoshaphat-action`（**聖歌·約沙法,戰爭關已搬進 paul**，敵軍放大有表情）/
