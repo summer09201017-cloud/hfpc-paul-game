@@ -712,7 +712,46 @@ body {
   display: inline-block;
   margin-bottom: 0.8rem;
 }
-/* ---- 3D 骰子（CSS 3D 立方體；對面相加 = 7）---- */
+/* ---- 2D 點數骰(取代下方 3D 立方體)----
+   3D 立方體(perspective/preserve-3d)在部分 Chrome+顯卡驅動會讓 GPU 行程崩潰、整頁變白
+   (尤其地圖縮放重繪時)。2D 骰子零 3D 合成層,任何裝置都不會白。 */
+.die2d {
+  --die: clamp(4rem, 10vw, 5.6rem);
+  width: var(--die);
+  height: var(--die);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 14%;
+  background: linear-gradient(155deg, #fff 0%, #fff6e0 100%);
+  border: 3px solid var(--gold, #f3a712);
+  border-radius: 16%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+.die2d__pip {
+  width: 55%;
+  height: 55%;
+  place-self: center;
+  border-radius: 50%;
+  background: transparent;
+}
+.die2d__pip--on {
+  background: var(--accent-warm, #e4572e);
+  box-shadow: inset 0 -2px 2px rgba(0, 0, 0, 0.18);
+}
+/* 滾動時:純 2D 輕晃(translate/rotate,非 3D,安全);只在擲骰瞬間出現,縮放時骰子靜止不晃。 */
+.die2d--rolling {
+  animation: die2d-shake 0.26s linear infinite;
+}
+@keyframes die2d-shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(-6%, 4%) rotate(-7deg); }
+  50% { transform: translate(5%, -4%) rotate(6deg); }
+  75% { transform: translate(-3%, -3%) rotate(-3deg); }
+}
+
+/* ---- (已停用)3D 骰子：保留樣式但無元素使用(DicePanel 已改 2D),不會建立 3D 合成層 ---- */
 .die3d-stage {
   /* 透視舞台：值越小立體感越強 */
   --die: clamp(4rem, 10vw, 5.6rem);
