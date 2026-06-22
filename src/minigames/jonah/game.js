@@ -643,6 +643,7 @@ export class Game {
 
   gameOver() {
     this.state = STATE.LOSE
+    speakScripture(LEVELS[this.level]?.verse)   // 失敗也朗讀經文(不是只有過關)
     this._loseAt = typeof performance !== 'undefined' ? performance.now() : 0 // 失敗緩衝起點(見 loop)
     this.ui.hidePauseButton()
     Audio.stopMusic()
