@@ -17,8 +17,10 @@ export default function MapBackground({ map }) {
   const decor = (map && map.decor) || []
   return (
     <>
+      {/* 海(藍底)改由 .board 的 CSS background-color 提供,不再用「被拉伸成超大的 SVG <rect>」——
+          那個大 rect 在拖曳/縮放時每幀重新點陣化,會超過 GPU 紋理上限 → 整片變海藍(2026-06-23 修)。
+          純色背景在任何尺寸都幾乎零成本,且即使合成層出問題,看到的也只是正常海色,不會「全頁變藍」。 */}
       <svg className="board__map" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <rect x="0" y="0" width="100" height="100" className="board__sea" />
         {lands.map((d, i) => (
           <path key={i} d={d} className="board__land" vectorEffect="non-scaling-stroke" />
         ))}

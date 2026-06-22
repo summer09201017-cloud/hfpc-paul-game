@@ -1,6 +1,14 @@
-# 已知問題(未解):paul2 地圖「拖曳變藍 / 放大變白」整片變單色
+# 已知問題:paul2 地圖「拖曳變藍 / 放大變白」整片變單色
 
-> 更新:2026-06-22(agape250 機,接手請續查)。狀態:**未解。** 影響:`?journey=paul2`(及可能其他旅程)桌機 Chrome。
+> ✅ **已解決(2026-06-23,HFP 機)。** 真因**不是特定顯卡**(agape250 重現不出,是沒踩到觸發條件,不是沒這 bug):
+> 是**所有大富翁地圖共用的 Board 渲染**——① 海是 `preserveAspectRatio="none"` 被拉伸成超大的 SVG `<rect fill:#acd3e0>`;
+> ② 平移每幀改 `left/top`,強制這張巨大 SVG **每幀重新點陣化** → 超過 GPU 紋理上限 → 整片變海藍(縮放變白同因)。
+> 使用者回報「PC Chrome + 手機 + 任何地圖、只要拖曳(不需放大)就犯」→ 確認與顯卡無關,是程式。
+> **修法**(`MapBackground.jsx`/`Board.jsx`/`styles.css`):海改 `.board` 的 CSS `background:#acd3e0`(移除 SVG 大 rect);
+> 平移改 `transform: translate3d`(合成器移動、不重繪);縮放仍走 width/height %。實機驗收:地圖正常、拖曳正常、不再變色。
+> ——以下為未解時的調查紀錄,保留供參考——
+
+> 更新:2026-06-22(agape250 機)。狀態(當時):**未解。** 影響:`?journey=paul2`(及其他旅程)桌機 Chrome。
 
 ## 症狀(使用者實測)
 - 在 `https://hfpc-paul-game.netlify.app/?journey=paul2` 進旅程後:
