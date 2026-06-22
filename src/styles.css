@@ -296,6 +296,7 @@ body {
   aspect-ratio: var(--map-aspect, 1.322); /* 由 Board.jsx 以 CSS 變數帶入真實地圖長寬比 */
   border-radius: 14px;
   overflow: hidden;
+  background: #acd3e0; /* 海(地中海)底色——改用純色 CSS 背景,取代被拉伸成超大的 SVG <rect>(見 MapBackground 註解;修「拖曳/縮放整片變海藍」) */
 }
 /* 可縮放 / 平移的場景容器（地圖+路線+城市+棋子一起縮放）。
    大小/位移由 Board.jsx 以行內樣式控制（width/height=scale×100%、left/top=平移 px）——

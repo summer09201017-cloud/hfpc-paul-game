@@ -55,8 +55,11 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
         style={{
           width: `${zp.scale * zp.baseW * 100}%`,
           height: `${zp.scale * zp.baseH * 100}%`,
-          left: `${zp.x}px`,
-          top: `${zp.y}px`,
+          // 平移用 transform: translate3d(只在合成器移動圖層、不重排不重繪),
+          // 取代每幀改 left/top(會強制把整張地圖 SVG 重新點陣化 → 拖曳時超過 GPU 紋理上限 → 整片變海藍)。
+          // ⚠ 用 translate(平移)不是 scale(縮放)——縮放才會放大底層點陣;平移不會,故安全。縮放仍走 width/height %。
+          transform: `translate3d(${zp.x}px, ${zp.y}px, 0)`,
+          willChange: 'transform',
           cursor: zp.scale > 1 || zp.baseW > 1.01 || zp.baseH > 1.01 ? 'grab' : 'default',
         }}
       >
