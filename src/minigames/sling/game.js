@@ -131,7 +131,7 @@ export class Game {
   _win() {
     this.state = 'win'
     this.audio.hit()
-    speakScripture(CONTENT.win?.line)
+    speakScripture(CONTENT.win?.line, { ref: CONTENT.win?.ref })
     this.audio.win()
     this.beat = {
       kind: 'win',
@@ -148,7 +148,7 @@ export class Game {
     this.audio.miss()
     if (this.stonesLeft <= 0) {
       this.state = 'lose'
-      speakScripture(CONTENT.lose?.line || CONTENT.lose?.teach)   // 失敗也朗讀經文
+      speakScripture(CONTENT.lose?.line || CONTENT.lose?.teach, { ref: CONTENT.lose?.ref })   // 失敗也朗讀經文
       this.beat = {
         kind: 'lose',
         kicker: `${this.totalStones} 顆石子都甩完了`,

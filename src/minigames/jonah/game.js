@@ -569,7 +569,7 @@ export class Game {
   }
 
   win() {
-    speakScripture(LEVELS[this.level]?.verse)
+    speakScripture(LEVELS[this.level]?.verse, { ref: LEVELS[this.level]?.ref })
     this.state = STATE.WIN
     this.ui.hidePauseButton()
     Audio.stopMusic()
@@ -643,7 +643,7 @@ export class Game {
 
   gameOver() {
     this.state = STATE.LOSE
-    speakScripture(LEVELS[this.level]?.verse)   // 失敗也朗讀經文(不是只有過關)
+    speakScripture(LEVELS[this.level]?.verse, { ref: LEVELS[this.level]?.ref })   // 失敗也朗讀經文(不是只有過關)
     this._loseAt = typeof performance !== 'undefined' ? performance.now() : 0 // 失敗緩衝起點(見 loop)
     this.ui.hidePauseButton()
     Audio.stopMusic()
@@ -925,7 +925,7 @@ export class Game {
   }
 
   _fishWin() {
-    speakScripture(LEVEL3.verse)
+    speakScripture(LEVEL3.verse, { ref: LEVEL3.ref })
     this.fish.lit = this.fish.total // 全亮
     this.fish.phase = 'done'
     this.state = STATE.WIN
@@ -1033,7 +1033,7 @@ export class Game {
   }
 
   _preachWin() {
-    speakScripture(LEVEL5.verse)
+    speakScripture(LEVEL5.verse, { ref: LEVEL5.ref })
     this.preach.repented = this.preach.total // 全城悔改
     this.preach.phase = 'done'
     this.state = STATE.WIN
@@ -1131,7 +1131,7 @@ export class Game {
   }
 
   _gourdWin() {
-    speakScripture(LEVEL6.verse)
+    speakScripture(LEVEL6.verse, { ref: LEVEL6.ref })
     this.gourd.done = this.gourd.total
     this.gourd.phase = 'done'
     this.state = STATE.WIN

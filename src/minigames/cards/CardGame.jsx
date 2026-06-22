@@ -156,12 +156,13 @@ export default function CardGame({ spec, onComplete }) {
 
   // 過關自動朗讀經文(系列預設;沒中文語音→靜默 fallback;隨🔇靜音、切卡/卸載即停)。見 skill web-speech-scripture。
   const winVerse = (spec.done && spec.done.line) || (spec.intro && spec.intro.line) || ''
+  const winRef = (spec.done && spec.done.ref) || (spec.intro && spec.intro.ref) || ''
   useEffect(() => {
     initSpeech()
     return () => stopSpeech()
   }, [])
   useEffect(() => {
-    if ((stage === 'done' || stage === 'lost') && winVerse) speakScripture(winVerse, { isMuted: () => musicMuted })
+    if ((stage === 'done' || stage === 'lost') && winVerse) speakScripture(winVerse, { isMuted: () => musicMuted, ref: winRef })
     return () => stopSpeech() // 切卡/卸載就停,別蓋到下一關（過關 done 與失敗 lost 都朗讀經文）
   }, [stage])
 
@@ -243,7 +244,7 @@ export default function CardGame({ spec, onComplete }) {
           <button
             type="button"
             className="btn mgcard__replay"
-            onClick={() => speakScripture(vLine, { isMuted: () => musicMuted })}
+            onClick={() => speakScripture(vLine, { isMuted: () => musicMuted, ref: vRef })}
           >
             🔊 再聽一次
           </button>
