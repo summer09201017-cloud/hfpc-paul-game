@@ -5,15 +5,25 @@
 const A4 = 440
 const mtof = (m) => A4 * Math.pow(2, (m - 69) / 12)
 
-// 5 首和弦進行輪流（每 4 小節換一首），結尾解到 C。情緒：患難中歡然讚美，明亮為主、帶一點深度。
-const END = { root: 60, triad: [0, 4, 7] }
-const TRACKS = [
-  [{ root: 53, triad: [0, 4, 7] }, { root: 55, triad: [0, 4, 7] }, { root: 60, triad: [0, 4, 7] }, { root: 57, triad: [0, 3, 7] }], // F G C Am
-  [{ root: 60, triad: [0, 4, 7] }, { root: 55, triad: [0, 4, 7] }, { root: 57, triad: [0, 3, 7] }, { root: 53, triad: [0, 4, 7] }], // C G Am F
-  [{ root: 50, triad: [0, 3, 7] }, { root: 55, triad: [0, 4, 7] }, { root: 60, triad: [0, 4, 7] }, { root: 60, triad: [0, 4, 7] }], // Dm G C C
-  [{ root: 57, triad: [0, 3, 7] }, { root: 53, triad: [0, 4, 7] }, { root: 60, triad: [0, 4, 7] }, { root: 55, triad: [0, 4, 7] }], // Am F C G
-  [{ root: 53, triad: [0, 4, 7] }, { root: 60, triad: [0, 4, 7] }, { root: 55, triad: [0, 4, 7] }, { root: 57, triad: [0, 3, 7] }], // F C G Am
+// 5 首「真的不一樣」的歌:各自不同的和弦進行 + 音色(波形)+ 琶音密度 + 旋律八度。
+// 選哪首就「整首」播那首(不輪替),所以 5 首聽起來明顯不同。情緒:患難中歡然讚美。
+const C = { root: 60, triad: [0, 4, 7] }, G = { root: 55, triad: [0, 4, 7] }, F = { root: 53, triad: [0, 4, 7] }
+const Am = { root: 57, triad: [0, 3, 7] }, Dm = { root: 50, triad: [0, 3, 7] }, Em = { root: 52, triad: [0, 3, 7] }
+const Bb = { root: 58, triad: [0, 4, 7] }, D = { root: 62, triad: [0, 4, 7] }
+const END = C
+const SONGS = [
+  { name: '平安喜樂', prog: [C, G, Am, F],  wave: 'triangle', arpN: 2, melOct: 24 }, // 明亮抒情
+  { name: '黑夜歌聲', prog: [Am, Em, F, C], wave: 'sine',     arpN: 1, melOct: 12 }, // 小調起、低柔、稀疏
+  { name: '患難讚美', prog: [Dm, Bb, F, C], wave: 'square',   arpN: 3, melOct: 19 }, // 方波、三連音感
+  { name: '信靠盼望', prog: [F, C, G, Am],  wave: 'triangle', arpN: 2, melOct: 24 }, // 溫暖盼望
+  { name: '得勝凱歌', prog: [C, F, G, C],   wave: 'sawtooth', arpN: 4, melOct: 24 }, // 鋸齒、快琶音、凱旋
+  { name: '半夜禱告', prog: [Em, C, G, D],  wave: 'sine',     arpN: 2, melOct: 19 }, // 安靜、小調起
+  { name: '監牢頌讚', prog: [F, Dm, Bb, C], wave: 'square',   arpN: 3, melOct: 24 }, // 厚實、借用和弦
+  { name: '釋放之歌', prog: [G, D, Em, C],  wave: 'triangle', arpN: 4, melOct: 24 }, // 明亮、快、釋放
+  { name: '同心合一', prog: [C, Am, Dm, G], wave: 'sine',     arpN: 2, melOct: 12 }, // 溫暖低柔
+  { name: '頌讚到底', prog: [G, Em, C, D],  wave: 'sawtooth', arpN: 3, melOct: 24 }, // 驅動、堅持讚美
 ]
+export const TRACK_NAMES = SONGS.map((s) => s.name)
 
 export class Audio {
   constructor() {
@@ -84,8 +94,9 @@ export class Audio {
   }
 
   // ================= 音樂排程 =================
-  startSong(bpm, endBeats) {
+  startSong(bpm, endBeats, songStart = 0) {
     if (!this.ctx) return 0
+    this._songIdx = songStart | 0
     this.spb = 60 / bpm
     this.beat = 0
     this.endBeat = endBeats
@@ -111,8 +122,9 @@ export class Audio {
     const inBar = beat % 4
     // 結尾兩小節解到 C，給「上船、風住了」的安定
     const endBars = Math.floor(this.endBeat / 4)
-    const track = TRACKS[Math.floor(bar / 4) % TRACKS.length]   // 每 4 小節換一首
-    const chord = bar >= endBars - 1 ? END : track[bar % track.length]
+    const song = SONGS[this._songIdx || 0] || SONGS[0]   // 整首播選的那首(不輪替)
+    const prog = song.prog
+    const chord = bar >= endBars - 1 ? END : prog[bar % prog.length]
     const spb = this.spb
 
     // 低音：每拍踩根音（第 1、3 拍重）
@@ -121,13 +133,14 @@ export class Audio {
       type: 'sine', gain: inBar % 2 === 0 ? 0.26 : 0.16, rel: 0.08,
     })
 
-    // 琶音：拍內兩個八分，走三和弦音
+    // 琶音：每拍 arpN 個音(密度因歌而異)，用該首的音色(波形)
     const tones = chord.triad
-    for (let i = 0; i < 2; i++) {
-      const tt = t + i * spb * 0.5
-      const tone = tones[(beat * 2 + i) % tones.length]
-      this._tone(mtof(chord.root + 12 + tone), tt, spb * 0.42, {
-        type: 'triangle', gain: 0.12, rel: 0.1,
+    const n = song.arpN || 2
+    for (let i = 0; i < n; i++) {
+      const tt = t + (i * spb) / n
+      const tone = tones[(beat * n + i) % tones.length]
+      this._tone(mtof(chord.root + 12 + tone), tt, spb * (0.85 / n), {
+        type: song.wave, gain: 0.11, rel: 0.1,
       })
     }
 
@@ -140,11 +153,11 @@ export class Audio {
       }
     }
 
-    // 旋律：每小節第 1、3 拍一點高音線，結尾上揚
+    // 旋律：每小節第 1、3 拍一點高音線，用該首音色+八度，結尾上揚
     if (inBar === 0 || inBar === 2) {
       const lift = bar >= endBars - 2 ? 12 : 0
-      const top = chord.root + 24 + chord.triad[(bar + (inBar === 2 ? 1 : 0)) % chord.triad.length] + lift
-      this._tone(mtof(top), t, spb * 1.4, { type: 'triangle', gain: 0.09, atk: 0.02, rel: 0.25 })
+      const top = chord.root + (song.melOct || 24) + chord.triad[(bar + (inBar === 2 ? 1 : 0)) % chord.triad.length] + lift
+      this._tone(mtof(top), t, spb * 1.4, { type: song.wave, gain: 0.09, atk: 0.02, rel: 0.25 })
     }
   }
 

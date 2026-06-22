@@ -5,7 +5,7 @@
 import { VIEW, HIGHWAY, DIFF, SCORE, STARS, COUNT_BEATS, RESCUE as RCFG, FAITH } from './config.js'
 import { makeChart } from './chart.js'
 import { Input } from './input.js'
-import { Audio } from './audio.js'
+import { Audio, TRACK_NAMES } from './audio.js'
 import { Renderer } from './renderer.js'
 import { initSpeech, speakScripture, stopSpeech } from './speak.js'
 import * as C from './content.js'
@@ -197,7 +197,7 @@ export class Game {
     this.rescuePhase = Math.min(1, this.rescueT / RCFG.holdSec)
     if (this.rescuePhase >= 0.5 && !this._spokeRescue) {
       this._spokeRescue = true
-      speakScripture(this.RESCUE.word, { isMuted: () => this.muted })
+      speakScripture(this.RESCUE.word, { isMuted: () => this.muted, ref: this.RESCUE.ref })
     }
     if (this.rescuePhase >= 1) this._resume()
   }
@@ -232,13 +232,15 @@ export class Game {
       const L = this._toLogical(p.x, p.y)
       // 靜音鈕（任何狀態）
       if (inRect(L, this.buttons.mute)) { this.muted = !this.muted; this.audio.setMuted(this.muted); if (this.muted) stopSpeech(); continue }
-      if (this.state === 'paused') { this._resume(); continue }
+      if (this.state === 'paused') { this._resumeFromPause(); continue }
       if (this.state === 'play' && inRect(L, this.buttons.pause)) { this._pause(); continue }
       if (this.state === 'title') { this.audio.unlock(); this.storyIndex = 0; this.state = 'story' }
       else if (this.state === 'story') { this.audio.unlock(); this._advanceStory() }
       else if (this.state === 'mode') {
-        if (inRect(L, this.buttons.walk)) { this.audio.unlock(); this._startCountdown('walk') }
-        else if (inRect(L, this.buttons.run)) { this.audio.unlock(); this._startCountdown('run') }
+        if (inRect(L, this.buttons.walk)) { this.audio.unlock(); this.startMode = 'walk'; this.state = 'song' }
+        else if (inRect(L, this.buttons.run)) { this.audio.unlock(); this.startMode = 'run'; this.state = 'song' }
+      } else if (this.state === 'song') {
+        for (let i = 0; i < TRACK_NAMES.length; i++) { if (inRect(L, this.songRect(i))) { this._songIdx = i; this._startCountdown(this.startMode); break } }
       } else if (this.state === 'win') {
         if (inRect(L, this.buttons.again)) this._restart()
         else if (inRect(L, this.buttons.listen)) speakScripture(`${this.WIN.head}。${this.WIN.verse}。${this.WIN.refSpoken || ''}`, { isMuted: () => this.muted })
@@ -257,6 +259,7 @@ export class Game {
     if (this.state === 'paused' && inRect({ x, y }, B.resume)) return 'resume'
     if (this.state === 'title' && inRect({ x, y }, B.start)) return 'start'
     if (this.state === 'mode') { if (inRect({ x, y }, B.walk)) return 'walk'; if (inRect({ x, y }, B.run)) return 'run' }
+    if (this.state === 'song') { for (let i = 0; i < TRACK_NAMES.length; i++) if (inRect({ x, y }, this.songRect(i))) return 'song' + i }
     if (this.state === 'win' && inRect({ x, y }, B.again)) return 'again'
     if (this.state === 'win' && inRect({ x, y }, B.listen)) return 'listen'
     return null
@@ -268,7 +271,7 @@ export class Game {
     this.audio.suspend()
   }
 
-  _resume() {
+  _resumeFromPause() {
     if (this.state !== 'paused') return
     this.audio.resume()
     this.state = 'play'
@@ -278,6 +281,17 @@ export class Game {
     if (x < HIGHWAY.x0 - 10 || x > HIGHWAY.x0 + HIGHWAY.totalW + 10) return -1
     const lane = Math.floor((x - HIGHWAY.x0) / (HIGHWAY.laneW + HIGHWAY.gap))
     return Math.max(0, Math.min(3, lane))
+  }
+
+  songRect(i) {
+    const n = TRACK_NAMES.length
+    const cols = n > 6 ? 2 : 1
+    const rows = Math.ceil(n / cols)
+    const bw = cols === 2 ? 300 : 360, bh = 46, gy = 10, gx = 24
+    const top = Math.max(96, (540 - (rows * (bh + gy) - gy)) / 2 + 24)
+    const left = (960 - (cols * bw + (cols - 1) * gx)) / 2
+    const col = i % cols, row = (i / cols) | 0
+    return { x: left + col * (bw + gx), y: top + row * (bh + gy), w: bw, h: bh }
   }
 
   _startCountdown(mode) {
@@ -296,7 +310,7 @@ export class Game {
   }
 
   _startPlay() {
-    this.songStart = this.audio.startSong(this.diff.bpm, this.chart.endBeats)
+    this.songStart = this.audio.startSong(this.diff.bpm, this.chart.endBeats, this._songIdx || 0)
     this.songPos = 0
     this.state = 'play'
   }
