@@ -10,6 +10,7 @@ import SaulActionDemo from './components/SaulActionDemo.jsx'
 import JehoshaphatActionDemo from './components/JehoshaphatActionDemo.jsx'
 import ArkPairsDemo from './components/ArkPairsDemo.jsx'
 import ArkBuildDemo from './components/ArkBuildDemo.jsx'
+import PaulSilasDemo from './components/PaulSilasDemo.jsx'
 import { CARD_GAMES } from './minigames/cards/specs'
 import './styles.css'
 import { registerSW } from 'virtual:pwa-register'
@@ -45,6 +46,7 @@ function pickRoot() {
   if (demo === 'jehoshaphat-action') return <JehoshaphatActionDemo />
   if (demo === 'arkpairs') return <ArkPairsDemo />
   if (demo === 'arkbuild') return <ArkBuildDemo />
+  if (demo === 'paulsilas') return <PaulSilasDemo />
   return <App />
 }
 
