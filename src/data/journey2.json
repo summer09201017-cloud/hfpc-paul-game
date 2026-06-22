@@ -581,6 +581,31 @@
       "lon": 24.29
     },
     {
+      "id": "philippi_prison",
+      "name": "腓立比監牢",
+      "type": "challenge",
+      "mustStop": true,
+      "scripture": "使徒行傳 16:25-34",
+      "text": "保羅和西拉因傳福音被打、下在內監，兩腳上了木狗。約在半夜，他們沒有抱怨，反倒禱告、唱詩讚美神，眾囚犯都側耳而聽。踩準每一拍，在患難中持續讚美——撐到底！",
+      "minigame": {
+        "engine": "paulsilas",
+        "mode": "run",
+        "winPoints": 4,
+        "label": "🎶 半夜監牢唱詩讚美",
+        "how": "保羅和西拉被下在監裡，約在半夜唱詩讚美神。用 ← ↓ ↑ → 或 D F J K 踩準每一拍，在患難中持續讚美——唱到底，神就震動監牢、開了監門！"
+      },
+      "history": {
+        "year": "約西元 50～51 年",
+        "companions": "西拉（同被囚）、眾囚犯、禁卒一家",
+        "willMeet": "半夜的地震、全開的監門、鬆脫的鎖鍊，與信主受洗的禁卒一家（徒 16:33-34）。"
+      },
+      "_comment": "手繪座標（非 gen-map；philippi_prison 不在 gen-map CITIES，置於 philippi→暗妃波里 之間）。",
+      "x": 18.2,
+      "y": 9.0,
+      "lat": 41.01,
+      "lon": 24.29
+    },
+    {
       "id": "amphipolis_chance",
       "name": "經過暗妃波里",
       "type": "chance",
