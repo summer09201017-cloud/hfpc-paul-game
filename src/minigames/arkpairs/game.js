@@ -291,7 +291,7 @@ export class Game {
   _win() {
     this.state = 'won'
     this.selected = null
-    speakScripture(CONTENT.win?.line)
+    speakScripture(CONTENT.win?.line, { ref: CONTENT.win?.ref })
     this.unsafe = new Set()
     this.stars = starsForMisses(this.misses, this.pairs, this.diff) // 依翻錯次數給 1–3 星
     this.audio.win()

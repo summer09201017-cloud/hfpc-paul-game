@@ -276,7 +276,7 @@ export class Game {
   _finish(won) {
     if (this._done) return
     this._done = true
-    if (won) speakScripture(CONTENT.win?.line)
+    if (won) speakScripture(CONTENT.win?.line, { ref: CONTENT.win?.ref })
     this.stopped = true
     this.onComplete({ won, score: won ? this.winPoints : 0, level: 'elijah' })
   }

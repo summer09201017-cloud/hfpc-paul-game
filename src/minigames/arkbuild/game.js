@@ -204,7 +204,7 @@ export class Game {
   _finish() {
     if (this.finished) return
     this.finished = true
-    speakScripture(CONTENT.win?.line || CONTENT.intro?.line)
+    speakScripture(CONTENT.win?.line || CONTENT.intro?.line, { ref: CONTENT.win?.ref || CONTENT.intro?.ref })
     this.onComplete({ won: true, score: this.winPoints, level: 'arkbuild' })
   }
 
