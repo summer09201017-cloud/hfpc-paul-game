@@ -87,8 +87,8 @@ export const sound = {
   },
 
   tick() {
-    tone(1300, 0.035, { type: 'square', gain: 0.045 })
-  }, // 跑馬燈每跳一格的滴答
+    tone(1300, 0.04, { type: 'square', gain: 0.13 })
+  }, // 骰子轉動每跳一格的滴答(調亮:原 0.045 太小聲、被背景音樂蓋過幾乎聽不到)
   ding() {
     tone(N.C5, 0.12, { gain: 0.22 })
     tone(N.G5, 0.2, { gain: 0.18, at: 0.07 })

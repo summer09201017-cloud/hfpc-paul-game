@@ -18,8 +18,11 @@ function safeMaxScale(w, h, bw, bh) {
   const longest = Math.max(w * bw, h * bh) // 場景在 100% 時的最長邊(CSS px)
   if (!longest) return MAX
   const cap = RASTER_BUDGET / (longest * dpr)
-  // 至少允許放大到 150%(再小就沒意義);最多不超過桌機硬上限 2.5。
-  return Math.max(1.5, Math.min(MAX, cap))
+  // cap 是「不超過點陣上限」的硬天花板,絕不可被任何下限蓋過——否則高 DPR / 大螢幕 PC
+  // 算出的 cap 會 <1.5,舊版用 Math.max(1.5, …) 強拉回 1.5 → 放大時點陣超限 → 整片全白
+  // (這就是「手機修好了、PC 仍然全白」的元兇,2026-06-22 修)。
+  // 最多到桌機硬上限 2.5、最少到 100%(不放大,永遠安全);中間一律以 cap 為準。
+  return Math.min(MAX, Math.max(1, cap))
 }
 
 // 地圖縮放 / 平移。回傳要掛到「裁切容器」的 ref、指標事件處理器、目前縮放/位移，

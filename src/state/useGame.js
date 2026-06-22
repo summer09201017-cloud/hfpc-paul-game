@@ -90,6 +90,7 @@ export function useGame() {
     const value = 1 + Math.floor(Math.random() * 6) // 骰子 1~6 點
 
     setPhase('rolling')
+    sound.unlock() // 防呆:點擊手勢中再喚醒一次音訊——分頁切走再回來/重新整理後 AudioContext 可能被瀏覽器暫停,否則擲骰滴答聲會消失
     // 骰子轉動：每 80ms 換一個隨機點數（1~6），響一聲滴答。
     rollTimer.current = setInterval(() => {
       setDiceFace(1 + Math.floor(Math.random() * 6))
