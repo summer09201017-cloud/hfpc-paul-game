@@ -161,8 +161,8 @@ export default function CardGame({ spec, onComplete }) {
     return () => stopSpeech()
   }, [])
   useEffect(() => {
-    if (stage === 'done' && winVerse) speakScripture(winVerse, { isMuted: () => musicMuted })
-    return () => stopSpeech() // 切卡/卸載就停,別蓋到下一關
+    if ((stage === 'done' || stage === 'lost') && winVerse) speakScripture(winVerse, { isMuted: () => musicMuted })
+    return () => stopSpeech() // 切卡/卸載就停,別蓋到下一關（過關 done 與失敗 lost 都朗讀經文）
   }, [stage])
 
   const stepIdx = typeof stage === 'number' ? stage : -1
