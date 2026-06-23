@@ -138,11 +138,15 @@ export function useZoomPan({ aspect = 0 } = {}) {
       })
     } else {
       setTf((t) => {
-        drag.current = { startX: e.clientX, startY: e.clientY, tx: t.x, ty: t.y }
+        // 記下起點 + 當下的 scale/位移;拖曳過程「不走 React setState」,改直接寫 DOM(見 onPointerMove)。
+        drag.current = { startX: e.clientX, startY: e.clientY, tx: t.x, ty: t.y, s: t.s, pending: null }
         return t
       })
     }
   }, [])
+
+  // 拖曳場景元素(.board__scene)的快取,讓 onPointerMove 能「不重繪」直接寫 left/top。
+  const sceneEl = () => ref.current?.querySelector?.('.board__scene') || null
 
   const onPointerMove = useCallback(
     (e) => {
@@ -159,9 +163,16 @@ export function useZoomPan({ aspect = 0 } = {}) {
         const cy = (a.y + b.y) / 2 - r.top
         zoomAt(cx, cy, pinch.current.s * (dist / pinch.current.dist))
       } else if (drag.current) {
+        // ★ 拖曳「不」每幀 setState(那會讓整張地圖 SVG + 所有站點 + 3D 骰子每幀重繪,
+        //   在較弱的顯卡上反覆重繪/重新合成 → GPU 行程崩潰 → 整頁變單色海藍)。
+        //   改成:用純函式 norm() 算出夾好的位移,直接寫進 .board__scene 的 left/top(只移動、不重繪),
+        //   放開手(pointerup)時才 setTf 一次同步回 React。視覺一樣,但拖曳期間零 React 重繪。
         const dx = e.clientX - drag.current.startX
         const dy = e.clientY - drag.current.startY
-        setTf((t) => norm(t.s, drag.current.tx + dx, drag.current.ty + dy))
+        const n = norm(drag.current.s, drag.current.tx + dx, drag.current.ty + dy)
+        drag.current.pending = n
+        const el = sceneEl()
+        if (el) { el.style.left = n.x + 'px'; el.style.top = n.y + 'px' }
       }
     },
     [zoomAt],
@@ -170,7 +181,12 @@ export function useZoomPan({ aspect = 0 } = {}) {
   const onPointerUp = useCallback((e) => {
     pointers.current.delete(e.pointerId)
     if (pointers.current.size < 2) pinch.current = null
-    if (pointers.current.size === 0) drag.current = null
+    if (pointers.current.size === 0) {
+      // 放開手才把拖曳結果同步回 React(整段拖曳只觸發這一次重繪)。
+      const p = drag.current && drag.current.pending
+      drag.current = null
+      if (p) setTf(p)
+    }
   }, [])
 
   const zoomIn = useCallback(() => step(1), [step])
