@@ -55,11 +55,14 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
         style={{
           width: `${zp.scale * zp.baseW * 100}%`,
           height: `${zp.scale * zp.baseH * 100}%`,
-          // 平移用 transform: translate3d(只在合成器移動圖層、不重排不重繪),
-          // 取代每幀改 left/top(會強制把整張地圖 SVG 重新點陣化 → 拖曳時超過 GPU 紋理上限 → 整片變海藍)。
-          // ⚠ 用 translate(平移)不是 scale(縮放)——縮放才會放大底層點陣;平移不會,故安全。縮放仍走 width/height %。
-          transform: `translate3d(${zp.x}px, ${zp.y}px, 0)`,
-          willChange: 'transform',
+          // 平移用 left/top(純版面位移),★刻意「不用」transform / translate3d / will-change。
+          // 原因(這就是「拖曳整片變海藍」的真因):用 transform/will-change 會把整個場景提升成一個
+          //   獨立 GPU 合成圖層,瀏覽器必須把「整張場景(含放大後的尺寸)」一次點陣化;在某些顯卡上
+          //   這層點陣化失敗 → 整個場景沒畫出來 → 看到的是 .board 的純色海底 → 全藍。
+          // 用 left/top + .board 的 overflow:hidden,瀏覽器「只點陣化看得見的可視區」(=容器大小,永遠很小),
+          //   不論地圖多大、放大多少都不會超過 GPU 紋理上限 → 桌機/手機都穩。海底已改 CSS 純色背景(見 MapBackground)。
+          left: `${zp.x}px`,
+          top: `${zp.y}px`,
           cursor: zp.scale > 1 || zp.baseW > 1.01 || zp.baseH > 1.01 ? 'grab' : 'default',
         }}
       >
