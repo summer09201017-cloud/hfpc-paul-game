@@ -77,7 +77,6 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
               x2={leg.to.x}
               y2={leg.to.y}
               className={leg.sea ? 'route route--sea' : 'route route--land'}
-              vectorEffect="non-scaling-stroke"
             />
           ))}
         </svg>

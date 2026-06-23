@@ -410,7 +410,7 @@ body {
 .board__land {
   fill: #e9dcb5; /* 陸地（羊皮紙感的暖色） */
   stroke: #b88a4a;
-  stroke-width: 1px;
+  stroke-width: 0.35; /* viewBox 使用者單位(0~100);原本 1px 是配 non-scaling-stroke,移除後改用小的使用者單位值 */
   stroke-linejoin: round;
 }
 /* 地名 / 海洋標籤（HTML 疊層，避免被 SVG 拉伸變形） */
@@ -474,13 +474,13 @@ body {
 }
 .route--land {
   stroke: #b9532e;
-  stroke-width: 2.5;
-  stroke-dasharray: 3 3;
+  stroke-width: 0.7; /* 使用者單位(移除 non-scaling-stroke 後);原 2.5px */
+  stroke-dasharray: 1.4 1.4;
 }
 .route--sea {
   stroke: #2e6f96;
-  stroke-width: 2.5;
-  stroke-dasharray: 6 4;
+  stroke-width: 0.7;
+  stroke-dasharray: 1.8 1.2;
 }
 .station {
   position: absolute;

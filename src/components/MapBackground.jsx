@@ -20,9 +20,12 @@ export default function MapBackground({ map }) {
       {/* 海(藍底)改由 .board 的 CSS background-color 提供,不再用「被拉伸成超大的 SVG <rect>」——
           那個大 rect 在拖曳/縮放時每幀重新點陣化,會超過 GPU 紋理上限 → 整片變海藍(2026-06-23 修)。
           純色背景在任何尺寸都幾乎零成本,且即使合成層出問題,看到的也只是正常海色,不會「全頁變藍」。 */}
+      {/* ★ 不用 vectorEffect="non-scaling-stroke":它在「被縮放/拖曳的大 SVG」上是已知的 Chrome
+          GPU 合成崩潰觸發點(整頁變單色)。改用一般 stroke(以 viewBox 使用者單位計,會隨地圖縮放,
+          視覺差異極小但不再觸發崩潰)。stroke 寬度移到 CSS / 下面 decor 直接給使用者單位值。 */}
       <svg className="board__map" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         {lands.map((d, i) => (
-          <path key={i} d={d} className="board__land" vectorEffect="non-scaling-stroke" />
+          <path key={i} d={d} className="board__land" />
         ))}
         {decor.map((p, i) => (
           <path
@@ -30,9 +33,8 @@ export default function MapBackground({ map }) {
             d={p.d}
             fill={p.fill || 'none'}
             stroke={p.stroke || 'none'}
-            strokeWidth={p.sw || 1}
+            strokeWidth={p.sw || 0.4}
             opacity={p.opacity == null ? 1 : p.opacity}
-            vectorEffect="non-scaling-stroke"
           />
         ))}
       </svg>
