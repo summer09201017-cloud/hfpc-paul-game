@@ -198,39 +198,11 @@ body {
   padding: 0.8rem;
   align-content: start;
 }
-/* 寬螢幕（平板橫向 / 投影）：地圖在左、面板在右 */
+/* 寬螢幕（平板橫向 / 投影）：地圖在左、面板在右。地圖以欄寬撐大(原本的大地圖)。 */
 @media (min-width: 860px) {
-  /* 桌機把整個 app 鎖在一個畫面高度內,不讓棋盤把頁面撐高 → 杜絕「地圖比螢幕高、捲到只看到藍色海」的整片變藍。 */
-  .app {
-    height: 100dvh;
-    overflow: hidden;
-  }
   .app__main {
     grid-template-columns: 1fr minmax(300px, 26%);
-    align-items: stretch; /* 讓地圖欄拿到整列高度,棋盤才能「等比例縮到剛好放進去」 */
-    min-height: 0;
-  }
-  .app__board {
-    min-height: 0;
-    overflow: hidden;
-    display: grid;
-    place-items: center; /* 棋盤置中、留白(letterbox),而不是被撐爆 */
-  }
-  /* ★ 棋盤等比例「縮到剛好放進欄位」(contain):以高度為準、寬度自動;寬度超過欄寬再以 max-width 夾回
-     (此時高度為 auto,長寬比由 aspect-ratio 維持) → 寬、高兩個方向都不溢出視窗。
-     這修掉「拖曳/任何大富翁地圖整片變海藍」的真因:之前 width:100%+aspect-ratio 會讓直式/大地圖
-     算出比視窗還高的棋盤,頁面溢出後看到的就是地圖的藍色海部分。 */
-  .app__board .board {
-    width: auto;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
-    margin: auto;
-  }
-  .app__side {
-    align-self: stretch;
-    min-height: 0;
-    overflow-y: auto;
+    align-items: start;
   }
 }
 
