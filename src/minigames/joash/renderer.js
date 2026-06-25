@@ -158,7 +158,7 @@ export class Renderer {
       const a = game.state === 'aim' ? deg2rad(game.aimDeg) : deg2rad(18)
       const dx = Math.cos(a), dy = -Math.sin(a)              // 瞄準方向（螢幕 y 向下）
       const px = -dy, py = dx                                 // 垂直＝弓臂方向
-      const gripX = x + dx * 22, gripY = shoulderY + dy * 22  // 弓握把（前手）
+      const gripX = x + dx * 32, gripY = shoulderY + dy * 32  // 弓握把（前手；手臂加長,別太短）
       const limb = 20
       const tX = gripX + px * limb, tY = gripY + py * limb    // 弓上端
       const bX = gripX - px * limb, bY = gripY - py * limb    // 弓下端
@@ -174,9 +174,12 @@ export class Renderer {
       ctx.beginPath(); ctx.moveTo(nX, nY); ctx.lineTo(tipX, tipY); ctx.stroke()                // 搭在弦上的箭
       ctx.fillStyle = '#9aa0a6'
       ctx.beginPath(); ctx.moveTo(tipX + dx * 5, tipY + dy * 5); ctx.lineTo(tipX + px * 3, tipY + py * 3); ctx.lineTo(tipX - px * 3, tipY - py * 3); ctx.closePath(); ctx.fill() // 箭頭
-      ctx.strokeStyle = skin; ctx.lineWidth = 6; ctx.lineCap = 'round'
-      ctx.beginPath(); ctx.moveTo(x + 8, shoulderY + 2); ctx.lineTo(gripX, gripY); ctx.stroke() // 前臂→握把
-      ctx.beginPath(); ctx.moveTo(x - 6, shoulderY + 4); ctx.lineTo(nX, nY); ctx.stroke()       // 後手→拉弦
+      ctx.strokeStyle = skin; ctx.lineWidth = 6.5; ctx.lineCap = 'round'
+      ctx.beginPath(); ctx.moveTo(x + 7, shoulderY + 1); ctx.lineTo(gripX, gripY); ctx.stroke() // 前臂→握把(加長)
+      ctx.beginPath(); ctx.moveTo(x - 7, shoulderY + 3); ctx.lineTo(nX, nY); ctx.stroke()        // 後臂→拉弦(加長)
+      ctx.fillStyle = skin
+      ctx.beginPath(); ctx.arc(gripX, gripY, 4.5, 0, Math.PI * 2); ctx.fill() // 前手掌(握弓)
+      ctx.beginPath(); ctx.arc(nX, nY, 4.5, 0, Math.PI * 2); ctx.fill()       // 後手掌(拉弦)
     }
 
     ctx.fillStyle = '#3a2c1a'
@@ -220,16 +223,20 @@ export class Renderer {
     ctx.fillStyle = '#2f3a28'
     ctx.fillRect(g.x - 30, footY - 9, 28, 9)
     ctx.fillRect(g.x + 4, footY - 9, 28, 9)
-    // 持矛手臂後面的矛（撒上 17:7 槍桿如織布的機軸）
-    ctx.strokeStyle = '#6b4a28'
-    ctx.lineWidth = 5
-    ctx.beginPath(); ctx.moveTo(g.x + 52, shoulderY - 40); ctx.lineTo(g.x + 52, footY); ctx.stroke()
-    ctx.fillStyle = '#9aa0a6'
-    ctx.beginPath()
-    ctx.moveTo(g.x + 52, shoulderY - 58)
-    ctx.lineTo(g.x + 45, shoulderY - 40)
-    ctx.lineTo(g.x + 59, shoulderY - 40)
-    ctx.closePath(); ctx.fill()
+    // 矛（亞蘭兵持矛）——槍頭加大、完整在畫面內(不被裁)、由持矛手握住
+    {
+      const spx = g.x + 54
+      ctx.strokeStyle = '#6b4a28'; ctx.lineWidth = 5; ctx.lineCap = 'round'
+      ctx.beginPath(); ctx.moveTo(spx, headY - 28); ctx.lineTo(spx, footY); ctx.stroke() // 槍桿
+      ctx.fillStyle = '#b8bcc2' // 葉形槍頭(加大;尖頂 headY-56 仍安全在框內)
+      ctx.beginPath()
+      ctx.moveTo(spx, headY - 56)
+      ctx.lineTo(spx - 9, headY - 30)
+      ctx.lineTo(spx, headY - 24)
+      ctx.lineTo(spx + 9, headY - 30)
+      ctx.closePath(); ctx.fill()
+      ctx.strokeStyle = '#7d8085'; ctx.lineWidth = 1.5; ctx.stroke()
+    }
     // 鎧甲身體
     ctx.fillStyle = armor
     ctx.beginPath()
@@ -244,18 +251,21 @@ export class Renderer {
     for (let yy = shoulderY + 16; yy < hipY; yy += 20) {
       ctx.beginPath(); ctx.moveTo(g.x - 33, yy); ctx.lineTo(g.x + 33, yy); ctx.stroke()
     }
-    // 手臂
+    // 手臂（加長、末端有手掌——近手握盾、遠手握矛,別太短）
     ctx.strokeStyle = skin
     ctx.lineWidth = 13
     ctx.lineCap = 'round'
-    ctx.beginPath(); ctx.moveTo(g.x - 31, shoulderY + 6); ctx.lineTo(g.x - 46, shoulderY + 64); ctx.stroke() // 近手垂放
-    ctx.beginPath(); ctx.moveTo(g.x + 31, shoulderY + 6); ctx.lineTo(g.x + 52, shoulderY - 40); ctx.stroke() // 持矛手
-    // 圓盾（近東步兵圓盾,擋在身前近側）——亞蘭兵的招牌
+    ctx.beginPath(); ctx.moveTo(g.x - 30, shoulderY + 8); ctx.lineTo(g.x - 42, shoulderY + 52); ctx.stroke() // 近手→盾(加長)
+    ctx.beginPath(); ctx.moveTo(g.x + 30, shoulderY + 8); ctx.lineTo(g.x + 54, shoulderY + 4); ctx.stroke()   // 遠手→矛(加長)
+    ctx.fillStyle = skin
+    ctx.beginPath(); ctx.arc(g.x + 54, shoulderY + 4, 6.5, 0, Math.PI * 2); ctx.fill() // 握矛手掌(看得見握住)
+    // 圓盾（近東步兵圓盾,擋在身前近側）——加大,亞蘭兵的招牌
     ctx.fillStyle = '#8a5a2a'
-    ctx.beginPath(); ctx.arc(g.x - 33, shoulderY + 42, 21, 0, Math.PI * 2); ctx.fill()
-    ctx.strokeStyle = '#5f3c1a'; ctx.lineWidth = 3
-    ctx.beginPath(); ctx.arc(g.x - 33, shoulderY + 42, 21, 0, Math.PI * 2); ctx.stroke()
-    ctx.fillStyle = '#c0962f'; ctx.beginPath(); ctx.arc(g.x - 33, shoulderY + 42, 5, 0, Math.PI * 2); ctx.fill() // 盾心凸飾
+    ctx.beginPath(); ctx.arc(g.x - 38, shoulderY + 48, 30, 0, Math.PI * 2); ctx.fill()
+    ctx.strokeStyle = '#5f3c1a'; ctx.lineWidth = 4
+    ctx.beginPath(); ctx.arc(g.x - 38, shoulderY + 48, 30, 0, Math.PI * 2); ctx.stroke()
+    ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(g.x - 38, shoulderY + 48, 19, 0, Math.PI * 2); ctx.stroke() // 盾飾圈
+    ctx.fillStyle = '#c0962f'; ctx.beginPath(); ctx.arc(g.x - 38, shoulderY + 48, 6.5, 0, Math.PI * 2); ctx.fill() // 盾心凸飾
     // 脖子
     ctx.fillStyle = skin
     ctx.fillRect(g.x - 11, headY + headR - 6, 22, 20)
@@ -277,19 +287,26 @@ export class Renderer {
     ctx.beginPath(); ctx.arc(g.x, headY - headR - 22, 2.5, 0, Math.PI * 2); ctx.fill() // 頂珠
     // 臉部表情
     if (!fallen) {
-      // 怒眉（內低外高，兇）
+      // 怒眉（更陡、更粗——兇）
       ctx.strokeStyle = '#3a2a18'
-      ctx.lineWidth = 3
-      ctx.beginPath(); ctx.moveTo(g.x - 16, headY - 3); ctx.lineTo(g.x - 4, headY + 2); ctx.stroke()
-      ctx.beginPath(); ctx.moveTo(g.x + 16, headY - 3); ctx.lineTo(g.x + 4, headY + 2); ctx.stroke()
-      // 眼
-      ctx.fillStyle = '#2a2a2a'
-      ctx.beginPath(); ctx.arc(g.x - 9, headY + 4, 2.6, 0, Math.PI * 2); ctx.fill()
-      ctx.beginPath(); ctx.arc(g.x + 9, headY + 4, 2.6, 0, Math.PI * 2); ctx.fill()
-      // 怒嘴（下彎）
-      ctx.strokeStyle = '#3a2a18'
-      ctx.lineWidth = 2.5
-      ctx.beginPath(); ctx.arc(g.x, headY + 22, 7, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke()
+      ctx.lineWidth = 4
+      ctx.lineCap = 'round'
+      ctx.beginPath(); ctx.moveTo(g.x - 17, headY - 6); ctx.lineTo(g.x - 3, headY + 4); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(g.x + 17, headY - 6); ctx.lineTo(g.x + 3, headY + 4); ctx.stroke()
+      // 怒目（紅光瞇眼）
+      ctx.fillStyle = '#a11'
+      ctx.beginPath(); ctx.arc(g.x - 9, headY + 5, 3.2, 0, Math.PI * 2); ctx.fill()
+      ctx.beginPath(); ctx.arc(g.x + 9, headY + 5, 3.2, 0, Math.PI * 2); ctx.fill()
+      ctx.fillStyle = '#1a1a1a'
+      ctx.beginPath(); ctx.arc(g.x - 9, headY + 5, 1.6, 0, Math.PI * 2); ctx.fill()
+      ctx.beginPath(); ctx.arc(g.x + 9, headY + 5, 1.6, 0, Math.PI * 2); ctx.fill()
+      // 咆哮露齒嘴（張口 + 白牙）——更兇
+      ctx.fillStyle = '#2a1410'
+      ctx.beginPath(); ctx.ellipse(g.x, headY + 21, 9, 6, 0, 0, Math.PI * 2); ctx.fill()
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(g.x - 7, headY + 16, 14, 3) // 上排牙
+      ctx.strokeStyle = '#2a1410'; ctx.lineWidth = 1
+      ctx.beginPath(); ctx.moveTo(g.x - 3, headY + 16); ctx.lineTo(g.x - 3, headY + 19); ctx.moveTo(g.x + 3, headY + 16); ctx.lineTo(g.x + 3, headY + 19); ctx.stroke()
     } else {
       // 暈眩：XX 眼 + 張嘴
       ctx.strokeStyle = '#2a2a2a'
