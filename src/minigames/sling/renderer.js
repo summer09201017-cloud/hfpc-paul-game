@@ -260,9 +260,12 @@ export class Renderer {
     }
     ctx.restore()
 
-    // 額頭命中區提示（瞄準時微微發亮，幫小孩知道要打哪）
+    // 額頭命中區提示（瞄準時微微發亮，幫小孩知道要打哪）。
+    // ★ 直接畫「實際命中矩形 game.forehead」——它已含歌利亞動作位移(gx/gy)＋年齡檔大小(幼70×50/童28×18/青20×13)，
+    //   所以紅框會跟著額頭一起移動/跳/蹲、大小也隨年齡變，與物理命中判定「同一個矩形」零誤差(看到哪打哪一致)。
+    //   （畫在 ctx.restore() 之後、用絕對座標，不再吃 translate；故用 game.forehead 而非靜態 GOLIATH.forehead。）
     if (!fallen && (game.state === 'aim' || game.state === 'flying')) {
-      const f = g.forehead
+      const f = game.forehead || g.forehead
       ctx.strokeStyle = 'rgba(228,87,46,0.85)'
       ctx.setLineDash([5, 4])
       ctx.lineWidth = 2
@@ -277,7 +280,7 @@ export class Renderer {
     ctx.fillStyle = '#3a2c1a'
     ctx.font = 'bold 14px system-ui'
     ctx.textAlign = 'center'
-    if (!fallen) ctx.fillText('歌利亞', g.x, g.groundY + 16)
+    if (!fallen) ctx.fillText('歌利亞', g.x + (game.gx || 0), g.groundY + 16) // 名牌也跟著左右移動
   }
 
   _aim(ctx, game) {
