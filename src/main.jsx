@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import SlingDemo from './components/SlingDemo.jsx'
+import JoashDemo from './components/JoashDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
 import RedSeaDemo from './components/RedSeaDemo.jsx'
 import CardDemo from './components/CardDemo.jsx'
@@ -20,6 +21,7 @@ registerSW({ immediate: true })
 
 // 單獨玩 / 開發預覽 / 大廳深連結（不影響正式桌遊流程）：
 //   ?demo=sling             → 大衛甩石（拋射動作關）
+//   ?demo=joash             → 約阿施射得勝箭（拋射，王下 13；多箭、命中越多次=得勝越完全）
 //   ?demo=elijah-action     → 盼望·以利亞重得力（收集/恢復動作關，王上 19）
 //   ?demo=redsea            → 紅海奔逃（約拿引擎 level 8 動作關，出 14；不併保羅旅程）
 //   ?demo=cornelius-action  → 福音·出發傳福音（跑酷，約帕→該撒利亞，徒 10）
@@ -38,6 +40,7 @@ const demo = (() => {
 
 function pickRoot() {
   if (demo === 'sling') return <SlingDemo />
+  if (demo === 'joash') return <JoashDemo />
   if (demo === 'elijah-action') return <ElijahDemo />
   if (demo === 'redsea') return <RedSeaDemo />
   if (demo && CARD_GAMES[demo]) return <CardDemo specKey={demo} />
