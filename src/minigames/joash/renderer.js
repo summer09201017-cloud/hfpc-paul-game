@@ -71,6 +71,24 @@ export class Renderer {
     ctx.lineTo(960, GROUND_Y)
     ctx.closePath()
     ctx.fill()
+
+    // 朝東的晨光（王下 13:17「開朝東的窗戶」）——右方(東)朝陽,點出射箭的方向
+    const sun = ctx.createRadialGradient(880, 92, 8, 880, 92, 78)
+    sun.addColorStop(0, 'rgba(255,238,176,0.95)')
+    sun.addColorStop(1, 'rgba(255,238,176,0)')
+    ctx.fillStyle = sun
+    ctx.beginPath(); ctx.arc(880, 92, 78, 0, Math.PI * 2); ctx.fill()
+
+    // 王宮「朝東的窗戶」：約阿施站在拱形窗口向東(右)射「耶和華的得勝箭」,亞蘭仇敵在窗外右方遠處。
+    const stone = '#b9a989', stoneDk = '#8f7e5e'
+    const wl = 104, wr = 248, wtop = 98, wsill = 420, jw = 15
+    ctx.fillStyle = stoneDk; ctx.fillRect(wl - jw, wsill, (wr - wl) + jw * 2, 16) // 窗台
+    ctx.fillStyle = stone
+    ctx.fillRect(wl - jw, wtop, jw, wsill - wtop) // 左窗柱
+    ctx.fillRect(wr, wtop, jw, wsill - wtop)      // 右窗柱
+    ctx.strokeStyle = stone; ctx.lineWidth = jw; ctx.lineCap = 'butt'
+    ctx.beginPath(); ctx.arc((wl + wr) / 2, wtop, (wr - wl) / 2 + jw / 2, Math.PI, 0); ctx.stroke() // 拱頂
+    ctx.fillStyle = stoneDk; ctx.fillRect((wl + wr) / 2 - 6, wtop - (wr - wl) / 2 - jw, 12, 11) // 拱心楔石
   }
 
   _david(ctx, game) {
@@ -103,11 +121,7 @@ export class Renderer {
     // 腰帶
     ctx.fillStyle = '#5a3d22'
     ctx.fillRect(x - 16, hipY - 8, 32, 6)
-    // 後手（插在身側）
-    ctx.strokeStyle = skin
-    ctx.lineWidth = 6
-    ctx.lineCap = 'round'
-    ctx.beginPath(); ctx.moveTo(x - 9, shoulderY + 12); ctx.lineTo(x - 19, shoulderY + 40); ctx.stroke()
+    // (後手＝拉弦手,改由下面「弓」區塊一起畫)
     // 脖子 + 頭
     const hy = shoulderY - 20
     ctx.fillStyle = skin
@@ -139,25 +153,30 @@ export class Renderer {
       ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.arc(x, cy - 1, 2, 0, Math.PI * 2); ctx.fill()
     }
 
-    // 拉弓手臂 + 弓/弦：瞄準時手臂沿角度伸出（讀作拉弓）；非瞄準時手收在身側。
-    if (game.state === 'aim') {
-      const a = deg2rad(game.aimDeg)
-      const hxp = x + Math.cos(a) * 22
-      const hyp = shoulderY - Math.sin(a) * 22
-      ctx.strokeStyle = skin
-      ctx.lineWidth = 6
-      ctx.beginPath(); ctx.moveTo(x + 8, shoulderY + 2); ctx.lineTo(hxp, hyp); ctx.stroke() // 投擲手臂
-      const sx = x + Math.cos(a) * 36
-      const sy = shoulderY - Math.sin(a) * 36
-      ctx.strokeStyle = '#5a4326'
-      ctx.lineWidth = 2
-      ctx.beginPath(); ctx.moveTo(hxp, hyp); ctx.lineTo(sx, sy); ctx.stroke()
-      ctx.fillStyle = '#444'
-      ctx.beginPath(); ctx.arc(sx, sy, 5, 0, Math.PI * 2); ctx.fill()
-    } else {
-      ctx.strokeStyle = skin
-      ctx.lineWidth = 6
-      ctx.beginPath(); ctx.moveTo(x + 8, shoulderY + 2); ctx.lineTo(x + 22, shoulderY + 16); ctx.stroke()
+    // 弓 + 箭（約阿施真的拿弓拉弓）：前手握弓沿瞄準角伸出、後手拉弦搭箭；非瞄準時弓持身前微張。
+    {
+      const a = game.state === 'aim' ? deg2rad(game.aimDeg) : deg2rad(18)
+      const dx = Math.cos(a), dy = -Math.sin(a)              // 瞄準方向（螢幕 y 向下）
+      const px = -dy, py = dx                                 // 垂直＝弓臂方向
+      const gripX = x + dx * 22, gripY = shoulderY + dy * 22  // 弓握把（前手）
+      const limb = 20
+      const tX = gripX + px * limb, tY = gripY + py * limb    // 弓上端
+      const bX = gripX - px * limb, bY = gripY - py * limb    // 弓下端
+      const cX = gripX + dx * 11, cY = gripY + dy * 11        // 弓弧控制點（往前凸）
+      ctx.strokeStyle = '#7a4a1c'; ctx.lineWidth = 3.5; ctx.lineCap = 'round'
+      ctx.beginPath(); ctx.moveTo(tX, tY); ctx.quadraticCurveTo(cX, cY, bX, bY); ctx.stroke() // 弓臂（木）
+      const pull = game.state === 'aim' ? 15 : 4              // 拉弦量（瞄準時拉滿）
+      const nX = gripX - dx * pull, nY = gripY - dy * pull    // 搭箭/拉弦點（後手）
+      ctx.strokeStyle = '#efe9da'; ctx.lineWidth = 1.3
+      ctx.beginPath(); ctx.moveTo(tX, tY); ctx.lineTo(nX, nY); ctx.lineTo(bX, bY); ctx.stroke() // 弦
+      const tipX = gripX + dx * 16, tipY = gripY + dy * 16
+      ctx.strokeStyle = '#6b4a28'; ctx.lineWidth = 2
+      ctx.beginPath(); ctx.moveTo(nX, nY); ctx.lineTo(tipX, tipY); ctx.stroke()                // 搭在弦上的箭
+      ctx.fillStyle = '#9aa0a6'
+      ctx.beginPath(); ctx.moveTo(tipX + dx * 5, tipY + dy * 5); ctx.lineTo(tipX + px * 3, tipY + py * 3); ctx.lineTo(tipX - px * 3, tipY - py * 3); ctx.closePath(); ctx.fill() // 箭頭
+      ctx.strokeStyle = skin; ctx.lineWidth = 6; ctx.lineCap = 'round'
+      ctx.beginPath(); ctx.moveTo(x + 8, shoulderY + 2); ctx.lineTo(gripX, gripY); ctx.stroke() // 前臂→握把
+      ctx.beginPath(); ctx.moveTo(x - 6, shoulderY + 4); ctx.lineTo(nX, nY); ctx.stroke()       // 後手→拉弦
     }
 
     ctx.fillStyle = '#3a2c1a'
@@ -178,7 +197,7 @@ export class Renderer {
     const hipY = 360
     const footY = g.groundY
     const skin = '#b59b6e'
-    const armor = '#5b6b57'
+    const armor = '#3f7c79' // 亞蘭兵:青銅綠松色甲(別於歌利亞墨綠)
 
     ctx.save()
     // 歌利亞動作位移（前後移動 gx／跳起或蹲下 gy）；命中框與「額頭」標記都在這個位移內畫，
@@ -231,6 +250,12 @@ export class Renderer {
     ctx.lineCap = 'round'
     ctx.beginPath(); ctx.moveTo(g.x - 31, shoulderY + 6); ctx.lineTo(g.x - 46, shoulderY + 64); ctx.stroke() // 近手垂放
     ctx.beginPath(); ctx.moveTo(g.x + 31, shoulderY + 6); ctx.lineTo(g.x + 52, shoulderY - 40); ctx.stroke() // 持矛手
+    // 圓盾（近東步兵圓盾,擋在身前近側）——亞蘭兵的招牌
+    ctx.fillStyle = '#8a5a2a'
+    ctx.beginPath(); ctx.arc(g.x - 33, shoulderY + 42, 21, 0, Math.PI * 2); ctx.fill()
+    ctx.strokeStyle = '#5f3c1a'; ctx.lineWidth = 3
+    ctx.beginPath(); ctx.arc(g.x - 33, shoulderY + 42, 21, 0, Math.PI * 2); ctx.stroke()
+    ctx.fillStyle = '#c0962f'; ctx.beginPath(); ctx.arc(g.x - 33, shoulderY + 42, 5, 0, Math.PI * 2); ctx.fill() // 盾心凸飾
     // 脖子
     ctx.fillStyle = skin
     ctx.fillRect(g.x - 11, headY + headR - 6, 22, 20)
@@ -239,10 +264,17 @@ export class Renderer {
     // 鬍子
     ctx.fillStyle = '#4a3a28'
     ctx.beginPath(); ctx.arc(g.x, headY + 11, 19, 0.12 * Math.PI, 0.88 * Math.PI); ctx.fill()
-    // 銅盔（撒上 17:5 頭戴銅盔）
-    ctx.fillStyle = '#b08d57'
-    ctx.beginPath(); ctx.arc(g.x, headY - 4, headR + 1, Math.PI * 1.04, Math.PI * 1.96); ctx.fill()
-    ctx.fillRect(g.x - headR - 1, headY - 8, (headR + 1) * 2, 6)
+    // 亞蘭兵尖頂盔（近東錐形盔 + 護額帶 + 頂珠）——與歌利亞的圓銅盔明顯不同
+    ctx.fillStyle = '#9a6b34'
+    ctx.beginPath()
+    ctx.moveTo(g.x - headR - 1, headY - 4)
+    ctx.lineTo(g.x, headY - headR - 22) // 尖頂
+    ctx.lineTo(g.x + headR + 1, headY - 4)
+    ctx.closePath(); ctx.fill()
+    ctx.fillStyle = '#7d5526'
+    ctx.fillRect(g.x - headR - 1, headY - 8, (headR + 1) * 2, 7) // 護額帶
+    ctx.fillStyle = '#c0962f'
+    ctx.beginPath(); ctx.arc(g.x, headY - headR - 22, 2.5, 0, Math.PI * 2); ctx.fill() // 頂珠
     // 臉部表情
     if (!fallen) {
       // 怒眉（內低外高，兇）
