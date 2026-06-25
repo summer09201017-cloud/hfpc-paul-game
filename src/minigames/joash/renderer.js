@@ -225,7 +225,7 @@ export class Renderer {
     ctx.fillRect(g.x + 4, footY - 9, 28, 9)
     // 矛（亞蘭兵持矛）——槍頭加大、完整在畫面內(不被裁)、由持矛手握住
     {
-      const spx = g.x + 54
+      const spx = g.x + 66
       ctx.strokeStyle = '#6b4a28'; ctx.lineWidth = 5; ctx.lineCap = 'round'
       ctx.beginPath(); ctx.moveTo(spx, headY - 28); ctx.lineTo(spx, footY); ctx.stroke() // 槍桿
       ctx.fillStyle = '#b8bcc2' // 葉形槍頭(加大;尖頂 headY-56 仍安全在框內)
@@ -255,10 +255,10 @@ export class Renderer {
     ctx.strokeStyle = skin
     ctx.lineWidth = 13
     ctx.lineCap = 'round'
-    ctx.beginPath(); ctx.moveTo(g.x - 30, shoulderY + 8); ctx.lineTo(g.x - 42, shoulderY + 52); ctx.stroke() // 近手→盾(加長)
-    ctx.beginPath(); ctx.moveTo(g.x + 30, shoulderY + 8); ctx.lineTo(g.x + 54, shoulderY + 4); ctx.stroke()   // 遠手→矛(加長)
+    ctx.beginPath(); ctx.moveTo(g.x - 28, shoulderY + 8); ctx.lineTo(g.x - 48, shoulderY + 66); ctx.stroke() // 近手→盾(更長)
+    ctx.beginPath(); ctx.moveTo(g.x + 28, shoulderY + 8); ctx.lineTo(g.x + 66, shoulderY + 22); ctx.stroke()  // 遠手→矛(更長,伸到矛桿)
     ctx.fillStyle = skin
-    ctx.beginPath(); ctx.arc(g.x + 54, shoulderY + 4, 6.5, 0, Math.PI * 2); ctx.fill() // 握矛手掌(看得見握住)
+    ctx.beginPath(); ctx.arc(g.x + 66, shoulderY + 22, 6.5, 0, Math.PI * 2); ctx.fill() // 握矛手掌(握在桿上)(看得見握住)
     // 圓盾（近東步兵圓盾,擋在身前近側）——加大,亞蘭兵的招牌
     ctx.fillStyle = '#8a5a2a'
     ctx.beginPath(); ctx.arc(g.x - 38, shoulderY + 48, 30, 0, Math.PI * 2); ctx.fill()
