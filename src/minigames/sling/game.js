@@ -1,12 +1,12 @@
 // 大衛甩石（簡化版）主迴圈 + 狀態機。嵌入契約：new Game(canvas,{embed,onComplete})、boot()、destroy()。
 // 狀態：intro → aim →（放手）flying →（命中）win ／（落空）miss →(還有石子) aim ／(沒石子) lose。
-import { WORLD, PHYSICS, AIM, GROUND_Y, DAVID, GOLIATH, RULES } from './config.js'
+import { WORLD, PHYSICS, AIM, GROUND_Y, DAVID, GOLIATH, RULES, getAge, speedStars } from './config.js'
 import { CONTENT } from './content.js'
 import { launchVelocity, stepProjectile, segmentHitsRect, deg2rad } from './projectile.js'
 import { Renderer } from './renderer.js'
 import { Input } from './input.js'
 import { SlingAudio } from './audio.js'
-import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
+import { initSpeech, speakScripture, speakText, stopSpeech } from '../../speak.js'
 
 const STEP = 1 / 60
 const MISS_AUTO_SEC = 1.6 // 落空提示停留多久自動換下一顆（也可點畫面快轉）
@@ -21,10 +21,23 @@ export class Game {
     this.input = new Input()
     this.audio = new SlingAudio()
 
+    // —— 年齡旋鈕（幼稚園/兒童/青少年）：一個年齡檔決定擺速、命中區、石子數、是否語音/計時、歌利亞動作 ——
+    this.age = getAge(opts.age) // 預設 kids
+    this.sweep = this.age.sweepDegPerSec
+    this.foreheadBase = this.age.forehead || GOLIATH.forehead // 命中區「靜止位置」（會被動作平移）
+    this.forehead = { ...this.foreheadBase } // 每幀重算（歌利亞會動）
+    this.timed = !!this.age.timed
+    this.motion = this.age.motion || null
+    this.gx = 0 // 歌利亞水平位移（前後移動）
+    this.gy = 0 // 垂直位移（負=跳起、正=蹲下/端下）
+    this.gPhase = 0 // 動作相位累加
+    this.clock = 0 // 青少年計時（從第一次瞄準起算到命中）
+    this.speedStars = 0
+
     this.stopped = false
     this.finished = false
-    this.totalStones = RULES.stones
-    this.stonesLeft = RULES.stones
+    this.totalStones = this.age.stones ?? RULES.stones
+    this.stonesLeft = this.totalStones
     this.aimDeg = AIM.minDeg
     this.aimDir = 1
     this.stone = null
@@ -50,7 +63,15 @@ export class Game {
     this.input.attach(this.canvas)
     this.last = null
     this.acc = 0
+    // ① 語音玩法簡介：幼稚園(不識字)自動朗讀「怎麼玩」;稍延遲等語音清單就緒。
+    if (this.age.speakHowto) setTimeout(() => this.speakHowto(), 350)
     requestAnimationFrame(this._loop)
+  }
+
+  // 朗讀玩法說明(🔊 鈕也呼叫這個);沒中文語音→靜默。在 intro 才唸,避免蓋過經文朗讀。
+  speakHowto() {
+    if (this.finished || this.stopped) return
+    speakText(CONTENT.how)
   }
 
   _loop(t) {
@@ -69,14 +90,42 @@ export class Game {
     requestAnimationFrame(this._loop)
   }
 
+  // 歌利亞動作（增加難度的「會動的靶」）：左右移動 + 週期跳起 + 週期蹲下；命中區跟著平移。
+  _updateGoliath(dt) {
+    if (!this.motion) { this.gx = 0; this.gy = 0 }
+    else {
+      this.gPhase += dt
+      const m = this.motion
+      this.gx = (m.swayAmp || 0) * Math.sin(this.gPhase * (m.swaySpeed || 1))
+      let gy = 0
+      if (m.jump) { // 跳起：在每個週期前段走一條上拋弧（gy 為負＝往上）
+        const t = this.gPhase % m.jump.everySec
+        if (t < m.jump.durSec) gy -= m.jump.h * Math.sin(Math.PI * (t / m.jump.durSec))
+      }
+      if (m.crouch) { // 蹲下/端下：頭部下沉（gy 為正＝往下），躲開瞄準線
+        const t = (this.gPhase + (m.crouch.everySec / 2)) % m.crouch.everySec
+        if (t < m.crouch.durSec) gy += m.crouch.drop * Math.sin(Math.PI * (t / m.crouch.durSec))
+      }
+      this.gy = gy
+    }
+    // 命中區跟著動作平移（renderer 的歌利亞身體也用同一組 gx/gy 位移，兩邊同步）
+    this.forehead.x = this.foreheadBase.x + this.gx
+    this.forehead.y = this.foreheadBase.y + this.gy
+  }
+
   _step(dt) {
     const fire = this.input.consumeFire()
+    // 瞄準/飛行時：歌利亞持續移動 + 青少年計時
+    if (this.state === 'aim' || this.state === 'flying') {
+      this._updateGoliath(dt)
+      if (this.timed) this.clock += dt
+    }
     switch (this.state) {
       case 'intro':
         if (fire) this._startAim()
         break
       case 'aim': {
-        this.aimDeg += this.aimDir * AIM.sweepDegPerSec * dt
+        this.aimDeg += this.aimDir * this.sweep * dt
         if (this.aimDeg >= AIM.maxDeg) { this.aimDeg = AIM.maxDeg; this.aimDir = -1 }
         else if (this.aimDeg <= AIM.minDeg) { this.aimDeg = AIM.minDeg; this.aimDir = 1 }
         if (fire) this._launch()
@@ -86,7 +135,7 @@ export class Game {
         this.flightT += dt
         const prev = this.stone
         const next = stepProjectile(prev, dt, PHYSICS.gravity)
-        if (segmentHitsRect(prev.x, prev.y, next.x, next.y, GOLIATH.forehead)) {
+        if (segmentHitsRect(prev.x, prev.y, next.x, next.y, this.forehead)) {
           this.stone = next
           this._win()
           break
@@ -133,9 +182,14 @@ export class Game {
     this.audio.hit()
     speakScripture(CONTENT.win?.line, { ref: CONTENT.win?.ref })
     this.audio.win()
+    // 青少年計時挑戰：命中越快星越多（純獎勵，不影響過關/score）
+    if (this.timed) this.speedStars = speedStars(this.clock, this.age)
+    const star = this.timed && this.speedStars
+      ? `　⏱ ${this.clock.toFixed(1)}s ${'★'.repeat(this.speedStars)}${'☆'.repeat(3 - this.speedStars)}`
+      : ''
     this.beat = {
       kind: 'win',
-      kicker: '🎯 正中額頭！歌利亞仆倒了',
+      kicker: '🎯 正中額頭！歌利亞仆倒了' + star,
       ref: CONTENT.win.ref,
       line: CONTENT.win.line,
       teach: CONTENT.win.teach,

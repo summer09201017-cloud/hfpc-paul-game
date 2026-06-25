@@ -168,6 +168,9 @@ export class Renderer {
     const armor = '#5b6b57'
 
     ctx.save()
+    // 歌利亞動作位移（前後移動 gx／跳起或蹲下 gy）；命中框與「額頭」標記都在這個位移內畫，
+    // 與 game.forehead（= 同一組 gx/gy 平移）保持同步 → 看到哪打哪一致。
+    ctx.translate(game.gx || 0, game.gy || 0)
     if (fallen) {
       // 倒下（勝利）：以腳為軸往後倒
       ctx.translate(g.x, footY)
@@ -311,7 +314,7 @@ export class Renderer {
   }
 
   _hud(ctx, game) {
-    // 剩餘石子（● 滿 ○ 空）
+    // 剩餘石子（🪨 滿 ◻ 空）
     ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
     ctx.font = '20px system-ui'
@@ -319,6 +322,20 @@ export class Renderer {
     for (let i = 0; i < game.totalStones; i++) s += i < game.stonesLeft ? '🪨' : '◻'
     ctx.fillStyle = '#3a2c1a'
     ctx.fillText(s, 16, 24)
+    // 年齡檔標籤（右上）
+    if (game.age) {
+      ctx.textAlign = 'right'
+      ctx.font = 'bold 16px system-ui'
+      ctx.fillStyle = '#5a4a2a'
+      ctx.fillText(`${game.age.emoji} ${game.age.label}`, WORLD.w - 16, 22)
+    }
+    // 青少年計時挑戰：瞄準/飛行時顯示碼錶（純挑戰提示，不影響過關）
+    if (game.timed && (game.state === 'aim' || game.state === 'flying')) {
+      ctx.textAlign = 'right'
+      ctx.font = 'bold 18px system-ui'
+      ctx.fillStyle = '#c0392b'
+      ctx.fillText(`⏱ ${game.clock.toFixed(1)}s`, WORLD.w - 16, 46)
+    }
   }
 
   _beat(ctx, beat) {

@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { Game as SlingGame } from '../minigames/sling/game'
+import { AGE } from '../minigames/sling/config'
+import { CONTENT } from '../minigames/sling/content'
+import { initSpeech, speakText } from '../speak'
 
-// 大衛甩石的開發預覽（不在正式遊戲流程內）：開 ?demo=sling 就能單獨玩這關、調手感。
-// 之後做「大衛」旅程時，這關用站點 minigame:{ engine:'sling', winPoints } 接進棋盤即可。
+// 大衛甩石的開發預覽（?demo=sling）。試點:加「年齡旋鈕(幼稚園/兒童/青少年)」+「語音玩法簡介」。
+// 回應兒主老師回饋:幼兒不識字→大目標+站著不動+自動語音;7–12 歲嫌太簡單→歌利亞會移動/跳/蹲、命中區小、計時。
 export default function SlingDemo() {
   const canvasRef = useRef(null)
   const gameRef = useRef(null)
   const [started, setStarted] = useState(false)
   const [result, setResult] = useState(null)
+  const [age, setAge] = useState('kids') // 預設兒童
 
   // 進全螢幕 + 盡量鎖橫向（手機只有在「使用者手勢」中呼叫才有效，所以綁在「開始甩石」點擊裡）。
   const enterFullscreenLandscape = () => {
@@ -15,7 +19,6 @@ export default function SlingDemo() {
       const el = document.documentElement
       if (!document.fullscreenElement && el.requestFullscreen) {
         const p = el.requestFullscreen()
-        // 進全螢幕後再嘗試鎖橫向（桌機沒有 orientation.lock，靜默略過）。
         if (p && p.then) p.then(() => { try { screen.orientation?.lock?.('landscape') } catch {} }).catch(() => {})
         else { try { screen.orientation?.lock?.('landscape') } catch {} }
       }
@@ -29,6 +32,9 @@ export default function SlingDemo() {
     } catch {}
   }
 
+  // 🔊 聽玩法說明（語音）——點擊本身就是使用者手勢,iOS/Chrome 才允許出聲;沒中文語音→靜默。
+  const hearHowto = () => { initSpeech(); speakText(CONTENT.how) }
+
   const begin = () => {
     if (gameRef.current) return
     enterFullscreenLandscape() // 在點擊手勢中要全螢幕——手機才會生效
@@ -37,10 +43,11 @@ export default function SlingDemo() {
     const g = new SlingGame(canvasRef.current, {
       embed: true,
       winPoints: 5,
+      age, // ★ 把選的年齡檔傳進引擎（幼稚園 kinder / 兒童 kids / 青少年 teen）
       onComplete: (r) => setResult(r),
     })
     gameRef.current = g
-    if (typeof window !== 'undefined') window.__sling = g // 開發/測試掛勾：讓煙霧測試讀 aimDeg/state 在命中帶放手
+    if (typeof window !== 'undefined') window.__sling = g // 煙霧測試/Playwright 掛勾
     g.boot()
   }
 
@@ -50,6 +57,14 @@ export default function SlingDemo() {
     if (gameRef.current) gameRef.current.destroy()
     gameRef.current = null
     begin()
+  }
+
+  // 回到年齡選單（換難度重選）
+  const backToMenu = () => {
+    if (gameRef.current) gameRef.current.destroy()
+    gameRef.current = null
+    setStarted(false)
+    setResult(null)
   }
 
   return (
@@ -69,21 +84,64 @@ export default function SlingDemo() {
       )}
       <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
         <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+
+        {/* 開始前：年齡旋鈕(大顆觸控友善) + 🔊 聽玩法 + 開始 */}
         {!started && (
-          <button
-            onClick={begin}
-            style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', padding: '12px 24px', fontSize: 18, borderRadius: 12, border: 'none', background: '#e4572e', color: '#fff', cursor: 'pointer' }}
-          >
-            開始甩石 →
-          </button>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 16 }}>
+            <div style={{ color: '#fff', font: 'bold 22px system-ui' }}>🪨 大衛戰歌利亞　選一個年齡</div>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {Object.values(AGE).map((a) => {
+                const on = age === a.id
+                return (
+                  <button
+                    key={a.id}
+                    onClick={() => setAge(a.id)}
+                    style={{
+                      width: 200, padding: '14px 16px', borderRadius: 14, cursor: 'pointer', textAlign: 'left',
+                      border: on ? '3px solid #ffd98a' : '2px solid #3a5160',
+                      background: on ? 'rgba(228,87,46,0.92)' : 'rgba(20,30,40,0.7)',
+                      color: '#fff', boxShadow: on ? '0 4px 16px rgba(0,0,0,.4)' : 'none',
+                    }}
+                  >
+                    <div style={{ font: 'bold 20px system-ui' }}>{a.emoji} {a.label}</div>
+                    <div style={{ font: '12.5px system-ui', opacity: 0.9, marginTop: 4 }}>{a.sub}</div>
+                  </button>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
+              <button
+                onClick={hearHowto}
+                title="用語音念出怎麼玩(給還不識字的孩子)"
+                style={{ padding: '12px 18px', fontSize: 17, borderRadius: 12, border: '2px solid #6aa9c0', background: '#13303c', color: '#cfe3e8', cursor: 'pointer' }}
+              >
+                🔊 聽玩法
+              </button>
+              <button
+                onClick={begin}
+                style={{ padding: '12px 28px', fontSize: 18, borderRadius: 12, border: 'none', background: '#e4572e', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                開始甩石 →
+              </button>
+            </div>
+          </div>
         )}
+
         {result && (
-          <button
-            onClick={replay}
-            style={{ position: 'absolute', right: 16, bottom: 16, padding: '8px 16px', borderRadius: 10, border: '2px solid #b9863f', background: '#fffdf7', cursor: 'pointer' }}
-          >
-            再玩一次 ↻
-          </button>
+          <div style={{ position: 'absolute', right: 16, bottom: 16, display: 'flex', gap: 10 }}>
+            <button
+              onClick={backToMenu}
+              style={{ padding: '8px 16px', borderRadius: 10, border: '2px solid #6aa9c0', background: '#13303c', color: '#cfe3e8', cursor: 'pointer' }}
+            >
+              換年齡 ↺
+            </button>
+            <button
+              onClick={replay}
+              style={{ padding: '8px 16px', borderRadius: 10, border: '2px solid #b9863f', background: '#fffdf7', cursor: 'pointer' }}
+            >
+              再玩一次 ↻
+            </button>
+          </div>
         )}
       </div>
     </div>

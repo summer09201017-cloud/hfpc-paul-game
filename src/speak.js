@@ -55,6 +55,27 @@ export function speakScripture(text, { isMuted = () => false, rate = 0.92, pitch
   }
 }
 
+// 朗讀一般文字(非經文)——給「語音玩法簡介」用(回應兒主老師:不識字的幼兒聽得懂怎麼玩)。
+// 同樣零音檔、離線、免費;沒中文語音→靜默 fallback(回 false,不報錯不卡關)。可被 🔊 鈕重複呼叫。
+export function speakText(text, { isMuted = () => false, rate = 0.95, pitch = 1 } = {}) {
+  if (!('speechSynthesis' in window) || !text) return false
+  if (isMuted()) return false
+  try {
+    speechSynthesis.cancel()
+    const u = new SpeechSynthesisUtterance(String(text).replace(/\s+/g, ''))
+    const v = pickZh()
+    if (!v) return false
+    u.voice = v
+    u.lang = v.lang
+    u.rate = rate
+    u.pitch = pitch
+    speechSynthesis.speak(u)
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function stopSpeech() {
   if ('speechSynthesis' in window) speechSynthesis.cancel()
 }
