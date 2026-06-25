@@ -3,6 +3,7 @@ import { Game as SlingGame } from '../minigames/sling/game'
 import { AGE } from '../minigames/sling/config'
 import { CONTENT } from '../minigames/sling/content'
 import { initSpeech, speakText } from '../speak'
+import { getAgePref, setAgePref } from '../agePrefs'
 
 // 大衛甩石的開發預覽（?demo=sling）。試點:加「年齡旋鈕(幼稚園/兒童/青少年)」+「語音玩法簡介」。
 // 回應兒主老師回饋:幼兒不識字→大目標+站著不動+自動語音;7–12 歲嫌太簡單→歌利亞會移動/跳/蹲、命中區小、計時。
@@ -11,7 +12,8 @@ export default function SlingDemo() {
   const gameRef = useRef(null)
   const [started, setStarted] = useState(false)
   const [result, setResult] = useState(null)
-  const [age, setAge] = useState('kids') // 預設兒童
+  const [age, setAge] = useState(getAgePref()) // 預設＝跨關記住的年齡(孩子/老師選一次,全系列沿用)
+  const pickAge = (id) => { setAge(id); setAgePref(id) } // 選了就寫回,下一關沿用
 
   // 進全螢幕 + 盡量鎖橫向（手機只有在「使用者手勢」中呼叫才有效，所以綁在「開始甩石」點擊裡）。
   const enterFullscreenLandscape = () => {
@@ -95,7 +97,7 @@ export default function SlingDemo() {
                 return (
                   <button
                     key={a.id}
-                    onClick={() => setAge(a.id)}
+                    onClick={() => pickAge(a.id)}
                     style={{
                       width: 200, padding: '14px 16px', borderRadius: 14, cursor: 'pointer', textAlign: 'left',
                       border: on ? '3px solid #ffd98a' : '2px solid #3a5160',
