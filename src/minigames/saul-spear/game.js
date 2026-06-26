@@ -21,22 +21,23 @@ export class Game {
     this.input = new Input()
     this.audio = new SpearAudio()
 
-    // —— 年齡旋鈕(幼稚園/兒童/青少年):一個年齡檔決定預警秒數、槍速、同時支數、移速、要躲幾支、容錯次數、計時、假動作 ——
+    // —— 年齡旋鈕(幼稚園/兒童/青少年):一個年齡檔決定預警秒數、槍速、齊射支數、移速、總槍數、容錯、計時、預判、斜射 ——
     this.age = getAge(opts.age)
     this.telegraphSec = this.age.telegraphSec
     this.speedY = this.age.speedY
-    this.simultaneous = this.age.simultaneous
+    this.volley = this.age.volley || 1
     this.moveSpeed = this.age.moveSpeed
     this.throwsToWin = this.age.throwsToWin
     this.maxHits = this.age.maxHits
     this.spawnGap = this.age.spawnGap
     this.timed = !!this.age.timed
-    this.feint = !!this.age.feint
+    this.lead = this.age.lead || 0
+    this.spreadGap = this.age.spreadGap || 0
     this.diagChance = this.age.diagChance || 0
     this.diagMax = this.age.diagMax || 0
     this.aimJitter = this.age.aimJitter ?? 24
 
-    this.david = { x: DAVID.startX, flinch: 0 }
+    this.david = { x: DAVID.startX, vx: 0, flinch: 0 } // vx=橫向速度(預判用)
     this.spears = [] // { phase:'telegraph'|'fly', x, y, t, resolved }
     this.stuck = [] // 躲過的槍插在牆上(撒上 19:10)——純視覺
     this.spawnedCount = 0
@@ -120,50 +121,69 @@ export class Game {
 
   _moveDavid(dt) {
     const d = this.input.dir()
-    this.david.x += d * this.moveSpeed * dt
+    this.david.vx = d * this.moveSpeed // 記下橫向速度,供「預判鎖定」用(瞄你將移到的位置)
+    this.david.x += this.david.vx * dt
     if (this.david.x < LANE.minX) this.david.x = LANE.minX
     if (this.david.x > LANE.maxX) this.david.x = LANE.maxX
   }
 
-  _spawnSpear() {
-    // 斜射:出手點(launchX)偏到大衛一側;直射:出手點就在大衛正上方。落點(targetX)在預警期間追蹤大衛。
-    const diagonal = this.diagChance > 0 && Math.random() < this.diagChance
-    let launchX = this.david.x
-    if (diagonal) {
-      const side = Math.random() < 0.5 ? -1 : 1
-      launchX = clamp(this.david.x + side * (this.diagMax * 0.55 + Math.random() * this.diagMax * 0.45), 72, WORLD.w - 72)
+  // 預判鎖定點:大衛現在位置 + 朝移動方向預判(lead 越大越堵你前進方向)。
+  _aimBase() {
+    const flyTime = (HARP_Y - SPEAR_START_Y) / this.speedY
+    return clamp(this.david.x + this.david.vx * this.lead * flyTime, LANE.minX, LANE.maxX)
+  }
+
+  // 一波「齊射」:同時射出 volley 支,各佔一個 slot(扇形分散),全部圍著「預判點」鋪開,只留空檔讓你鑽。
+  _spawnVolley() {
+    const n = Math.min(this.volley, this.throwsToWin - this.spawnedCount)
+    if (n <= 0) return
+    for (let i = 0; i < n; i++) {
+      const slot = i - (n - 1) / 2 // -..0..+ 對稱分散
+      const diagonal = this.diagMax > 0 && Math.random() < this.diagChance
+      // 斜射方向「出生時決定一次」(別每幀重算,否則預警線會抖):有 slot 就照 slot 那側,正中央隨機。
+      const diagSide = !diagonal ? 0 : slot > 0 ? 1 : slot < 0 ? -1 : (Math.random() < 0.5 ? -1 : 1)
+      this.spears.push({
+        phase: 'telegraph', slot, diagonal, diagSide,
+        launchX: this.david.x, targetX: this.david.x,
+        x: this.david.x, y: SAUL.y, startY: SPEAR_START_Y, t: 0, resolved: false, ux: 0, uy: 1,
+      })
     }
-    this.spears.push({
-      phase: 'telegraph', diagonal, launchX, targetX: this.david.x,
-      x: launchX, y: SAUL.y, startY: SPEAR_START_Y, t: 0, resolved: false, ux: 0, uy: 1,
-    })
-    this.spawnedCount += 1
+    this.spawnedCount += n
     this.audio.warn()
   }
 
+  // 這支槍此刻「瞄準的落點」= 預判點 + 自己的 slot 偏移(整波鋪開圍住大衛)。
+  _slotTarget(s) {
+    return clamp(this._aimBase() + s.slot * this.spreadGap, LANE.minX, LANE.maxX)
+  }
+  // 斜射的出手點:從落點往固定一側(出生決定的 diagSide)拉開 diagMax。
+  _launchFor(s, targetX) {
+    if (!s.diagonal) return targetX
+    return clamp(targetX + s.diagSide * this.diagMax, 72, WORLD.w - 72)
+  }
+
   _updateSpears(dt) {
-    // 生成節奏:還沒擲完該躲的支數、空中支數未滿、間隔到了 → 擲一支
+    // 生成節奏:還沒擲滿總槍數、且上一波大致清空(場上 ≤ volley)、間隔到了 → 射下一波(齊射)
     this.spawnTimer -= dt
-    const airborne = this.spears.length
-    if (this.spawnedCount < this.throwsToWin && airborne < this.simultaneous && this.spawnTimer <= 0) {
-      this._spawnSpear()
+    if (this.spawnedCount < this.throwsToWin && this.spawnTimer <= 0 && this.spears.length <= this.volley) {
+      this._spawnVolley()
       this.spawnTimer = this.spawnGap
     }
     const halfHit = DAVID.halfW + SPEAR.halfW
     for (const s of this.spears) {
       if (s.phase === 'telegraph') {
         s.t += dt
-        // ★ 紅色預警線追蹤大衛現在的位置(站著不動就會被瞄準);直射的出手點也跟著移到正上方。
-        s.targetX = this.david.x
-        if (!s.diagonal) s.launchX = this.david.x
+        // ★ 紅色預警線追蹤「預判落點」(瞄你將移到的位置 + 整波扇形分散);斜射保留入射角。
+        s.targetX = this._slotTarget(s)
+        s.launchX = this._launchFor(s, s.targetX)
         if (s.t >= this.telegraphSec) {
-          // 出手:把落點「鎖定」在大衛當下位置 + 一點抖動 → 必須移動才躲得開,站著不動會被打中。
+          // 出手:鎖定當下的預判落點 + 一點抖動。純左右擺脫不掉(會被預判堵),要看空檔鑽。
           s.phase = 'fly'
           s.t = 0
           s.y = s.startY
           const jitter = (Math.random() * 2 - 1) * this.aimJitter
-          s.targetX = clamp(this.david.x + jitter, LANE.minX, LANE.maxX)
-          if (!s.diagonal) s.launchX = s.targetX
+          s.targetX = clamp(this._slotTarget(s) + jitter, LANE.minX, LANE.maxX)
+          s.launchX = this._launchFor(s, s.targetX)
           const dx = s.targetX - s.launchX, dy = HARP_Y - s.startY, m = Math.hypot(dx, dy) || 1
           s.ux = dx / m; s.uy = dy / m
           this.audio.throw()

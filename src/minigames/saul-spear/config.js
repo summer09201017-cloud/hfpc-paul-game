@@ -13,19 +13,20 @@ export const SPEAR = { halfW: 7, len: 76, hitBandY: 30 } // 槍身半寬 / 長�
 export const RULES = { maxSec: 120 } // 單局逾時保險
 
 // 年齡旋鈕(幼稚園/兒童/青少年),同甩石的 kid-age-modes 精神。一個年齡檔綁:
-//   telegraphSec 預警秒數(越久越好躲) · speedY 槍落下速度 · simultaneous 同時最多幾支在空中
-//   moveSpeed 大衛橫移速度(px/s) · throwsToWin 要躲過幾支才過關 · maxHits 最多被打中幾次(超過=溫柔結束)
-//   speakHowto 幼稚園自動語音講玩法 · timed 青少年計時 · feint 假動作(預警處與真正落點不同,逼你看到最後)
-//   spawnGap 兩支槍之間的最短間隔(秒)
-//   diagChance 斜射的機率(0=全直射) · diagMax 斜射時出手點離大衛的水平距離(px,越大越斜越難)
-//   aimJitter 鎖定大衛時的落點抖動(px):越小=越精準瞄你、越要移動才躲得開;越大=常落在身旁(較寬容)
+//   telegraphSec 預警秒數(越久越好躲) · speedY 槍落下速度
+//   volley 一次「齊射」幾支(★真的同時出手,不是錯開):幼1/童2/青3
+//   moveSpeed 大衛橫移速度(px/s) · throwsToWin 總共要面對幾支才過關 · maxHits 最多被打中幾次
+//   spawnGap 兩波齊射之間的間隔(秒) · speakHowto 幼稚園自動語音 · timed 青少年計時
+//   lead 預判量 0..1:鎖定時瞄「大衛將移到的位置」而非現在位置(越大越會堵你前進方向 → 純左右擺脫不掉)
+//   spreadGap 同一波齊射內每支的水平間距(px):圍住一個區域、只留空檔讓你鑽
+//   diagChance 斜射機率(0=全直射) · diagMax 斜射出手點離落點的水平距離(px) · aimJitter 落點抖動(px,越小越準)
 export const AGE = {
-  kinder: { id: 'kinder', label: '幼稚園', emoji: '🧸', sub: '不識字也能玩｜槍很慢、預警久、幾乎不會輸、自動語音',
-            telegraphSec: 1.4, speedY: 320, simultaneous: 1, moveSpeed: 560, throwsToWin: 10, maxHits: 99, spawnGap: 1.15, speakHowto: true, timed: false, feint: false, diagChance: 0, diagMax: 0, aimJitter: 64 },
-  kids:   { id: 'kids',   label: '兒童',   emoji: '🙂', sub: '一般玩法（7–12 歲）｜瞄準你、會斜射、常常兩支齊發',
-            telegraphSec: 0.8, speedY: 540, simultaneous: 2, moveSpeed: 600, throwsToWin: 18, maxHits: 4, spawnGap: 0.62, speakHowto: false, timed: false, feint: false, diagChance: 0.5, diagMax: 240, aimJitter: 24 },
-  teen:   { id: 'teen',   label: '青少年', emoji: '🧑', sub: '挑戰｜三槍齊發＋大角度斜射＋假動作＋計時,預警最短',
-            telegraphSec: 0.48, speedY: 760, simultaneous: 3, moveSpeed: 660, throwsToWin: 28, maxHits: 3, spawnGap: 0.42, speakHowto: false, timed: true, feint: true, diagChance: 0.78, diagMax: 360, aimJitter: 12 },
+  kinder: { id: 'kinder', label: '幼稚園', emoji: '🧸', sub: '不識字也能玩｜一次一支、槍很慢、預警久、幾乎不會輸、自動語音',
+            telegraphSec: 1.4, speedY: 320, volley: 1, moveSpeed: 560, throwsToWin: 10, maxHits: 99, spawnGap: 1.15, speakHowto: true, timed: false, lead: 0, spreadGap: 0, diagChance: 0, diagMax: 0, aimJitter: 64 },
+  kids:   { id: 'kids',   label: '兒童',   emoji: '🙂', sub: '一般玩法（7–12 歲）｜兩支齊射、會預判你的方向、會斜射',
+            telegraphSec: 0.85, speedY: 520, volley: 2, moveSpeed: 600, throwsToWin: 18, maxHits: 4, spawnGap: 1.0, speakHowto: false, timed: false, lead: 0.55, spreadGap: 150, diagChance: 0.5, diagMax: 240, aimJitter: 22 },
+  teen:   { id: 'teen',   label: '青少年', emoji: '🧑', sub: '挑戰｜三槍齊射＋預判方向＋大角度斜射＋計時,預警最短',
+            telegraphSec: 0.52, speedY: 720, volley: 3, moveSpeed: 660, throwsToWin: 30, maxHits: 3, spawnGap: 0.8, speakHowto: false, timed: true, lead: 0.95, spreadGap: 128, diagChance: 0.7, diagMax: 360, aimJitter: 12 },
 }
 export const SPEAR_START_Y = SAUL.y + 40 // 槍離手(開始飛)的高度
 export function getAge(id) {
