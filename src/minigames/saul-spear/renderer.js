@@ -1,6 +1,6 @@
 // 繪製層:只讀 game 狀態、不改狀態。邏輯座標固定 960×540,依畫布父層尺寸等比縮放置中(同甩石)。
 // 美術鐵則(l6-canvas-figure-rules):王戴華麗皇冠、手臂夠長有手掌、槍握在手裡、對話用真經文。
-import { WORLD, SAUL, HARP_Y, LANE, DAVID, SPEAR } from './config.js'
+import { WORLD, SAUL, HARP_Y, LANE, DAVID, SPEAR, SPEAR_START_Y } from './config.js'
 
 export class Renderer {
   constructor(canvas) {
@@ -98,10 +98,12 @@ export class Renderer {
   }
 
   // 臉:眼睛(眼白+眼珠,眼珠可朝 lookY 方向看)+ 眉毛 + 嘴,依 mood 表情。
-  //   'angry'=嫉妒動怒(掃羅)、'calm'=平靜信靠(大衛)、'ouch'=被擦到皺一下(不血腥)。
+  //   'angry'=嫉妒動怒(掃羅)、'nervous'=緊張(大衛閃避中:張大眼+擔憂眉+冷汗)、
+  //   'calm'=平靜(intro/結算)、'ouch'=被擦到皺一下(不血腥)。
   //   cx,cy=頭中心;r=頭半徑;lookY 正=往下看、負=往上看。
   _face(ctx, cx, cy, r, mood, lookY = 0) {
-    const eyeDX = r * 0.42, eyeY = cy + 1, eyeR = 2.2
+    const eyeDX = r * 0.42, eyeY = cy + 1
+    const wide = mood === 'nervous' // 緊張=瞪大眼
     if (mood === 'ouch') { // 緊閉的眼(兩條 ^ 線)
       ctx.strokeStyle = '#26201a'; ctx.lineWidth = 2; ctx.lineCap = 'round'
       ctx.beginPath()
@@ -109,28 +111,42 @@ export class Renderer {
       ctx.moveTo(cx + eyeDX - 3, eyeY + 2); ctx.lineTo(cx + eyeDX, eyeY - 1); ctx.lineTo(cx + eyeDX + 3, eyeY + 2)
       ctx.stroke()
     } else {
-      ctx.fillStyle = '#fbf6ec' // 眼白
-      ctx.beginPath(); ctx.ellipse(cx - eyeDX, eyeY, eyeR + 1.6, eyeR + 2.2, 0, 0, Math.PI * 2); ctx.fill()
-      ctx.beginPath(); ctx.ellipse(cx + eyeDX, eyeY, eyeR + 1.6, eyeR + 2.2, 0, 0, Math.PI * 2); ctx.fill()
-      ctx.fillStyle = '#26201a' // 眼珠(朝 lookY)
-      ctx.beginPath(); ctx.arc(cx - eyeDX, eyeY + lookY, eyeR, 0, Math.PI * 2); ctx.fill()
-      ctx.beginPath(); ctx.arc(cx + eyeDX, eyeY + lookY, eyeR, 0, Math.PI * 2); ctx.fill()
+      const ew = (wide ? 2.6 : 1.6), eh = (wide ? 3.2 : 2.2), eR = (wide ? 2.0 : 2.2)
+      ctx.fillStyle = '#fbf6ec' // 眼白(緊張時更大)
+      ctx.beginPath(); ctx.ellipse(cx - eyeDX, eyeY, eR + ew, eR + eh, 0, 0, Math.PI * 2); ctx.fill()
+      ctx.beginPath(); ctx.ellipse(cx + eyeDX, eyeY, eR + ew, eR + eh, 0, 0, Math.PI * 2); ctx.fill()
+      ctx.fillStyle = '#26201a' // 眼珠(朝 lookY;緊張時瞳孔小一點=更瞪大)
+      const pr = wide ? 1.8 : 2.2
+      ctx.beginPath(); ctx.arc(cx - eyeDX, eyeY + lookY, pr, 0, Math.PI * 2); ctx.fill()
+      ctx.beginPath(); ctx.arc(cx + eyeDX, eyeY + lookY, pr, 0, Math.PI * 2); ctx.fill()
     }
     // 眉毛
     ctx.strokeStyle = '#3a2a1c'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'
     ctx.beginPath()
     if (mood === 'angry') { // 內低外高(怒/嫉妒)
-      ctx.moveTo(cx - eyeDX - 4, eyeY - 6); ctx.lineTo(cx - eyeDX + 4, eyeY - 2)
-      ctx.moveTo(cx + eyeDX + 4, eyeY - 6); ctx.lineTo(cx + eyeDX - 4, eyeY - 2)
+      ctx.moveTo(cx - eyeDX - 4, eyeY - 7); ctx.lineTo(cx - eyeDX + 4, eyeY - 3)
+      ctx.moveTo(cx + eyeDX + 4, eyeY - 7); ctx.lineTo(cx + eyeDX - 4, eyeY - 3)
+    } else if (mood === 'nervous') { // 內高外低(擔憂/緊張),且抬高離眼
+      ctx.moveTo(cx - eyeDX - 4, eyeY - 7); ctx.lineTo(cx - eyeDX + 4, eyeY - 10)
+      ctx.moveTo(cx + eyeDX + 4, eyeY - 7); ctx.lineTo(cx + eyeDX - 4, eyeY - 10)
     } else { // 平靜:平眉
       ctx.moveTo(cx - eyeDX - 4, eyeY - 6); ctx.lineTo(cx - eyeDX + 4, eyeY - 6)
       ctx.moveTo(cx + eyeDX - 4, eyeY - 6); ctx.lineTo(cx + eyeDX + 4, eyeY - 6)
     }
     ctx.stroke()
+    // 冷汗(緊張)
+    if (mood === 'nervous') {
+      ctx.fillStyle = 'rgba(120,180,235,0.92)'
+      ctx.beginPath(); ctx.ellipse(cx + r * 0.92, cy - r * 0.1, 2.4, 3.4, 0, 0, Math.PI * 2); ctx.fill()
+    }
     // 嘴
     const my = cy + r * 0.5
     if (mood === 'ouch') { // 小張口
       ctx.fillStyle = '#7a3b2b'; ctx.beginPath(); ctx.ellipse(cx, my, 3, 2.6, 0, 0, Math.PI * 2); ctx.fill()
+      return
+    }
+    if (mood === 'nervous') { // 緊張:小小張口的扁橢圓(屏息)
+      ctx.fillStyle = '#7a3b2b'; ctx.beginPath(); ctx.ellipse(cx, my + 1, 3.4, 1.8, 0, 0, Math.PI * 2); ctx.fill()
       return
     }
     ctx.strokeStyle = '#7a3b2b'; ctx.lineWidth = 2; ctx.lineCap = 'round'
@@ -175,8 +191,9 @@ export class Renderer {
     const tilt = game.david.flinch > 0 ? Math.sin(game.david.flinch * 30) * 0.12 : 0
     ctx.save(); ctx.translate(x, y); ctx.rotate(tilt); ctx.translate(-x, -y)
     const p = this._person(ctx, x, y, { body: '#3a7d5a', leg: '#2c5d44', hair: '#5a3a22' })
-    // 臉:平靜信靠地仰望掃羅;被擦到時皺一下(不血腥)
-    this._face(ctx, x, y - 118, 15, game.david.flinch > 0 ? 'ouch' : 'calm', -1.4)
+    // 臉:閃避中緊張地仰望掃羅(瞪大眼+冷汗);被擦到時皺一下(不血腥);intro/結算則平靜信靠
+    const mood = game.david.flinch > 0 ? 'ouch' : game.state === 'dodge' ? 'nervous' : 'calm'
+    this._face(ctx, x, y - 118, 15, mood, -1.4)
     // 抱著豎琴(lyre)在左臂
     ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 4
     ctx.beginPath(); ctx.arc(x - 30, y - 78, 16, -0.4, Math.PI + 0.4); ctx.stroke()
@@ -196,30 +213,40 @@ export class Renderer {
       if (s.phase !== 'telegraph') continue
       const k = Math.min(1, s.t / game.telegraphSec)
       const a = 0.25 + 0.55 * k
+      // 紅色預警線:從出手點(launchX,上方)連到落點(targetX,大衛所在);斜射就是斜線。追蹤大衛。
       ctx.strokeStyle = `rgba(224,72,60,${a})`; ctx.lineWidth = 3; ctx.setLineDash([8, 8])
-      ctx.beginPath(); ctx.moveTo(s.x, SAUL.y + 30); ctx.lineTo(s.x, HARP_Y); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(s.launchX, SPEAR_START_Y); ctx.lineTo(s.targetX, HARP_Y); ctx.stroke()
       ctx.setLineDash([])
-      // 落點 ▼
+      // 落點 ▼(在大衛當下位置)
       ctx.fillStyle = `rgba(224,72,60,${0.5 + 0.5 * k})`
-      ctx.beginPath(); ctx.moveTo(s.x - 9, HARP_Y - 18); ctx.lineTo(s.x + 9, HARP_Y - 18); ctx.lineTo(s.x, HARP_Y - 4); ctx.closePath(); ctx.fill()
+      ctx.beginPath(); ctx.moveTo(s.targetX - 9, HARP_Y - 18); ctx.lineTo(s.targetX + 9, HARP_Y - 18); ctx.lineTo(s.targetX, HARP_Y - 4); ctx.closePath(); ctx.fill()
     }
   }
 
-  _spear(ctx, x, y, len) {
+  // 沿行進方向(ux,uy)畫槍:tip 在 (x,y),槍身往後 len,槍頭朝行進方向。直射 uy=1。
+  _spear(ctx, x, y, len, ux = 0, uy = 1) {
+    const tailX = x - ux * len, tailY = y - uy * len
     ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 5; ctx.lineCap = 'round'
-    ctx.beginPath(); ctx.moveTo(x, y - len); ctx.lineTo(x, y); ctx.stroke()
-    ctx.fillStyle = '#dfe7ee' // 槍頭(朝下)
-    ctx.beginPath(); ctx.moveTo(x - 7, y - 4); ctx.lineTo(x + 7, y - 4); ctx.lineTo(x, y + 12); ctx.closePath(); ctx.fill()
+    ctx.beginPath(); ctx.moveTo(tailX, tailY); ctx.lineTo(x, y); ctx.stroke()
+    // 槍頭(三角形,尖端朝行進方向 (ux,uy);px,py = 垂直方向)
+    const px = -uy, py = ux
+    ctx.fillStyle = '#dfe7ee'
+    ctx.beginPath()
+    ctx.moveTo(x + ux * 12, y + uy * 12)
+    ctx.lineTo(x + px * 7 - ux * 2, y + py * 7 - uy * 2)
+    ctx.lineTo(x - px * 7 - ux * 2, y - py * 7 - uy * 2)
+    ctx.closePath(); ctx.fill()
   }
 
   _spears(ctx, game) {
-    for (const s of game.spears) if (s.phase === 'fly') this._spear(ctx, s.x, s.y, SPEAR.len)
+    for (const s of game.spears) if (s.phase === 'fly') this._spear(ctx, s.x, s.y, SPEAR.len, s.ux, s.uy)
   }
 
   _stuck(ctx, game) {
-    for (const s of game.stuck) { // 躲過的槍插在牆/地上(撒上 19:10)
-      ctx.strokeStyle = '#7a4f26'; ctx.lineWidth = 4; ctx.globalAlpha = 0.85
-      ctx.beginPath(); ctx.moveTo(s.x, s.y - 40); ctx.lineTo(s.x, s.y); ctx.stroke()
+    for (const s of game.stuck) { // 躲過的槍插在牆/地上(撒上 19:10),保留入射角度
+      const ux = s.ux || 0, uy = s.uy || 1
+      ctx.strokeStyle = '#7a4f26'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.globalAlpha = 0.85
+      ctx.beginPath(); ctx.moveTo(s.x - ux * 40, s.y - uy * 40); ctx.lineTo(s.x, s.y); ctx.stroke()
       ctx.globalAlpha = 1
     }
   }

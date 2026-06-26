@@ -1,6 +1,8 @@
 // 掃羅擲槍・大衛閃避 主迴圈 + 狀態機。嵌入契約:new Game(canvas,{embed,onComplete,age})、boot()、destroy()。
 // 狀態:intro →(確認)dodge →(撐過所有的槍)win ／(被打中超過上限)lose。大衛全程不還手——只躲。
-import { WORLD, SAUL, HARP_Y, LANE, DAVID, SPEAR, RULES, getAge, survivalStars } from './config.js'
+import { WORLD, SAUL, HARP_Y, LANE, DAVID, SPEAR, SPEAR_START_Y, RULES, getAge, survivalStars } from './config.js'
+
+const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
 import { CONTENT } from './content.js'
 import { Renderer } from './renderer.js'
 import { Input } from './input.js'
@@ -30,6 +32,9 @@ export class Game {
     this.spawnGap = this.age.spawnGap
     this.timed = !!this.age.timed
     this.feint = !!this.age.feint
+    this.diagChance = this.age.diagChance || 0
+    this.diagMax = this.age.diagMax || 0
+    this.aimJitter = this.age.aimJitter ?? 24
 
     this.david = { x: DAVID.startX, flinch: 0 }
     this.spears = [] // { phase:'telegraph'|'fly', x, y, t, resolved }
@@ -94,7 +99,8 @@ export class Game {
 
     switch (this.state) {
       case 'intro':
-        if (confirm) this._startDodge()
+        // 按空白/點畫面開始;★也接受方向鍵開始(否則玩家按方向鍵卻沒反應,以為「大衛不會動」)
+        if (confirm || this.input.dir() !== 0) this._startDodge()
         break
       case 'dodge':
         this._moveDavid(dt)
@@ -120,9 +126,17 @@ export class Game {
   }
 
   _spawnSpear() {
-    const margin = 40
-    const targetX = LANE.minX + margin + Math.random() * (LANE.maxX - LANE.minX - margin * 2)
-    this.spears.push({ phase: 'telegraph', x: targetX, y: SAUL.y, t: 0, resolved: false })
+    // 斜射:出手點(launchX)偏到大衛一側;直射:出手點就在大衛正上方。落點(targetX)在預警期間追蹤大衛。
+    const diagonal = this.diagChance > 0 && Math.random() < this.diagChance
+    let launchX = this.david.x
+    if (diagonal) {
+      const side = Math.random() < 0.5 ? -1 : 1
+      launchX = clamp(this.david.x + side * (this.diagMax * 0.55 + Math.random() * this.diagMax * 0.45), 72, WORLD.w - 72)
+    }
+    this.spears.push({
+      phase: 'telegraph', diagonal, launchX, targetX: this.david.x,
+      x: launchX, y: SAUL.y, startY: SPEAR_START_Y, t: 0, resolved: false, ux: 0, uy: 1,
+    })
     this.spawnedCount += 1
     this.audio.warn()
   }
@@ -139,16 +153,26 @@ export class Game {
     for (const s of this.spears) {
       if (s.phase === 'telegraph') {
         s.t += dt
-        // 青少年假動作:預警期間落點微微朝大衛現在位置漂移,逼你看到最後一刻
-        if (this.feint) s.x += (this.david.x - s.x) * 0.6 * dt
+        // ★ 紅色預警線追蹤大衛現在的位置(站著不動就會被瞄準);直射的出手點也跟著移到正上方。
+        s.targetX = this.david.x
+        if (!s.diagonal) s.launchX = this.david.x
         if (s.t >= this.telegraphSec) {
+          // 出手:把落點「鎖定」在大衛當下位置 + 一點抖動 → 必須移動才躲得開,站著不動會被打中。
           s.phase = 'fly'
           s.t = 0
-          if (this.feint) s.x += (this.david.x - s.x) * 0.25 // 出手瞬間再修正一點(假動作)
+          s.y = s.startY
+          const jitter = (Math.random() * 2 - 1) * this.aimJitter
+          s.targetX = clamp(this.david.x + jitter, LANE.minX, LANE.maxX)
+          if (!s.diagonal) s.launchX = s.targetX
+          const dx = s.targetX - s.launchX, dy = HARP_Y - s.startY, m = Math.hypot(dx, dy) || 1
+          s.ux = dx / m; s.uy = dy / m
           this.audio.throw()
         }
-      } else { // fly
+      } else { // fly:沿 launchX→targetX 直線等速下落(斜射就是斜線)
         s.y += this.speedY * dt
+        const span = HARP_Y - s.startY
+        const p = span > 0 ? clamp((s.y - s.startY) / span, 0, 1) : 1
+        s.x = s.launchX + (s.targetX - s.launchX) * p
         if (!s.resolved && s.y >= HARP_Y) {
           s.resolved = true
           if (Math.abs(s.x - this.david.x) < halfHit) this._onHit(s)
@@ -163,7 +187,7 @@ export class Game {
   _onDodged(s) {
     this.survivedCount += 1
     this.audio.thunk()
-    this.stuck.push({ x: s.x, y: HARP_Y + 8 }) // 槍刺入牆(撒上 19:10)
+    this.stuck.push({ x: s.x, y: HARP_Y + 8, ux: s.ux, uy: s.uy }) // 槍刺入牆(撒上 19:10),保留入射角度
     if (this.stuck.length > 14) this.stuck.shift()
     if (Math.random() < 0.4) this.toast = { text: CONTENT.dodged[Math.floor(Math.random() * CONTENT.dodged.length)], t: 1.4, good: true }
   }

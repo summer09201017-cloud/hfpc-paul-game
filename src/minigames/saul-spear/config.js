@@ -17,14 +17,17 @@ export const RULES = { maxSec: 120 } // 單局逾時保險
 //   moveSpeed 大衛橫移速度(px/s) · throwsToWin 要躲過幾支才過關 · maxHits 最多被打中幾次(超過=溫柔結束)
 //   speakHowto 幼稚園自動語音講玩法 · timed 青少年計時 · feint 假動作(預警處與真正落點不同,逼你看到最後)
 //   spawnGap 兩支槍之間的最短間隔(秒)
+//   diagChance 斜射的機率(0=全直射) · diagMax 斜射時出手點離大衛的水平距離(px,越大越斜越難)
+//   aimJitter 鎖定大衛時的落點抖動(px):越小=越精準瞄你、越要移動才躲得開;越大=常落在身旁(較寬容)
 export const AGE = {
   kinder: { id: 'kinder', label: '幼稚園', emoji: '🧸', sub: '不識字也能玩｜槍很慢、預警久、幾乎不會輸、自動語音',
-            telegraphSec: 1.5, speedY: 280, simultaneous: 1, moveSpeed: 540, throwsToWin: 5, maxHits: 99, spawnGap: 1.5, speakHowto: true, timed: false, feint: false },
-  kids:   { id: 'kids',   label: '兒童',   emoji: '🙂', sub: '一般玩法（7–12 歲）｜槍變快、預警短一點',
-            telegraphSec: 0.9, speedY: 440, simultaneous: 1, moveSpeed: 580, throwsToWin: 7, maxHits: 3, spawnGap: 1.0, speakHowto: false, timed: false, feint: false },
-  teen:   { id: 'teen',   label: '青少年', emoji: '🧑', sub: '挑戰｜雙槍齊發＋假動作＋計時,預警最短',
-            telegraphSec: 0.55, speedY: 620, simultaneous: 2, moveSpeed: 640, throwsToWin: 9, maxHits: 2, spawnGap: 0.75, speakHowto: false, timed: true, feint: true },
+            telegraphSec: 1.4, speedY: 320, simultaneous: 1, moveSpeed: 560, throwsToWin: 10, maxHits: 99, spawnGap: 1.15, speakHowto: true, timed: false, feint: false, diagChance: 0, diagMax: 0, aimJitter: 64 },
+  kids:   { id: 'kids',   label: '兒童',   emoji: '🙂', sub: '一般玩法（7–12 歲）｜瞄準你、會斜射、常常兩支齊發',
+            telegraphSec: 0.8, speedY: 540, simultaneous: 2, moveSpeed: 600, throwsToWin: 18, maxHits: 4, spawnGap: 0.62, speakHowto: false, timed: false, feint: false, diagChance: 0.5, diagMax: 240, aimJitter: 24 },
+  teen:   { id: 'teen',   label: '青少年', emoji: '🧑', sub: '挑戰｜三槍齊發＋大角度斜射＋假動作＋計時,預警最短',
+            telegraphSec: 0.48, speedY: 760, simultaneous: 3, moveSpeed: 660, throwsToWin: 28, maxHits: 3, spawnGap: 0.42, speakHowto: false, timed: true, feint: true, diagChance: 0.78, diagMax: 360, aimJitter: 12 },
 }
+export const SPEAR_START_Y = SAUL.y + 40 // 槍離手(開始飛)的高度
 export function getAge(id) {
   return AGE[id] || AGE.kids
 }
