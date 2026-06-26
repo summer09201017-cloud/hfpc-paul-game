@@ -3,9 +3,9 @@
 > 依 `/quiz` / [[quiz-authoring]] 流程產的**草稿**:這是把但以理問答站從「兒童事實題」補上一層**青少年深題**(神的主權、永遠的國、信心的代價、以神為中心)。
 > 消費端:`src/data/journey-daniel.json` 的 `quizzes[]`(格式 `{ question, options[4], answerIndex, explanation, reward }`)。
 >
-> ⚠️ **上線前一定要做(本系列第一鐵則)**:
-> 1. **逐題 `/cuv-check`** 下面每題的 `scripture` 出處(這台沒有 cuv 語料,我**沒有也不會**憑記憶填和合本經文;`explanation` 是教導文案、非經文原文,但出處務必核對)。
-> 2. **牧者審**:標 🔴 的題涉及教義/基督論/信心本質,用 [[pastor-review]] 打包送審,**審過才 merge main**(paul repo 鐵則:牧者通過前不 merge)。
+> ⚠️ **上線前一定要做**:
+> 1. ✅ **經文出處已核對(2026-06-26)**:全部 `scripture` ref 已對照和合本 `unv.json`(= cuv-scripture-mcp 預設版本)逐題核對,出處正確(3:18「即或不然」、5:26-28 數算/稱/分裂、7:13-14 人子得國度、6:10 一日三次禱告…皆相符)。`explanation` 是教導文案、非經文原文。
+> 2. **仍需牧者審**(cuv 只是第一道閘):標 🔴 的題涉及教義/基督論/信心本質,用 [[pastor-review]] 打包送審,**審過才 merge main**(paul repo 鐵則:牧者通過前不 merge)。
 > 3. 過 `npm run validate`(`answerIndex` 不越界、選項 4 個、id/欄位齊全)再併入 `journey-daniel.json`。
 
 ## 教導重點(先有重點,再回填題目)
