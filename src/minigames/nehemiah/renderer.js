@@ -63,10 +63,11 @@ export class Renderer {
     ctx.fillStyle = '#7e6a43'; ctx.fillRect(0, HARP_Y, WORLD.w, 5)
   }
 
-  // 城牆隨「躲過數 / 總數」升高(進度感)。畫在底部、工人前(builder 之後畫,故工人在牆前)。
+  // 城牆隨「躲過數 / 總數」升高(進度感)。畫在底部當背景,工人在牆「前」(builder 之後畫,故不會被擋)。
+  // maxH = 蓋滿時的牆高(px)。想更高就調大;工人永遠畫在牆前不會被蓋住。
   _wall(ctx, game) {
     const prog = Math.min(1, (game.survivedCount || 0) / (game.throwsToWin || 1))
-    const baseY = WORLD.h, maxH = 58, h = Math.round(maxH * prog)
+    const baseY = WORLD.h, maxH = 150, h = Math.round(maxH * prog)
     if (h <= 0) return
     const topY = baseY - h
     ctx.fillStyle = '#bda469'; ctx.fillRect(0, topY, WORLD.w, h)
