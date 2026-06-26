@@ -23,10 +23,10 @@ export const RULES = { maxSec: 120 } // 單局逾時保險
 export const AGE = {
   kinder: { id: 'kinder', label: '幼稚園', emoji: '🧸', sub: '不識字也能玩｜一次一支、槍很慢、預警久、幾乎不會輸、自動語音',
             telegraphSec: 1.4, speedY: 320, volley: 1, moveSpeed: 560, throwsToWin: 10, maxHits: 99, spawnGap: 1.15, speakHowto: true, timed: false, lead: 0, spreadGap: 0, diagChance: 0, diagMax: 0, aimJitter: 64 },
-  kids:   { id: 'kids',   label: '兒童',   emoji: '🙂', sub: '一般玩法（7–12 歲）｜兩支齊射、會預判你的方向、會斜射',
-            telegraphSec: 0.85, speedY: 520, volley: 2, moveSpeed: 600, throwsToWin: 18, maxHits: 4, spawnGap: 1.0, speakHowto: false, timed: false, lead: 0.55, spreadGap: 150, diagChance: 0.5, diagMax: 240, aimJitter: 22 },
-  teen:   { id: 'teen',   label: '青少年', emoji: '🧑', sub: '挑戰｜三槍齊射＋預判方向＋大角度斜射＋計時,預警最短',
-            telegraphSec: 0.52, speedY: 720, volley: 3, moveSpeed: 660, throwsToWin: 30, maxHits: 3, spawnGap: 0.8, speakHowto: false, timed: true, lead: 0.95, spreadGap: 128, diagChance: 0.7, diagMax: 360, aimJitter: 12 },
+  kids:   { id: 'kids',   label: '兒童',   emoji: '🙂', sub: '一般玩法（7–12 歲）｜兩支齊射:一支瞄你、一支堵你去向',
+            telegraphSec: 0.85, speedY: 560, volley: 2, moveSpeed: 470, throwsToWin: 18, maxHits: 4, spawnGap: 1.0, speakHowto: false, timed: false, lead: 0.9, spreadGap: 120, diagChance: 0.5, diagMax: 240, aimJitter: 22 },
+  teen:   { id: 'teen',   label: '青少年', emoji: '🧑', sub: '挑戰｜三槍齊射:瞄你+堵去向+堵退路,大角度斜射+計時',
+            telegraphSec: 0.52, speedY: 760, volley: 3, moveSpeed: 520, throwsToWin: 30, maxHits: 3, spawnGap: 0.8, speakHowto: false, timed: true, lead: 1.0, spreadGap: 105, diagChance: 0.7, diagMax: 360, aimJitter: 12 },
 }
 export const SPEAR_START_Y = SAUL.y + 40 // 槍離手(開始飛)的高度
 export function getAge(id) {

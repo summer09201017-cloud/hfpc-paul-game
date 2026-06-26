@@ -127,23 +127,20 @@ export class Game {
     if (this.david.x > LANE.maxX) this.david.x = LANE.maxX
   }
 
-  // 預判鎖定點:大衛現在位置 + 朝移動方向預判(lead 越大越堵你前進方向)。
-  _aimBase() {
-    const flyTime = (HARP_Y - SPEAR_START_Y) / this.speedY
-    return clamp(this.david.x + this.david.vx * this.lead * flyTime, LANE.minX, LANE.maxX)
-  }
-
-  // 一波「齊射」:同時射出 volley 支,各佔一個 slot(扇形分散),全部圍著「預判點」鋪開,只留空檔讓你鑽。
+  // 一波「齊射」:同時射出 volley 支,各帶一個「角色」分工——
+  //   anchor=瞄你現在的位置(站著不動就中)、lead=瞄你正在移動要去的方向(一直往一邊衝就中)、
+  //   cover=瞄你回頭逃的那一側(想反向也堵)。三者一起 → 純左右擺、站著、亂衝都躲不掉,要看空檔。
   _spawnVolley() {
     const n = Math.min(this.volley, this.throwsToWin - this.spawnedCount)
     if (n <= 0) return
+    const roles = ['anchor', 'lead', 'cover', 'cover', 'cover']
     for (let i = 0; i < n; i++) {
-      const slot = i - (n - 1) / 2 // -..0..+ 對稱分散
+      const role = n === 1 ? 'anchor' : roles[i] || 'cover'
+      const coverSign = i % 2 === 0 ? 1 : -1 // 多支 cover 時左右錯開
       const diagonal = this.diagMax > 0 && Math.random() < this.diagChance
-      // 斜射方向「出生時決定一次」(別每幀重算,否則預警線會抖):有 slot 就照 slot 那側,正中央隨機。
-      const diagSide = !diagonal ? 0 : slot > 0 ? 1 : slot < 0 ? -1 : (Math.random() < 0.5 ? -1 : 1)
+      const diagSide = !diagonal ? 0 : Math.random() < 0.5 ? -1 : 1 // 斜射方向出生決定一次(線才不抖)
       this.spears.push({
-        phase: 'telegraph', slot, diagonal, diagSide,
+        phase: 'telegraph', role, coverSign, diagonal, diagSide,
         launchX: this.david.x, targetX: this.david.x,
         x: this.david.x, y: SAUL.y, startY: SPEAR_START_Y, t: 0, resolved: false, ux: 0, uy: 1,
       })
@@ -152,9 +149,15 @@ export class Game {
     this.audio.warn()
   }
 
-  // 這支槍此刻「瞄準的落點」= 預判點 + 自己的 slot 偏移(整波鋪開圍住大衛)。
-  _slotTarget(s) {
-    return clamp(this._aimBase() + s.slot * this.spreadGap, LANE.minX, LANE.maxX)
+  // 這支槍此刻瞄準的落點,依角色而定。站著→anchor 中;一直衝→lead 中;回頭→cover 中。
+  _spearTarget(s) {
+    const flyTime = (HARP_Y - SPEAR_START_Y) / this.speedY
+    const lead = this.david.vx * this.lead * flyTime
+    const dir = Math.sign(this.david.vx)
+    let tx = this.david.x // anchor:瞄現在位置
+    if (s.role === 'lead') tx = this.david.x + lead // 瞄你要去的方向
+    else if (s.role === 'cover') tx = this.david.x - dir * this.spreadGap * s.coverSign + lead * 0.3 // 瞄回頭逃那側
+    return clamp(tx, LANE.minX, LANE.maxX)
   }
   // 斜射的出手點:從落點往固定一側(出生決定的 diagSide)拉開 diagMax。
   _launchFor(s, targetX) {
@@ -173,8 +176,8 @@ export class Game {
     for (const s of this.spears) {
       if (s.phase === 'telegraph') {
         s.t += dt
-        // ★ 紅色預警線追蹤「預判落點」(瞄你將移到的位置 + 整波扇形分散);斜射保留入射角。
-        s.targetX = this._slotTarget(s)
+        // ★ 紅色預警線追蹤「該角色的瞄準落點」(anchor 瞄你現在/lead 瞄你去向/cover 瞄你退路);斜射保留入射角。
+        s.targetX = this._spearTarget(s)
         s.launchX = this._launchFor(s, s.targetX)
         if (s.t >= this.telegraphSec) {
           // 出手:鎖定當下的預判落點 + 一點抖動。純左右擺脫不掉(會被預判堵),要看空檔鑽。
@@ -182,7 +185,7 @@ export class Game {
           s.t = 0
           s.y = s.startY
           const jitter = (Math.random() * 2 - 1) * this.aimJitter
-          s.targetX = clamp(this._slotTarget(s) + jitter, LANE.minX, LANE.maxX)
+          s.targetX = clamp(this._spearTarget(s) + jitter, LANE.minX, LANE.maxX)
           s.launchX = this._launchFor(s, s.targetX)
           const dx = s.targetX - s.launchX, dy = HARP_Y - s.startY, m = Math.hypot(dx, dy) || 1
           s.ux = dx / m; s.uy = dy / m
