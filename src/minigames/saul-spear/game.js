@@ -100,7 +100,9 @@ export class Game {
         this._moveDavid(dt)
         this._updateSpears(dt)
         if (this.timed) this.clock += dt
-        if (this.survivedCount >= this.throwsToWin) this._win()
+        // 過關 = 所有槍都擲完且場上清空(不管躲過幾支、擦到幾支——擦到沒超過上限就還在)。
+        // ★ 不可用「躲過數 >= 目標」當條件:被擦到的槍不算躲過,但也不會再生新槍 → 會卡死永不結束。
+        if (this.spawnedCount >= this.throwsToWin && this.spears.length === 0) this._win()
         else if (this.clock > RULES.maxSec) this._win() // 逾時保險:當作撐過
         break
       case 'win':

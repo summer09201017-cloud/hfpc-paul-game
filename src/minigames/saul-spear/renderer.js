@@ -97,9 +97,55 @@ export class Renderer {
     ctx.fillStyle = '#e9c39a'; ctx.beginPath(); ctx.arc(hx, hy, 5, 0, Math.PI * 2); ctx.fill() // 手掌
   }
 
+  // 臉:眼睛(眼白+眼珠,眼珠可朝 lookY 方向看)+ 眉毛 + 嘴,依 mood 表情。
+  //   'angry'=嫉妒動怒(掃羅)、'calm'=平靜信靠(大衛)、'ouch'=被擦到皺一下(不血腥)。
+  //   cx,cy=頭中心;r=頭半徑;lookY 正=往下看、負=往上看。
+  _face(ctx, cx, cy, r, mood, lookY = 0) {
+    const eyeDX = r * 0.42, eyeY = cy + 1, eyeR = 2.2
+    if (mood === 'ouch') { // 緊閉的眼(兩條 ^ 線)
+      ctx.strokeStyle = '#26201a'; ctx.lineWidth = 2; ctx.lineCap = 'round'
+      ctx.beginPath()
+      ctx.moveTo(cx - eyeDX - 3, eyeY + 2); ctx.lineTo(cx - eyeDX, eyeY - 1); ctx.lineTo(cx - eyeDX + 3, eyeY + 2)
+      ctx.moveTo(cx + eyeDX - 3, eyeY + 2); ctx.lineTo(cx + eyeDX, eyeY - 1); ctx.lineTo(cx + eyeDX + 3, eyeY + 2)
+      ctx.stroke()
+    } else {
+      ctx.fillStyle = '#fbf6ec' // 眼白
+      ctx.beginPath(); ctx.ellipse(cx - eyeDX, eyeY, eyeR + 1.6, eyeR + 2.2, 0, 0, Math.PI * 2); ctx.fill()
+      ctx.beginPath(); ctx.ellipse(cx + eyeDX, eyeY, eyeR + 1.6, eyeR + 2.2, 0, 0, Math.PI * 2); ctx.fill()
+      ctx.fillStyle = '#26201a' // 眼珠(朝 lookY)
+      ctx.beginPath(); ctx.arc(cx - eyeDX, eyeY + lookY, eyeR, 0, Math.PI * 2); ctx.fill()
+      ctx.beginPath(); ctx.arc(cx + eyeDX, eyeY + lookY, eyeR, 0, Math.PI * 2); ctx.fill()
+    }
+    // 眉毛
+    ctx.strokeStyle = '#3a2a1c'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'
+    ctx.beginPath()
+    if (mood === 'angry') { // 內低外高(怒/嫉妒)
+      ctx.moveTo(cx - eyeDX - 4, eyeY - 6); ctx.lineTo(cx - eyeDX + 4, eyeY - 2)
+      ctx.moveTo(cx + eyeDX + 4, eyeY - 6); ctx.lineTo(cx + eyeDX - 4, eyeY - 2)
+    } else { // 平靜:平眉
+      ctx.moveTo(cx - eyeDX - 4, eyeY - 6); ctx.lineTo(cx - eyeDX + 4, eyeY - 6)
+      ctx.moveTo(cx + eyeDX - 4, eyeY - 6); ctx.lineTo(cx + eyeDX + 4, eyeY - 6)
+    }
+    ctx.stroke()
+    // 嘴
+    const my = cy + r * 0.5
+    if (mood === 'ouch') { // 小張口
+      ctx.fillStyle = '#7a3b2b'; ctx.beginPath(); ctx.ellipse(cx, my, 3, 2.6, 0, 0, Math.PI * 2); ctx.fill()
+      return
+    }
+    ctx.strokeStyle = '#7a3b2b'; ctx.lineWidth = 2; ctx.lineCap = 'round'
+    ctx.beginPath()
+    if (mood === 'angry') ctx.moveTo(cx - 5, my + 2), ctx.quadraticCurveTo(cx, my - 2, cx + 5, my + 2) // 下撇怒嘴(∩)
+    else ctx.moveTo(cx - 5, my - 1), ctx.quadraticCurveTo(cx, my + 3, cx + 5, my - 1) // 平靜微笑(∪)
+    ctx.stroke()
+  }
+
   _saul(ctx, game) {
     const x = SAUL.x, y = SAUL.y + 70
+    const winding = game.spears && game.spears.some((s) => s.phase === 'telegraph')
     const p = this._person(ctx, x, y, { body: '#6b3fa0', leg: '#4a2d70', hair: '#3a2a1c' })
+    // 臉:嫉妒動怒(撒上 18:8-9),向下盯著大衛
+    this._face(ctx, x, y - 118, 15, 'angry', 1.4)
     // 華麗皇冠(王)
     ctx.fillStyle = '#e8c34a'
     ctx.beginPath()
@@ -109,7 +155,6 @@ export class Renderer {
     ctx.closePath(); ctx.fill()
     ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.arc(x, y - 138, 3, 0, Math.PI * 2); ctx.fill()
     // 手臂持槍:有 telegraph 在揮、有 fly 收手;否則自然下垂
-    const winding = game.spears && game.spears.some((s) => s.phase === 'telegraph')
     const hx = winding ? x + 40 : x + 26
     const hy = winding ? y - 118 : y - 86
     this._arm(ctx, x + 14, p.shoulderY, hx, hy, '#6b3fa0')
@@ -130,6 +175,8 @@ export class Renderer {
     const tilt = game.david.flinch > 0 ? Math.sin(game.david.flinch * 30) * 0.12 : 0
     ctx.save(); ctx.translate(x, y); ctx.rotate(tilt); ctx.translate(-x, -y)
     const p = this._person(ctx, x, y, { body: '#3a7d5a', leg: '#2c5d44', hair: '#5a3a22' })
+    // 臉:平靜信靠地仰望掃羅;被擦到時皺一下(不血腥)
+    this._face(ctx, x, y - 118, 15, game.david.flinch > 0 ? 'ouch' : 'calm', -1.4)
     // 抱著豎琴(lyre)在左臂
     ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 4
     ctx.beginPath(); ctx.arc(x - 30, y - 78, 16, -0.4, Math.PI + 0.4); ctx.stroke()
