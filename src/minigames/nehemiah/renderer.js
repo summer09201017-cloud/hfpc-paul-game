@@ -67,7 +67,7 @@ export class Renderer {
   // maxH = 蓋滿時的牆高(px)。想更高就調大;工人永遠畫在牆前不會被蓋住。
   _wall(ctx, game) {
     const prog = Math.min(1, (game.survivedCount || 0) / (game.throwsToWin || 1))
-    const baseY = WORLD.h, maxH = 150, h = Math.round(maxH * prog)
+    const baseY = WORLD.h, maxH = 210, h = Math.round(maxH * prog)
     if (h <= 0) return
     const topY = baseY - h
     ctx.fillStyle = '#bda469'; ctx.fillRect(0, topY, WORLD.w, h)
@@ -198,16 +198,16 @@ export class Renderer {
     const p = this._person(ctx, x, y, { body: '#7a6a3a', leg: '#4a3f25', hair: '#3a2a1a' })
     const mood = game.david.flinch > 0 ? 'ouch' : game.state === 'dodge' ? 'nervous' : 'calm'
     this._face(ctx, x, y - 118, 15, mood, -1.4)
-    // 右手抹刀(做工)
-    this._arm(ctx, x + 14, p.shoulderY, x + 26, y - 78, '#7a6a3a')
+    // 右手抹刀(做工)——手臂加長,往外伸出去砌牆
+    this._arm(ctx, x + 14, p.shoulderY, x + 40, y - 60, '#7a6a3a')
     ctx.strokeStyle = '#9aa3ad'; ctx.lineWidth = 3
-    ctx.beginPath(); ctx.moveTo(x + 26, y - 78); ctx.lineTo(x + 38, y - 86); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x + 40, y - 60); ctx.lineTo(x + 54, y - 68); ctx.stroke()
     ctx.fillStyle = '#cfd8e3'
-    ctx.beginPath(); ctx.moveTo(x + 36, y - 82); ctx.lineTo(x + 49, y - 90); ctx.lineTo(x + 40, y - 93); ctx.closePath(); ctx.fill()
-    // 左手抱建材(磚)
-    this._arm(ctx, x - 14, p.shoulderY, x - 24, y - 74, '#7a6a3a')
-    ctx.fillStyle = '#b9794a'; ctx.fillRect(x - 36, y - 82, 18, 12)
-    ctx.strokeStyle = 'rgba(80,50,30,0.6)'; ctx.lineWidth = 1; ctx.strokeRect(x - 36, y - 82, 18, 12)
+    ctx.beginPath(); ctx.moveTo(x + 52, y - 64); ctx.lineTo(x + 65, y - 72); ctx.lineTo(x + 56, y - 75); ctx.closePath(); ctx.fill()
+    // 左手抱建材(磚)——手臂加長
+    this._arm(ctx, x - 14, p.shoulderY, x - 40, y - 62, '#7a6a3a')
+    ctx.fillStyle = '#b9794a'; ctx.fillRect(x - 54, y - 70, 18, 12)
+    ctx.strokeStyle = 'rgba(80,50,30,0.6)'; ctx.lineWidth = 1; ctx.strokeRect(x - 54, y - 70, 18, 12)
     ctx.restore()
     ctx.fillStyle = 'rgba(20,40,30,0.5)'; ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center'
     ctx.fillText('修牆的人', x, y + 16)
