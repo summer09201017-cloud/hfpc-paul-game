@@ -33,7 +33,10 @@ export class Renderer {
     const { dpr, scale, ox, oy } = this._fit()
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.fillStyle = '#1b2a36'; ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
-    ctx.save(); ctx.translate(ox, oy); ctx.scale(scale, scale)
+    // 城牆崩塌震動:整個世界小幅隨機抖動(讀 game._shake,衰減在 game._loop)
+    const sh = game._shake || 0
+    const jx = sh ? (Math.random() - 0.5) * sh : 0, jy = sh ? (Math.random() - 0.5) * sh : 0
+    ctx.save(); ctx.translate(ox + jx, oy + jy); ctx.scale(scale, scale)
     ctx.beginPath(); ctx.rect(0, 0, WORLD.w, WORLD.h); ctx.clip()
 
     this._scene(ctx)
@@ -114,17 +117,17 @@ export class Renderer {
   }
 
   _aimPreview(ctx, pull) {
-    // 用發射速度模擬幾步畫拋物線虛點(幫小孩瞄準)
+    // 用發射速度模擬整條拋物線虛點(更長、每步都畫 → 弧線看得清楚,幫小孩瞄準)
     let vx = pull.vx * SLING.power, vy = pull.vy * SLING.power
     const sp = Math.hypot(vx, vy)
     if (sp > SLING.maxSpeed) { vx = vx / sp * SLING.maxSpeed; vy = vy / sp * SLING.maxSpeed }
     let x = SLING.x, y = SLING.y
-    ctx.fillStyle = 'rgba(40,40,40,0.45)'
-    for (let i = 0; i < 26; i++) {
-      const dt = 1 / 30
+    for (let i = 0; i < 80; i++) {
+      const dt = 1 / 40
       vy += PHYS.gravity * dt; x += vx * dt; y += vy * dt
-      if (y > GROUND_Y || x > WORLD.w) break
-      if (i % 2 === 0) { ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill() }
+      if (y > GROUND_Y || x > WORLD.w || x < 0) break
+      ctx.fillStyle = `rgba(40,40,40,${Math.max(0.12, 0.5 - i * 0.005)})` // 越遠越淡
+      ctx.beginPath(); ctx.arc(x, y, i < 55 ? 3.2 : 2.4, 0, Math.PI * 2); ctx.fill()
     }
   }
 

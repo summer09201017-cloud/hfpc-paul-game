@@ -29,6 +29,7 @@ export class Game {
     this.lapsToWin = LAPS_TO_WIN         // 繞城七次才過關(書 6:15)
     this._shotEffective = false          // 本發吶喊是否已計為一次繞城(每發只算一次)
     this._settleT = 0                    // settle 狀態計時(逾時保險,免瓦礫永不靜止軟鎖)
+    this._shake = 0                      // 畫面震動量(城牆崩塌時 = 16,逐幀衰減)
 
     this.blocks = makeBlocks(defaultStructure())
     this.ammo = null // 飛行中的彈丸
@@ -58,6 +59,7 @@ export class Game {
     if (dt > 0.1) dt = 0.1
     this.acc += dt
     while (this.acc >= STEP) { this._step(STEP); this.acc -= STEP; if (this.stopped) return }
+    this._shake = this._shake > 0.3 ? this._shake * 0.86 : 0 // 震動衰減
     this.renderer.draw(this)
     requestAnimationFrame(this._loop)
   }
@@ -110,7 +112,7 @@ export class Game {
     this.state = 'fly'
   }
 
-  // 一次有效吶喊:震掉「目前最高的一層」城牆(繞城一次,城牆少一層)。
+  // 一次有效吶喊:震掉「目前最高的一層」城牆(繞城一次,城牆少一層)。整層 4 塊轟然炸開 + 畫面震一下。
   _collapseTopCourse() {
     const standing = this.blocks.filter((b) => !b.collapsed)
     if (!standing.length) return
@@ -119,10 +121,11 @@ export class Game {
       if (b.collapsed || b.course !== top) continue
       b.collapsed = true
       b.settled = false
-      b.vx = 90 + Math.random() * 130        // 往城外(右)飛落
-      b.vy = -150 - Math.random() * 90
-      b.va = (Math.random() < 0.5 ? -1 : 1) * (1.4 + Math.random())
+      b.vx = (Math.random() - 0.3) * 300       // 左右四散(略偏城外),炸得更開
+      b.vy = -240 - Math.random() * 160          // 更用力往上拋 → 重重落下
+      b.va = (Math.random() < 0.5 ? -1 : 1) * (3 + Math.random() * 3) // 翻滾更猛
     }
+    this._shake = 16 // 城牆被震 → 畫面搖晃一下
   }
 
   _flyStep(dt) {
