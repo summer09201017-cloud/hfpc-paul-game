@@ -10,13 +10,13 @@ export const PHYS = {
 }
 
 // 「蓄力吶喊」發射器(沿用拖曳機制:按住往後拉=深吸氣蓄力,放手=大聲呼喊,號角聲飛向城牆)。
-// maxSpeed 調低一點 → 要把吶喊「拋高」才打得到城牆,弧線更明顯(忿怒鳥感)。
+// maxSpeed 再調低 → 要把吶喊「拋更高」才打得到城牆,弧線高聳明顯(忿怒鳥感)。
 export const SLING = {
   x: 150,
   y: GROUND_Y - 54,
   power: 7.6,
   maxPull: 120,
-  maxSpeed: 1000,
+  maxSpeed: 880,
 }
 
 // 彈丸 = 號角聲/吶喊波(renderer 畫成同心聲波,非石頭)。
@@ -30,7 +30,7 @@ export const LAPS_TO_WIN = 7   // 繞城七次才過關(書 6:15)
 // 耶利哥城牆:7 層堆積木式石牆(每層 4 塊磚並排,共 28 塊),最上層是城垛(type:'target',只是外觀)。
 //   每次有效吶喊震掉「目前最高的一層」(整層 4 塊一起轟然倒下),層層倒下;繞城七次 = 七層全倒 = 城牆塌陷。
 export function defaultStructure() {
-  const cx = 715
+  const cx = 690
   const courseH = 30      // 每層高
   const brickW = 56       // 每塊磚寬
   const cols = [cx - brickW * 1.5, cx - brickW * 0.5, cx + brickW * 0.5, cx + brickW * 1.5] // 一層四塊並排
