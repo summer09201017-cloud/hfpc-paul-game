@@ -64,19 +64,49 @@ export class Renderer {
 
   _sling(ctx, game) {
     const x = SLING.x, topY = SLING.y, footY = GROUND_Y
-    // 約書亞/祭司:吹角呼喊的人(站在左邊;簡單向量人 + 號角)
+    // 約書亞/祭司:吹角呼喊的人(站在左邊;向量人 + 五官表情 + 真羊角)
     const hy = topY - 6
     ctx.strokeStyle = '#6b4a28'; ctx.lineWidth = 8; ctx.lineCap = 'round'
     ctx.beginPath(); ctx.moveTo(x, footY); ctx.lineTo(x, topY + 18); ctx.stroke() // 身/腿
     ctx.fillStyle = '#cd7f3a'; ctx.beginPath(); ctx.moveTo(x - 13, footY); ctx.lineTo(x + 13, footY); ctx.lineTo(x + 9, topY + 16); ctx.lineTo(x - 9, topY + 16); ctx.closePath(); ctx.fill() // 袍
-    ctx.fillStyle = '#e8b887'; ctx.beginPath(); ctx.arc(x, hy, 13, 0, Math.PI * 2); ctx.fill() // 頭
-    ctx.fillStyle = '#3a2716'; ctx.beginPath(); ctx.arc(x, hy - 2, 13, Math.PI * 1.05, Math.PI * 2.0); ctx.fill() // 髮
-    // 號角(shofar):從嘴往右上吹
-    ctx.strokeStyle = '#d9b36a'; ctx.lineWidth = 6; ctx.lineCap = 'round'
-    ctx.beginPath(); ctx.moveTo(x + 10, hy + 2); ctx.quadraticCurveTo(x + 34, hy - 4, x + 40, hy - 16); ctx.stroke()
-    // 蓄力中:號角口冒出聲波(拉越遠越亮);待發的吶喊核心在 pull 點
+    // 手臂:雙手把號角舉到嘴邊
+    ctx.strokeStyle = '#cd7f3a'; ctx.lineWidth = 6; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(x - 2, topY + 22); ctx.lineTo(x + 16, hy + 10); ctx.stroke()
+    ctx.fillStyle = '#e8b887'; ctx.beginPath(); ctx.arc(x + 16, hy + 10, 4, 0, Math.PI * 2); ctx.fill() // 手掌
+    // 頭 + 髮
+    ctx.fillStyle = '#e8b887'; ctx.beginPath(); ctx.arc(x, hy, 13, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = '#3a2716'; ctx.beginPath(); ctx.arc(x, hy - 2, 13, Math.PI * 1.02, Math.PI * 2.05); ctx.fill() // 髮
+    ctx.fillStyle = '#6b4a28'; ctx.beginPath(); ctx.arc(x - 2, hy + 9, 5, 0, Math.PI); ctx.fill() // 短鬍(下巴)
+    // —— 五官(臉朝右、朝城牆)——
+    // 眉毛:微微下壓(用力吹角的神情)
+    ctx.strokeStyle = '#3a2716'; ctx.lineWidth = 1.8; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(x + 1, hy - 7); ctx.lineTo(x + 6, hy - 5); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x + 8, hy - 5.5); ctx.lineTo(x + 12, hy - 7); ctx.stroke()
+    // 眼睛(兩顆,看向城牆)
+    ctx.fillStyle = '#2a1c10'
+    ctx.beginPath(); ctx.arc(x + 4, hy - 1.5, 1.9, 0, Math.PI * 2); ctx.fill()
+    ctx.beginPath(); ctx.arc(x + 10, hy - 1.5, 1.9, 0, Math.PI * 2); ctx.fill()
+    // 鼓起的腮幫子(吹氣)
+    ctx.fillStyle = '#f0c79a'; ctx.beginPath(); ctx.arc(x + 7, hy + 4, 4.5, 0, Math.PI * 2); ctx.fill()
+    // 張開的嘴(對著號角吹)
+    ctx.fillStyle = '#7a3b2e'; ctx.beginPath(); ctx.ellipse(x + 9, hy + 6, 2.4, 3, 0, 0, Math.PI * 2); ctx.fill()
+    // —— 羊角(shofar):嘴邊起、由窄漸寬、尾端外翻成喇叭口,往右上吹(明顯是號角,不是長鼻子)——
+    ctx.fillStyle = '#e9d6a8'
+    ctx.beginPath()
+    ctx.moveTo(x + 11, hy + 6)                                 // 嘴端(窄)
+    ctx.quadraticCurveTo(x + 42, hy + 8, x + 57, hy - 12)      // 下緣往上彎
+    ctx.lineTo(x + 71, hy - 19)                                // 喇叭口外翻(下唇)
+    ctx.lineTo(x + 63, hy - 31)                                // 喇叭口(上唇)
+    ctx.quadraticCurveTo(x + 40, hy - 10, x + 12, hy - 2)      // 上緣彎回嘴端
+    ctx.closePath(); ctx.fill()
+    ctx.strokeStyle = '#b89a5e'; ctx.lineWidth = 1.5; ctx.stroke()
+    // 角身紋路 + 喇叭口開孔
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(x + 18, hy + 2); ctx.quadraticCurveTo(x + 42, hy + 3, x + 58, hy - 15); ctx.stroke()
+    ctx.fillStyle = '#9c7b4a'; ctx.beginPath(); ctx.ellipse(x + 67, hy - 25, 4.5, 8, 0.6, 0, Math.PI * 2); ctx.fill()
+    // 蓄力中:號角口冒出聲波(拉越遠越亮);待發的吶喊核心在 pull 點,否則在喇叭口
     if (game.state === 'aim') {
-      const px = game.pull ? game.pull.px : x + 40, py = game.pull ? game.pull.py : hy - 16
+      const px = game.pull ? game.pull.px : x + 67, py = game.pull ? game.pull.py : hy - 25
       this._drawShout(ctx, px, py, AMMO.r)
     }
     ctx.fillStyle = '#3a2c1a'; ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
@@ -140,10 +170,13 @@ export class Renderer {
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = '20px system-ui'; ctx.fillStyle = '#3a2c1a'
     let s = '吶喊：'; for (let i = 0; i < game.age.ammo; i++) s += i < game.ammoLeft ? '🎺' : '·'
     ctx.fillText(s, 16, 24)
-    const targets = game.blocks.filter((b) => b.type === 'target')
-    const down = targets.filter((b) => b.popped || Math.hypot(b.x - b.startX, b.y - b.startY) > 40 || Math.abs(b.angle) >= game.toppleAngle).length
+    // 繞城進度(書 6:15 繞城七次):⭕=已繞、◦=還沒
+    ctx.textAlign = 'center'; ctx.font = 'bold 18px system-ui'; ctx.fillStyle = '#7a5a1e'
+    let lap = '繞城 '; for (let i = 0; i < game.lapsToWin; i++) lap += i < game.laps ? '⭕' : '◦'
+    lap += ` ${game.laps}/${game.lapsToWin}`
+    ctx.fillText(lap, WORLD.w / 2, 24)
     ctx.textAlign = 'right'; ctx.font = 'bold 16px system-ui'; ctx.fillStyle = '#5a4a2a'
-    ctx.fillText(`${game.age.emoji} ${game.age.label}　城垛 ${down}/${targets.length}`, WORLD.w - 16, 22)
+    ctx.fillText(`${game.age.emoji} ${game.age.label}`, WORLD.w - 16, 22)
   }
 
   _beat(ctx, beat) {

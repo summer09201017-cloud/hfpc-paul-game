@@ -9,6 +9,8 @@ import { GROUND_Y, PHYS } from './config.js'
 export function makeBlocks(defs) {
   return defs.map((d) => ({
     x: d.x, y: d.y, w: d.w, h: d.h, type: d.type || 'wood',
+    course: d.course ?? 0, // 第幾層(0=最底);繞城一次震掉「目前最高層」
+    collapsed: false,      // 已被某次有效吶喊震落(飛出城外的瓦礫,不再算城牆)
     vx: 0, vy: 0, angle: 0, va: 0,
     settled: true, // 一開始是靜止地基
     popped: false, // 目標被夠力擊中 = 擊飛/消滅(像忿怒鳥打豬;不依賴完美崩塌)
@@ -67,14 +69,16 @@ export function stepWorld(blocks, dt) {
       const ov = overlap(a, b)
       if (!ov) continue
       const impact = Math.hypot(a.vx, a.vy)
-      // 被擊飛的磚撞到目標、夠力 → 目標也被擊飛(連鎖打豬)
-      if (impact > 130) { if (b.type === 'target') b.popped = true; if (a.type === 'target') a.popped = true }
+      // ★站立的城牆只能被「繞城逐層震落」(game._collapseTopCourse)拆;醒著的都是已崩落的瓦礫(a.collapsed),
+      //   瓦礫不可喚醒/擊飛站立的牆或城垛(否則一發就連鎖崩塌 → 失去「繞城七次」的難度)。
+      const mayWake = !a.collapsed
+      if (impact > 130 && mayWake) { if (b.type === 'target') b.popped = true; if (a.type === 'target') a.popped = true }
       if (ov.px < ov.py) {
         // 從側面推開(沿 x)
         const s = a.x < b.x ? -1 : 1
         a.x += ov.px * s
         if (b.settled) { a.vx *= -0.3 } else { const t = a.vx; a.vx = b.vx * 0.6; b.vx = t * 0.6 }
-        if (b.settled && impact > 120) { b.settled = false; b.vx += -s * impact * 0.25; b.va += -s * 0.9 } // 撞倒下面/旁邊的
+        if (b.settled && impact > 120 && mayWake) { b.settled = false; b.vx += -s * impact * 0.25; b.va += -s * 0.9 } // 撞倒下面/旁邊的
       } else {
         // 從上下推開(沿 y)——通常是 a 落在 b 上
         const s = a.y < b.y ? -1 : 1
@@ -83,7 +87,7 @@ export function stepWorld(blocks, dt) {
           a.vy = 0; a.vx *= 0.8; a.va *= 0.7
           if (Math.abs(a.vx) < 14 && Math.abs(a.va) < 0.4) a.settled = true
         } else { a.vy *= -0.2 }
-        if (b.settled && impact > 160) { b.settled = false; b.vy += impact * 0.1; b.va += (a.x < b.x ? 0.8 : -0.8) }
+        if (b.settled && impact > 160 && mayWake) { b.settled = false; b.vy += impact * 0.1; b.va += (a.x < b.x ? 0.8 : -0.8) }
       }
     }
   }

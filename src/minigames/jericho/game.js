@@ -1,8 +1,8 @@
 // 耶利哥城牆(忿怒鳥式,書 6)主迴圈 + 狀態機。嵌入契約:new Game(canvas,{embed,onComplete})、boot()、destroy()。
 // 狀態:aim(蓄力瞄準)→ fly(吶喊聲波飛行+震牆)→ settle(等靜止)→ aim/下一聲 或 win/lose。
 // ★神學:玩家發射的是「順服的吶喊/號角」,城牆塌陷歸功於神(書 6:20),不是玩家的武力。
-import { WORLD, GROUND_Y, PHYS, SLING, AMMO, defaultStructure, getAgeCfg, SCRIPTURE } from './config.js'
-import { makeBlocks, hitBlock, stepWorld, allTargetsDown, worldRested } from './blocks.js'
+import { WORLD, GROUND_Y, PHYS, SLING, AMMO, defaultStructure, getAgeCfg, SCRIPTURE, LAPS_TO_WIN } from './config.js'
+import { makeBlocks, stepWorld, worldRested } from './blocks.js'
 import { Renderer } from './renderer.js'
 import { Input } from './input.js'
 import { getAgePref } from '../../agePrefs.js'
@@ -22,7 +22,13 @@ export class Game {
 
     this.age = getAgeCfg(opts.age || getAgePref())
     this.toppleAngle = this.age.toppleAngle
+    this.shoutMin = this.age.shoutMin    // 這次吶喊要多大力打到牆才算「有效繞城一次」
     this.ammoLeft = this.age.ammo
+
+    this.laps = 0                        // 已繞城幾次(= 幾次有效吶喊)
+    this.lapsToWin = LAPS_TO_WIN         // 繞城七次才過關(書 6:15)
+    this._shotEffective = false          // 本發吶喊是否已計為一次繞城(每發只算一次)
+    this._settleT = 0                    // settle 狀態計時(逾時保險,免瓦礫永不靜止軟鎖)
 
     this.blocks = makeBlocks(defaultStructure())
     this.ammo = null // 飛行中的彈丸
@@ -31,7 +37,7 @@ export class Game {
     this.won = false
     this.finished = false
     this.stopped = false
-    this.beat = { kind: 'intro', kicker: '🎺 耶利哥城牆 · 第七天的呼喊', ref: SCRIPTURE.intro.ref, line: SCRIPTURE.intro.line, teach: HOWTO, cont: '按住往後拉蓄力 → 放手吶喊' }
+    this.beat = { kind: 'intro', kicker: '🎺 耶利哥城牆 · 繞城七次', ref: SCRIPTURE.intro.ref, line: SCRIPTURE.intro.line, teach: HOWTO, cont: '按住往後拉蓄力 → 放手吶喊(繞城七次城牆才塌)' }
     this._loop = this._loop.bind(this)
   }
 
@@ -62,10 +68,11 @@ export class Game {
       case 'fly': this._flyStep(dt); break
       case 'settle':
         stepWorld(this.blocks, dt)
-        if (allTargetsDown(this.blocks, this.toppleAngle)) return this._win()
-        if (worldRested(this.blocks)) {
-          if (allTargetsDown(this.blocks, this.toppleAngle)) this._win()
-          else if (this.ammoLeft > 0) { this.state = 'aim'; this.beat = null }
+        this._settleT += dt
+        if (this.laps >= this.lapsToWin) return this._win()
+        // worldRested 或逾時(瓦礫可能互撞永不完全靜止 → 逾時強制讓玩家繼續吶喊,免軟鎖)
+        if (worldRested(this.blocks) || this._settleT > 1.5) {
+          if (this.ammoLeft > 0) { this.state = 'aim'; this.beat = null }
           else this._lose()
         }
         break
@@ -99,7 +106,23 @@ export class Game {
     this.ammo = { x: SLING.x, y: SLING.y, vx, vy, r: AMMO.r, trail: [], t: 0 }
     this.pull = null
     this.ammoLeft -= 1
+    this._shotEffective = false // 新的一發吶喊,重新計繞城
     this.state = 'fly'
+  }
+
+  // 一次有效吶喊:震掉「目前最高的一層」城牆(繞城一次,城牆少一層)。
+  _collapseTopCourse() {
+    const standing = this.blocks.filter((b) => !b.collapsed)
+    if (!standing.length) return
+    const top = Math.max(...standing.map((b) => b.course))
+    for (const b of this.blocks) {
+      if (b.collapsed || b.course !== top) continue
+      b.collapsed = true
+      b.settled = false
+      b.vx = 90 + Math.random() * 130        // 往城外(右)飛落
+      b.vy = -150 - Math.random() * 90
+      b.va = (Math.random() < 0.5 ? -1 : 1) * (1.4 + Math.random())
+    }
   }
 
   _flyStep(dt) {
@@ -114,13 +137,21 @@ export class Game {
     }
     // 地面
     if (a.y + a.r >= GROUND_Y) { a.y = GROUND_Y - a.r; a.vy *= -0.35; a.vx *= 0.7 }
-    // 撞磚(圓 vs AABB):打到就喚醒+施力,彈丸自身耗能
+    // 撞磚(圓 vs AABB):只跟「站立的城牆」互動;已崩落的瓦礫讓吶喊穿過(不算繞城、不卡彈)
     for (const b of this.blocks) {
+      if (b.collapsed) continue
       const cx = Math.max(b.x - b.w / 2, Math.min(a.x, b.x + b.w / 2))
       const cy = Math.max(b.y - b.h / 2, Math.min(a.y, b.y + b.h / 2))
       const dx = a.x - cx, dy = a.y - cy
       if (dx * dx + dy * dy <= a.r * a.r) {
-        hitBlock(b, a, Math.hypot(a.vx, a.vy))
+        const impact = Math.hypot(a.vx, a.vy)
+        // 這次吶喊夠大力打到城牆 → 算「繞城一次」,震掉「目前最高的一層」(每發只算一次)。
+        // ★不喚醒被打中的那塊牆(否則它連同上方整柱崩塌 → 一兩發就過關);只用繞城數+逐層震落控制難度。
+        if (!this._shotEffective && impact > this.shoutMin) {
+          this._shotEffective = true
+          this.laps += 1
+          this._collapseTopCourse()
+        }
         a.vx *= 0.45; a.vy *= 0.45
         // 把彈丸推出磚外,避免卡住連續觸發
         const d = Math.hypot(dx, dy) || 1
@@ -129,11 +160,11 @@ export class Game {
       }
     }
     stepWorld(this.blocks, dt)
-    if (allTargetsDown(this.blocks, this.toppleAngle)) return this._win()
+    if (this.laps >= this.lapsToWin) return this._win()
     // 彈丸結束:出界 或 在地面幾乎停了
     const offscreen = a.x > WORLD.w + 60 || a.x < -60 || a.y > WORLD.h + 60
     const restedOnGround = a.y + a.r >= GROUND_Y - 1 && Math.hypot(a.vx, a.vy) < 40
-    if (offscreen || restedOnGround || a.t > 4) { this.ammo = null; this.state = 'settle' } // a.t>4:逾時保險,飛行不卡住
+    if (offscreen || restedOnGround || a.t > 4) { this.ammo = null; this.state = 'settle'; this._settleT = 0 } // a.t>4:逾時保險,飛行不卡住
   }
 
   _win() {
@@ -144,10 +175,10 @@ export class Game {
     speakScripture(SCRIPTURE.win.line, { ref: SCRIPTURE.win.ref })
     this.beat = {
       kind: 'win',
-      kicker: '🎺 城牆塌陷了！',
+      kicker: '🎺 繞城七次,城牆塌陷了！',
       ref: SCRIPTURE.win.ref,
       line: SCRIPTURE.win.line,
-      teach: '城牆倒下不是靠你的力氣——是耶和華使它塌陷。我們只管順服:繞城、吹角、大聲呼喊。',
+      teach: '城牆倒下不是靠你的力氣——是耶和華使它塌陷。我們只管順服:繞城七次、吹角、大聲呼喊。',
       cont: '點畫面 / 完成',
     }
   }
@@ -155,7 +186,7 @@ export class Game {
   _lose() {
     this.state = 'lose'
     speakScripture(SCRIPTURE.shout.line, { ref: SCRIPTURE.shout.ref })
-    this.beat = { kind: 'lose', kicker: '吶喊聲用完了', teach: '城牆還沒全塌——再來一次,憑信心再呼喊!(「呼喊吧,因為耶和華已經把城交給你們了!」書 6:16)', cont: '點畫面 / 再試' }
+    this.beat = { kind: 'lose', kicker: `吶喊聲用完了(繞城 ${this.laps}/${this.lapsToWin} 次)`, teach: '城牆還沒繞滿七次——再來一次,憑信心一圈一圈繞、放手大聲呼喊!(「呼喊吧,因為耶和華已經把城交給你們了!」書 6:16)', cont: '點畫面 / 再試' }
   }
 
   _finish() {
