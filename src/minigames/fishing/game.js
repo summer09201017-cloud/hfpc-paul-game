@@ -122,10 +122,10 @@ export class Game {
   // 下網到位:網圈內的魚一網打盡
   _haul() {
     const n = this.net
-    let got = 0
+    let got = 0 // 這一網的漁獲分數(大魚 3/中 2/小 1)
     for (const f of this.fish) {
       if (f.caught) continue
-      if (Math.hypot(f.x - n.x, f.y - n.y) <= this.age.netR + f.r * 0.5) { f.caught = true; got++ }
+      if (Math.hypot(f.x - n.x, f.y - n.y) <= this.age.netR + f.r * 0.5) { f.caught = true; got += f.value }
     }
     n.caught = got
     this.caught += got

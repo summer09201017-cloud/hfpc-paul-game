@@ -116,7 +116,7 @@ export class Renderer {
 
   _fish(ctx, f) {
     ctx.save(); ctx.translate(f.x, f.y); ctx.scale(f.dir, 1)
-    ctx.fillStyle = f.gold ? '#e8c24e' : '#cfd8de'
+    ctx.fillStyle = f.color || '#cfd8de'
     ctx.beginPath(); ctx.ellipse(0, 0, f.r, f.r * 0.6, 0, 0, Math.PI * 2); ctx.fill()
     ctx.beginPath(); ctx.moveTo(-f.r * 0.8, 0); ctx.lineTo(-f.r * 1.5, -f.r * 0.5); ctx.lineTo(-f.r * 1.5, f.r * 0.5); ctx.closePath(); ctx.fill() // 尾
     ctx.fillStyle = '#22323c'; ctx.beginPath(); ctx.arc(f.r * 0.5, -f.r * 0.12, 1.6, 0, Math.PI * 2); ctx.fill() // 眼
