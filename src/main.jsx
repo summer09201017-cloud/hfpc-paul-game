@@ -7,6 +7,7 @@ import SaulSpearDemo from './components/SaulSpearDemo.jsx'
 import NehemiahDemo from './components/NehemiahDemo.jsx'
 import SlingshotDemo from './components/SlingshotDemo.jsx'
 import JerichoDemo from './components/JerichoDemo.jsx'
+import FishingDemo from './components/FishingDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
 import RedSeaDemo from './components/RedSeaDemo.jsx'
 import CardDemo from './components/CardDemo.jsx'
@@ -29,6 +30,8 @@ registerSW({ immediate: true })
 //   ?demo=saul-spear        → 掃羅擲槍·大衛閃避（閃避，撒上 18–19；反向 RPG，大衛不還手）
 //   ?demo=nehemiah          → 尼希米修牆·躲敵人攻擊（閃避+築牆進度，尼 4、6；神為我們爭戰）
 //   ?demo=slingshot         → 忿怒鳥式技術原型（拖曳彈弓 + 會倒的疊磚物理；之後做大衛甩石拖曳版/耶利哥城牆）
+//   ?demo=jericho           → 耶利哥城牆（忿怒鳥式，書 6；繞城七次、蓄力吹角吶喊震塌城牆）
+//   ?demo=fishing           → 下網得魚（收集，路 5；點水面下網收魚，整夜勞力→依你的話開到水深之處豐收）
 //   ?demo=elijah-action     → 盼望·以利亞重得力（收集/恢復動作關，王上 19）
 //   ?demo=redsea            → 紅海奔逃（約拿引擎 level 8 動作關，出 14；不併保羅旅程）
 //   ?demo=cornelius-action  → 福音·出發傳福音（跑酷，約帕→該撒利亞，徒 10）
@@ -52,6 +55,7 @@ function pickRoot() {
   if (demo === 'nehemiah') return <NehemiahDemo />
   if (demo === 'slingshot') return <SlingshotDemo />
   if (demo === 'jericho') return <JerichoDemo />
+  if (demo === 'fishing') return <FishingDemo />
   if (demo === 'elijah-action') return <ElijahDemo />
   if (demo === 'redsea') return <RedSeaDemo />
   if (demo && CARD_GAMES[demo]) return <CardDemo specKey={demo} />
