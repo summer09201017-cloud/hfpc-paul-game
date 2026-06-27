@@ -6,6 +6,7 @@ import JoashDemo from './components/JoashDemo.jsx'
 import SaulSpearDemo from './components/SaulSpearDemo.jsx'
 import NehemiahDemo from './components/NehemiahDemo.jsx'
 import SlingshotDemo from './components/SlingshotDemo.jsx'
+import JerichoDemo from './components/JerichoDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
 import RedSeaDemo from './components/RedSeaDemo.jsx'
 import CardDemo from './components/CardDemo.jsx'
@@ -50,6 +51,7 @@ function pickRoot() {
   if (demo === 'saul-spear') return <SaulSpearDemo />
   if (demo === 'nehemiah') return <NehemiahDemo />
   if (demo === 'slingshot') return <SlingshotDemo />
+  if (demo === 'jericho') return <JerichoDemo />
   if (demo === 'elijah-action') return <ElijahDemo />
   if (demo === 'redsea') return <RedSeaDemo />
   if (demo && CARD_GAMES[demo]) return <CardDemo specKey={demo} />
