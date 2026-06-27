@@ -1,11 +1,17 @@
 // 繪製層：只讀 game 狀態、不改狀態。邏輯座標固定 960×540，依畫布父層尺寸等比縮放置中。
-import { WORLD, GROUND_Y, DAVID, GOLIATH, AIM } from './config.js'
-import { deg2rad } from './projectile.js'
+import { WORLD, GROUND_Y, DAVID, GOLIATH, DRAG, PHYSICS } from './config.js'
 
 export class Renderer {
   constructor(canvas) {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
+    this._t = { scale: 1, ox: 0, oy: 0 }
+  }
+
+  // 指標(canvas 相對 CSS px)→ 世界座標(給拖曳瞄準)
+  toWorld(cx, cy) {
+    const { scale, ox, oy } = this._t
+    return { x: (cx - ox) / scale, y: (cy - oy) / scale }
   }
 
   // 量父層尺寸 → 設定畫布像素(含 DPR)→ 回傳邏輯→實際的縮放與置中位移。
@@ -21,6 +27,7 @@ export class Renderer {
     const scale = Math.min(cw / WORLD.w, ch / WORLD.h)
     const ox = (cw - WORLD.w * scale) / 2
     const oy = (ch - WORLD.h * scale) / 2
+    this._t = { scale, ox, oy }
     return { dpr, scale, ox, oy }
   }
 
@@ -126,24 +133,19 @@ export class Renderer {
     ctx.beginPath(); ctx.moveTo(x + 9, hy - 5); ctx.lineTo(x + 13, hy - 6); ctx.stroke()
     ctx.beginPath(); ctx.moveTo(x + 6, hy + 6); ctx.lineTo(x + 12, hy + 6); ctx.stroke() // 堅定小抿嘴
 
-    // 甩石手臂 + 機弦：瞄準時手臂沿角度伸出、末端掛石袋；非瞄準時手收在肩側。
-    if (game.state === 'aim') {
-      const a = deg2rad(game.aimDeg)
-      const hxp = x + Math.cos(a) * 22
-      const hyp = shoulderY - Math.sin(a) * 22
-      ctx.strokeStyle = skin
-      ctx.lineWidth = 6
-      ctx.beginPath(); ctx.moveTo(x + 8, shoulderY + 2); ctx.lineTo(hxp, hyp); ctx.stroke() // 投擲手臂
-      const sx = x + Math.cos(a) * 36
-      const sy = shoulderY - Math.sin(a) * 36
-      ctx.strokeStyle = '#5a4326'
-      ctx.lineWidth = 2
-      ctx.beginPath(); ctx.moveTo(hxp, hyp); ctx.lineTo(sx, sy); ctx.stroke()
-      ctx.fillStyle = '#444'
-      ctx.beginPath(); ctx.arc(sx, sy, 5, 0, Math.PI * 2); ctx.fill()
+    // 甩石機弦(拖曳版):拖曳中把石袋拉到 pull 點、雙股皮筋拉開、手臂伸向石袋;沒拉時手收肩側。
+    if (game.state === 'aim' && game.pull) {
+      const sx = game.pull.px, sy = game.pull.py // 石袋(被拉到的點)
+      // 皮筋:從機弦兩股(肩前一點 + 頭上一點)拉到石袋
+      ctx.strokeStyle = '#5a4326'; ctx.lineWidth = 2.5
+      ctx.beginPath(); ctx.moveTo(x + 8, shoulderY - 2); ctx.lineTo(sx, sy); ctx.moveTo(x + 2, shoulderY - 16); ctx.lineTo(sx, sy); ctx.stroke()
+      // 投擲手臂伸向石袋
+      ctx.strokeStyle = skin; ctx.lineWidth = 6; ctx.lineCap = 'round'
+      ctx.beginPath(); ctx.moveTo(x + 8, shoulderY + 2); ctx.lineTo(sx, sy); ctx.stroke()
+      // 石袋裡的石頭
+      ctx.fillStyle = '#5b5550'; ctx.beginPath(); ctx.arc(sx, sy, 6, 0, Math.PI * 2); ctx.fill()
     } else {
-      ctx.strokeStyle = skin
-      ctx.lineWidth = 6
+      ctx.strokeStyle = skin; ctx.lineWidth = 6; ctx.lineCap = 'round'
       ctx.beginPath(); ctx.moveTo(x + 8, shoulderY + 2); ctx.lineTo(x + 22, shoulderY + 16); ctx.stroke()
     }
 
@@ -284,21 +286,19 @@ export class Renderer {
   }
 
   _aim(ctx, game) {
-    // 虛線瞄準軌跡（淡）：幫玩家預判石子會往哪飛
-    const a = deg2rad(game.aimDeg)
-    ctx.strokeStyle = 'rgba(46,134,171,0.6)'
-    ctx.setLineDash([6, 6])
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.moveTo(DAVID.x, DAVID.y - 6)
-    ctx.lineTo(DAVID.x + Math.cos(a) * 120, DAVID.y - 6 - Math.sin(a) * 120)
-    ctx.stroke()
-    ctx.setLineDash([])
-    // 角度標
-    ctx.fillStyle = '#2e86ab'
-    ctx.font = 'bold 14px system-ui'
-    ctx.textAlign = 'left'
-    ctx.fillText(`${Math.round(game.aimDeg)}°`, DAVID.x + 30, DAVID.y - 40)
+    // 拖曳中:用發射速度模擬幾步畫拋物線虛點(幫小孩預判石子會往哪飛)。沒拉就不畫。
+    if (!game.pull || game.pull.len < DRAG.minPull) return
+    let vx = game.pull.vx * DRAG.power, vy = game.pull.vy * DRAG.power
+    const sp = Math.hypot(vx, vy)
+    if (sp > DRAG.maxSpeed) { vx = vx / sp * DRAG.maxSpeed; vy = vy / sp * DRAG.maxSpeed }
+    let x = DRAG.anchorX, y = DRAG.anchorY
+    ctx.fillStyle = 'rgba(46,134,171,0.55)'
+    for (let i = 0; i < 30; i++) {
+      const dt = 1 / 30
+      vy += PHYSICS.gravity * dt; x += vx * dt; y += vy * dt
+      if (y > GROUND_Y || x > WORLD.w) break
+      if (i % 2 === 0) { ctx.beginPath(); ctx.arc(x, y, 2.6, 0, Math.PI * 2); ctx.fill() }
+    }
   }
 
   _stone(ctx, game) {

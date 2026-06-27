@@ -1,6 +1,6 @@
 // 大衛甩石（簡化版）主迴圈 + 狀態機。嵌入契約：new Game(canvas,{embed,onComplete})、boot()、destroy()。
 // 狀態：intro → aim →（放手）flying →（命中）win ／（落空）miss →(還有石子) aim ／(沒石子) lose。
-import { WORLD, PHYSICS, AIM, GROUND_Y, DAVID, GOLIATH, RULES, getAge, speedStars } from './config.js'
+import { WORLD, PHYSICS, AIM, DRAG, GROUND_Y, DAVID, GOLIATH, RULES, getAge, speedStars } from './config.js'
 import { CONTENT } from './content.js'
 import { launchVelocity, stepProjectile, segmentHitsRect, deg2rad } from './projectile.js'
 import { Renderer } from './renderer.js'
@@ -38,8 +38,9 @@ export class Game {
     this.finished = false
     this.totalStones = this.age.stones ?? RULES.stones
     this.stonesLeft = this.totalStones
-    this.aimDeg = AIM.minDeg
+    this.aimDeg = AIM.minDeg // (保留;拖曳版不再用於瞄準)
     this.aimDir = 1
+    this.pull = null // 拖曳拉弓向量 { vx, vy, px, py, len }
     this.stone = null
     this.trail = []
     this.flightT = 0
@@ -125,10 +126,17 @@ export class Game {
         if (fire) this._startAim()
         break
       case 'aim': {
-        this.aimDeg += this.aimDir * this.sweep * dt
-        if (this.aimDeg >= AIM.maxDeg) { this.aimDeg = AIM.maxDeg; this.aimDir = -1 }
-        else if (this.aimDeg <= AIM.minDeg) { this.aimDeg = AIM.minDeg; this.aimDir = 1 }
-        if (fire) this._launch()
+        // 拖曳彈弓:按住往後拉設「角度+力道」,放手發射。
+        if (this.input.down) {
+          const p = this.renderer.toWorld(this.input.cx, this.input.cy)
+          let dx = DRAG.anchorX - p.x, dy = DRAG.anchorY - p.y // 往後拉 → 發射方向(前/上)
+          const len = Math.hypot(dx, dy)
+          if (len > DRAG.maxPull) { dx = dx / len * DRAG.maxPull; dy = dy / len * DRAG.maxPull }
+          this.pull = { vx: dx, vy: dy, px: DRAG.anchorX - dx, py: DRAG.anchorY - dy, len: Math.min(len, DRAG.maxPull) }
+        } else if (fire) {
+          if (this.pull && this.pull.len >= DRAG.minPull) this._launch()
+          else this.pull = null // 誤觸(沒拉夠)→ 不發射、不浪費石子
+        }
         break
       }
       case 'flying': {
@@ -163,14 +171,15 @@ export class Game {
     this.beat = null
     this.stone = null
     this.trail = []
-    this.aimDeg = AIM.minDeg
-    this.aimDir = 1
+    this.pull = null
   }
 
   _launch() {
-    const a = deg2rad(this.aimDeg)
-    const v = launchVelocity(a, PHYSICS.power)
-    this.stone = { x: DAVID.x + Math.cos(a) * 30, y: DAVID.y - 6 - Math.sin(a) * 30, vx: v.vx, vy: v.vy }
+    let vx = this.pull.vx * DRAG.power, vy = this.pull.vy * DRAG.power
+    const sp = Math.hypot(vx, vy)
+    if (sp > DRAG.maxSpeed) { vx = vx / sp * DRAG.maxSpeed; vy = vy / sp * DRAG.maxSpeed }
+    this.stone = { x: DRAG.anchorX, y: DRAG.anchorY, vx, vy }
+    this.pull = null
     this.trail = []
     this.flightT = 0
     this.state = 'flying'

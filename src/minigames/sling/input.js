@@ -1,38 +1,43 @@
-// 原始輸入：只負責「有沒有一次『放手』動作」（空白鍵／↑／點畫面），不懂遊戲規則。
-// attach() 把處理器存成具名參考、提供 detach()，嵌入卸載時移得乾淨（嵌入契約）。
+// 拖曳彈弓輸入（2026-06-27 升級）：按住機弦往後拉(drag)→ 放開發射。pointer 事件涵蓋滑鼠+觸控。
+// down + cx/cy = 拖曳中的指標(canvas 相對座標;世界座標換算交給 renderer.toWorld,由 game 呼叫)。
+// consumeFire() = 邊緣旗標：放手(pointerup) 或 空白鍵/Enter → 用來「發射」與「推進 intro/過關/落空畫面」。
 export class Input {
   constructor() {
-    this.fired = false // 邊緣旗標：被讀一次就清掉
-    this._onKey = null
-    this._onPointer = null
+    this.down = false
+    this.cx = 0
+    this.cy = 0
+    this.fired = false
     this._target = null
   }
-  attach(target) {
-    this._target = target
+  attach(canvas) {
+    this._target = canvas
+    const rel = (e) => {
+      const r = canvas.getBoundingClientRect()
+      this.cx = e.clientX - r.left
+      this.cy = e.clientY - r.top
+    }
     this._onKey = (e) => {
-      if (e.code === 'Space' || e.code === 'ArrowUp' || e.key === ' ' || e.key === 'Enter') {
-        e.preventDefault()
-        this.fired = true
+      if (e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowUp' || e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault(); this.fired = true
       }
     }
-    this._onPointer = (e) => {
-      e.preventDefault()
-      this.fired = true
-    }
+    this._onDown = (e) => { e.preventDefault(); rel(e); this.down = true }
+    this._onMove = (e) => { if (this.down) rel(e) }
+    this._onUp = (e) => { if (this.down) { rel(e); this.down = false; this.fired = true } } // 放手 = 發射/推進
     window.addEventListener('keydown', this._onKey)
-    target.addEventListener('pointerdown', this._onPointer)
+    canvas.addEventListener('pointerdown', this._onDown)
+    window.addEventListener('pointermove', this._onMove)
+    window.addEventListener('pointerup', this._onUp)
   }
-  // 讀「這一拍有沒有放手」，讀完即清（邊緣觸發，避免連發）。
   consumeFire() {
-    if (this.fired) {
-      this.fired = false
-      return true
-    }
+    if (this.fired) { this.fired = false; return true }
     return false
   }
   detach() {
-    if (this._onKey) window.removeEventListener('keydown', this._onKey)
-    if (this._target && this._onPointer) this._target.removeEventListener('pointerdown', this._onPointer)
-    this._onKey = this._onPointer = this._target = null
+    window.removeEventListener('keydown', this._onKey)
+    if (this._target) this._target.removeEventListener('pointerdown', this._onDown)
+    window.removeEventListener('pointermove', this._onMove)
+    window.removeEventListener('pointerup', this._onUp)
+    this._target = null
   }
 }
