@@ -331,7 +331,14 @@ body {
   aspect-ratio: var(--map-aspect, 1.322); /* 由 Board.jsx 以 CSS 變數帶入真實地圖長寬比 */
   border-radius: 14px;
   overflow: hidden;
-  background: #acd3e0; /* 海(地中海)底色——改用純色 CSS 背景,取代被拉伸成超大的 SVG <rect>(見 MapBackground 註解;修「拖曳/縮放整片變海藍」) */
+  /* 海底色:CSS 背景(取代當年出事的「被拉伸成超大的 SVG <rect>」,見 MapBackground 註解)。
+     2026-07-03 美化:純色 → 疊漸層(左上光、右下深、整體由淺入深),仍是 .board 的靜態 DOM 背景,
+     不隨拖曳重繪、零點陣風險;底色 fallback 保留原 #acd3e0。 */
+  background-color: #acd3e0;
+  background-image:
+    radial-gradient(120% 90% at 22% 10%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 55%),
+    radial-gradient(140% 110% at 80% 92%, rgba(34, 78, 102, 0.22), rgba(34, 78, 102, 0) 60%),
+    linear-gradient(160deg, #b9dcea 0%, #a7d0e0 45%, #90c0d5 100%);
 }
 /* 可縮放 / 平移的場景容器（地圖+路線+城市+棋子一起縮放）。
    大小/位移由 Board.jsx 以行內樣式控制（width/height=scale×100%、left/top=平移 px）——
@@ -442,10 +449,24 @@ body {
 .board__sea {
   fill: #acd3e0; /* 地中海 */
 }
+/* 淺水帶:陸地輪廓的寬描邊光暈(畫在陸地底下),海岸邊一圈淺灘感 */
+.board__shore {
+  fill: none;
+  stroke: #e6f4f8;
+  stroke-opacity: 0.55;
+  stroke-width: 1.1; /* viewBox 使用者單位;寬而淡,柔光不搶戲 */
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+/* 海岸陰影:同輪廓右下偏移一點點,讓陸地「浮」在海面上 */
+.board__coast-shadow path {
+  fill: #4e708a;
+  opacity: 0.16;
+}
 .board__land {
-  fill: #e9dcb5; /* 陸地（羊皮紙感的暖色） */
-  stroke: #b88a4a;
-  stroke-width: 0.35; /* viewBox 使用者單位(0~100);原本 1px 是配 non-scaling-stroke,移除後改用小的使用者單位值 */
+  fill: url(#landGrad) #e9dcb5; /* 上淺下深的羊皮紙漸層(defs 在 MapBackground);找不到漸層時退回原純色 */
+  stroke: #a87f45;
+  stroke-width: 0.16; /* 細海岸線(0.35 太粗是「不精緻」主因;≈1.4px,非等比拉伸下粗細差已看不出) */
   stroke-linejoin: round;
 }
 /* 地名 / 海洋標籤（HTML 疊層，避免被 SVG 拉伸變形） */
