@@ -35,6 +35,8 @@ export class Game {
     this.combo = 0
     this.hits = 0
     this.judgedCount = 0
+    this.rollHits = 0 // 連打段總敲擊數(加分用,不進命中率)
+    this._scoreNotes = this.notes.filter((n) => n.type !== 'roll').length // 命中率分母(連打是 bonus)
     this.joy = JOY.start
     this.lastHitAt = -9
     this.lastHitType = 'don'
@@ -94,12 +96,25 @@ export class Game {
   _onHit(type) {
     if (this.state === 'intro') { this._start(); return }
     if (this.state !== 'play') return
+    // 連打段(roll)優先:判定圈正被藍色長條蓋住時,隨便敲都算、敲越多分越多
+    const roll = this.notes.find((n) => n.type === 'roll' && !n.judged && this.songTime >= n.t && this.songTime <= n.t + n.dur)
+    if (roll) {
+      roll.count = (roll.count || 0) + 1
+      this.rollHits++
+      this.score += 20
+      this._joyAdd(JOY.perHit * 0.5)
+      this.lastHitAt = this.renderer.t
+      this.lastHitType = type
+      this.audio.hit(type, false)
+      this.effects.push({ age: 0, life: 0.4, perfect: true, label: `連打 ${roll.count}!` })
+      return
+    }
     const win = this.age.window
-    // 單軌:找窗內最近的未判定音符
+    // 單軌:找窗內最近的未判定音符(連打段不進這條路)
     let best = null
     let bestAbs = Infinity
     for (const n of this.notes) {
-      if (n.judged) continue
+      if (n.judged || n.type === 'roll') continue
       const d = this.songTime - n.t
       if (Math.abs(d) <= win && Math.abs(d) < bestAbs) { best = n; bestAbs = Math.abs(d) }
       if (n.t - this.songTime > win) break
@@ -161,8 +176,13 @@ export class Game {
     }
 
     // 漏拍:過窗標 judged、斷連擊、歡慶小降(不扣命)
+    // 連打段例外:過尾端只收攤(judged),不算漏拍、不斷連擊——它是自由歡呼,不敲也不罰
     for (const n of this.notes) {
       if (n.judged) continue
+      if (n.type === 'roll') {
+        if (this.songTime > n.t + n.dur) n.judged = true
+        continue
+      }
       if (this.songTime - n.t > this.age.window) {
         n.judged = true
         this.judgedCount++
@@ -174,7 +194,7 @@ export class Game {
 
     const pi = this._currentPhrase()
     if (pi != null) {
-      const phraseNotes = this.notes.filter((n) => n.phrase === pi)
+      const phraseNotes = this.notes.filter((n) => n.phrase === pi && n.type !== 'roll')
       const done = phraseNotes.filter((n) => n.judged).length
       this.captionLine = { text: PHRASES[pi], progress: phraseNotes.length ? done / phraseNotes.length : 0 }
     }
@@ -196,7 +216,7 @@ export class Game {
     this.finished = true
     this.state = 'win'
     this.joy = JOY.max // 結尾:全隊歡呼
-    const acc = this.notes.length ? this.hits / this.notes.length : 0
+    const acc = this._scoreNotes ? this.hits / this._scoreNotes : 0
     const stars = starsForAccuracy(acc)
     this.audio.fanfare()
     this.beat = {

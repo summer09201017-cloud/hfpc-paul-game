@@ -108,14 +108,46 @@ export class Renderer {
       ctx.fill()
     }
 
-    // —— 音符(右→左) ——
+    // —— 音符(右→左);連打段=藍色長膠囊,滑過判定圈時整段可連敲 ——
     const appr = g.age.approach
+    const toX = (dt) => judgeX + (dt / appr) * (w - judgeX - 30)
+    let rollActive = false
     for (const n of g.notes) {
       if (n.judged) continue
       const dt = n.t - g.songTime
+      if (n.type === 'roll') {
+        const dtEnd = n.t + n.dur - g.songTime
+        if (dt > appr || dtEnd < -0.05) continue
+        const x1 = Math.max(judgeX, toX(dt))
+        const x2 = toX(dtEnd)
+        const r = VIEW.noteR * 0.86
+        ctx.fillStyle = 'rgba(61,142,217,0.82)'
+        this._rr(ctx, x1 - r, laneY - r, Math.max(x2 - x1 + r * 2, r * 2), r * 2, r)
+        ctx.fill()
+        ctx.strokeStyle = '#fffdf7'
+        ctx.lineWidth = 2.5
+        this._rr(ctx, x1 - r, laneY - r, Math.max(x2 - x1 + r * 2, r * 2), r * 2, r)
+        ctx.stroke()
+        ctx.fillStyle = '#fffdf7'
+        ctx.font = 'bold 14px system-ui'
+        ctx.textAlign = 'center'
+        ctx.fillText(`連打!${n.count ? ' ' + n.count : ''}`, (x1 + Math.max(x2, x1)) / 2 + r * 0.2, laneY + 5)
+        if (dt <= 0 && dtEnd >= 0) rollActive = true
+        continue
+      }
       if (dt > appr || dt < -0.12) continue
-      const x = judgeX + (dt / appr) * (w - judgeX - 30)
-      this._note(ctx, x, laneY, n.type)
+      this._note(ctx, toX(dt), laneY, n.type)
+    }
+    // 連打進行中:判定圈脈動放大+提示
+    if (rollActive) {
+      const pulse = 1 + Math.abs(Math.sin(this.t * 9)) * 0.25
+      ctx.strokeStyle = '#9fd0f2'
+      ctx.lineWidth = 4
+      ctx.beginPath(); ctx.arc(judgeX, laneY, (VIEW.noteR + 10) * pulse, 0, Math.PI * 2); ctx.stroke()
+      ctx.fillStyle = '#fff3c4'
+      ctx.font = 'bold 15px system-ui'
+      ctx.textAlign = 'center'
+      ctx.fillText('快!連續敲鼓 🥁', judgeX, laneY + VIEW.noteR + 34)
     }
 
     // —— 命中特效 ——
