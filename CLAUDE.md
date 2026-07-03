@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > **修法**(`MapBackground.jsx` / `Board.jsx` / `styles.css`):海改成 `.board` 的 **CSS `background:#acd3e0`**(純色背景零點陣成本、移除 SVG 大 rect);平移改用 **`transform: translate3d`**(只在合成器移動、不重繪),縮放仍走 width/height %。實機驗收:地圖正常、拖曳平移正常、不再變色。心法見 skill `gpu-safe-rendering`(本案是它的活範例)。
 > 本輪也做:3D 骰子→2D(`DicePanel.jsx`)、`sync:paulsilas`、保羅西拉嵌入同步最新版。
 
+> 🎹 **新機制(2026-07-03):`?demo=psalm100` 讚美琴鍵** —— 系列第一個 **4K 下落式節奏關(VSRG)**(`src/minigames/psalm100/`,自成一體引擎,sync:jonah 不碰):四欄琴鍵落下,判定線=「稱謝之門」(詩 100:4),DFJK/方向鍵/多點觸控,單點+長條(按住),年齡三檔(幼稚園長條退化成單點)。★設計:旋律照譜面排程播、漏按歌不斷——歌是神的,按對是「加入讚美」;不會輸,星等看命中率。原創 84BPM 五聲音階曲,經文已過 cuv 核對,how/win 文案標待牧者審核。
 > 📌 **現況速覽（2026-06-17，全部已併 main 並自動部署）**：線上 = 七旅程 + 多個單獨可玩的 `?demo=`：
 > 動作關 `?demo=sling`（大衛甩石）/ `elijah-action`（盼望·以利亞，遇天使後**跳吃空中餅水**回體力）/
 > `cornelius-action`（福音跑酷）/ `saul-action`（大光跑酷）/ `jehoshaphat-action`（**聖歌·約沙法,戰爭關已搬進 paul**，敵軍放大有表情）/
