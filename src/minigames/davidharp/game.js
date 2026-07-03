@@ -1,19 +1,17 @@
-// 詩篇 100 讚美琴鍵——4K 下落式節奏關主迴圈。
+// 大衛彈琴趕憂——Guitar Hero 型主迴圈(邏輯同 psalm100 引擎,多「掃羅的愁煩」層)。
 // 嵌入契約:new Game(canvas,{embed,winPoints,age,onComplete})、boot()、destroy()。
-// 狀態:intro →(點/按鍵)play → win。★不會輸(兒童營守則):歌走完必過關,星等看命中率。
-// 時序:歌曲時間 songTime 用固定步長累加;旋律用 Web Audio 提前排程(lookahead 0.4s),
-//       漏按歌也照唱(歌是神的,不是玩家表現的獎品)——按對是「加入讚美」不是「製造讚美」。
-import { LANES, getAge, starsForAccuracy } from './config.js'
-import { SCRIPTURE, buildChart, BASS_FREQ, BEAT_SEC } from './content.js'
+// ★不會輸:愁煩只影響畫面(掃羅頭上黑影),歌走完必過關,星等看命中率。
+// ★長條規則(2026-07-03 定版,同 psalm100 修正後):按到頭=開始,撐到尾端才算命中;放太早=斷(連擊歸零、不計命中)。
+import { LANES, getAge, starsForAccuracy, GLOOM } from './config.js'
+import { SCRIPTURE, PHRASES, buildChart, BASS_FREQ, BEAT_SEC } from './content.js'
 import { Renderer } from './renderer.js'
 import { Input } from './input.js'
-import { Psalm100Audio } from './audio.js'
-import { PHRASES } from './content.js'
+import { HarpAudio } from './audio.js'
 import { initSpeech, speakScripture, speakText, stopSpeech } from '../../speak.js'
 
 const STEP = 1 / 60
-const LOOKAHEAD = 0.4 // 排程提前量(秒)
-const END_PAD = 2.2 // 最後一顆音符後幾秒進 win
+const LOOKAHEAD = 0.4
+const END_PAD = 2.4
 
 export class Game {
   constructor(canvas, opts = {}) {
@@ -24,12 +22,11 @@ export class Game {
     this.age = getAge(opts.age)
     this.renderer = new Renderer(canvas)
     this.input = new Input()
-    this.audio = new Psalm100Audio()
+    this.audio = new HarpAudio()
 
-    this.notes = buildChart(this.age) // { t, dur, durMusic, lane, freq, phrase, judged?, holding?, hit? }
+    this.notes = buildChart(this.age)
     this.songLen = Math.max(...this.notes.map((n) => n.t + n.durMusic)) + END_PAD
-    this.songTime = -0.0001 // intro 時不走
-    this.playing = false
+    this.songTime = -0.0001
     this.state = 'intro'
     this.stopped = false
     this.finished = false
@@ -38,10 +35,12 @@ export class Game {
     this.combo = 0
     this.hits = 0
     this.judgedCount = 0
-    this.effects = [] // { lane, age, life, perfect, label }
+    this.gloom = GLOOM.start
+    this.lastHitAt = -9 // renderer 撥弦動作用(視覺時鐘)
+    this.effects = []
     this.laneHeld = new Array(LANES).fill(false)
-    this.activeHolds = new Array(LANES).fill(null) // 進行中的長條 { note, voice }
-    this._scheduled = 0 // 已排程到第幾顆音符
+    this.activeHolds = new Array(LANES).fill(null)
+    this._scheduled = 0
     this._bassBeat = 0
     this.captionLine = null
 
@@ -49,7 +48,7 @@ export class Game {
       kicker: SCRIPTURE.title,
       ref: SCRIPTURE.introRef,
       line: `${SCRIPTURE.intro}\n${SCRIPTURE.how}`,
-      cont: '點畫面 / 按任意鍵　開始讚美',
+      cont: '點畫面 / 按任意鍵　開始彈琴',
     }
     this._loop = this._loop.bind(this)
   }
@@ -84,8 +83,7 @@ export class Game {
     stopSpeech()
     this.audio.unlock()
     this.songTime = 0
-    this.playing = true
-    this._anchor = this.audio.now() // audio 時鐘錨點:songTime=0 對應這一刻
+    this._anchor = this.audio.now()
   }
 
   _onLane(lane, isDown) {
@@ -96,28 +94,31 @@ export class Game {
     else this._judgeRelease(lane)
   }
 
+  _gloomAdd(d) {
+    this.gloom = Math.min(GLOOM.max, Math.max(GLOOM.min, this.gloom + d))
+  }
+
   _judgePress(lane) {
     const win = this.age.window
-    // 找該欄「未判定、離判定線最近、在窗內」的音符
     let best = null
     let bestAbs = Infinity
     for (const n of this.notes) {
       if (n.lane !== lane || n.judged) continue
       const d = this.songTime - n.t
       if (Math.abs(d) <= win && Math.abs(d) < bestAbs) { best = n; bestAbs = Math.abs(d) }
-      if (n.t - this.songTime > win) break // 譜面按時間排序,後面都太遠
+      if (n.t - this.songTime > win) break
     }
-    if (!best) return // 空按不懲罰(兒童營守則:溫柔)
+    if (!best) return // 空按不懲罰
     const perfect = bestAbs <= win * 0.5
     best.judged = true
     this.judgedCount++
     this.combo++
     this.score += perfect ? 100 : 50
+    this.lastHitAt = this.renderer.t
+    this._gloomAdd(GLOOM.perHit)
     this.audio.hit(lane, perfect)
     this.effects.push({ lane, age: 0, life: 0.5, perfect, label: perfect ? '完美!' : '好!' })
     if (best.dur > 0) {
-      // 長條:按到頭只是開始——hit(算進命中率)要「撐到尾端」才給(見 _judgeRelease/自動結算)。
-      // 2026-07-03 修:原本按一下就 hit=true,長條形同虛設。
       best.holding = true
       const voice = this.audio.holdStart(best.freq)
       this.activeHolds[lane] = { note: best, voice }
@@ -136,16 +137,17 @@ export class Game {
     n.holding = false
     const tail = n.t + n.dur
     if (this.songTime >= tail - this.age.window) {
-      // 撐滿(或差一點點):這條長條才算真正命中
       n.hit = true
       this.hits++
       this.score += 100
-      this.effects.push({ lane, age: 0, life: 0.5, perfect: true, label: '撐住了!' })
+      this.lastHitAt = this.renderer.t
+      this._gloomAdd(GLOOM.perHit)
+      this.effects.push({ lane, age: 0, life: 0.5, perfect: true, label: '餘音悠長!' })
     } else {
-      // 放太早=斷:不算命中(拉低命中率/星等)、連擊歸零、視覺標灰(不倒扣已得的頭分——溫柔)
       n.broken = true
       this.combo = 0
-      this.effects.push({ lane, age: 0, life: 0.6, perfect: false, label: '斷了…要按住!' })
+      this._gloomAdd(GLOOM.perBreak)
+      this.effects.push({ lane, age: 0, life: 0.6, perfect: false, label: '弦斷了…要按住!' })
     }
   }
 
@@ -165,14 +167,12 @@ export class Game {
   }
 
   _update(dt) {
-    // 特效老化
     for (const fx of this.effects) fx.age += dt
     this.effects = this.effects.filter((fx) => fx.age < fx.life)
     if (this.state !== 'play') return
 
     this.songTime += dt
 
-    // —— 音訊排程(旋律照譜面播;低音每兩拍) ——
     const horizon = this.songTime + LOOKAHEAD
     while (this._scheduled < this.notes.length && this.notes[this._scheduled].t <= horizon) {
       const n = this.notes[this._scheduled]
@@ -184,18 +184,17 @@ export class Game {
       this._bassBeat++
     }
 
-    // —— 漏接:過窗就標 judged(不扣分、斷連擊) ——
     for (const n of this.notes) {
       if (n.judged) continue
       if (this.songTime - n.t > this.age.window) {
         n.judged = true
         this.judgedCount++
         this.combo = 0
+        this._gloomAdd(GLOOM.perMiss)
       }
       if (n.t > this.songTime) break
     }
 
-    // —— 長條到尾自動結算(還按著=撐滿,才算命中) ——
     for (let i = 0; i < LANES; i++) {
       const h = this.activeHolds[i]
       if (h && this.songTime >= h.note.t + h.note.dur) {
@@ -205,11 +204,11 @@ export class Game {
         h.note.hit = true
         this.hits++
         this.score += 100
-        this.effects.push({ lane: i, age: 0, life: 0.5, perfect: true, label: '撐住了!' })
+        this._gloomAdd(GLOOM.perHit)
+        this.effects.push({ lane: i, age: 0, life: 0.5, perfect: true, label: '餘音悠長!' })
       }
     }
 
-    // —— 字幕(目前句 + 句內進度) ——
     const pi = this._currentPhrase()
     if (pi != null) {
       const phraseNotes = this.notes.filter((n) => n.phrase === pi)
@@ -217,7 +216,6 @@ export class Game {
       this.captionLine = { text: PHRASES[pi], progress: phraseNotes.length ? done / phraseNotes.length : 0 }
     }
 
-    // —— 歌完 → 過關 ——
     if (this.songTime >= this.songLen) this._finish()
   }
 
@@ -234,9 +232,9 @@ export class Game {
     if (this.finished) return
     this.finished = true
     this.state = 'win'
-    this.playing = false
     for (const h of this.activeHolds) h?.voice?.stop?.()
     this.activeHolds.fill(null)
+    this.gloom = Math.min(this.gloom, 0.06) // 結尾:惡魔離了他
     const acc = this.notes.length ? this.hits / this.notes.length : 0
     const stars = starsForAccuracy(acc)
     this.audio.fanfare()
@@ -247,7 +245,6 @@ export class Game {
       stars,
       cont: '',
     }
-    // 過關自動朗讀經文(web-speech-scripture 系列預設)
     setTimeout(() => { if (!this.stopped) speakScripture(SCRIPTURE.winText, { ref: SCRIPTURE.winRef }) }, 600)
     setTimeout(() => {
       if (!this.stopped) this.onComplete({ won: true, score: this.score, stars, accuracy: Math.round(acc * 100) })

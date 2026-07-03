@@ -16,15 +16,15 @@ export const LANE_KEYCAP = ['D／←', 'F／↓', 'J／↑', 'K／→']
 export const AGE = {
   kinder: {
     id: 'kinder', label: '幼稚園', emoji: '🐣', sub: '慢慢掉、按到就好,長音不用按住',
-    approach: 2.6, window: 0.30, holds: false, speakHowto: true,
+    approach: 2.4, window: 0.26, holds: false, speakHowto: true,
   },
   kids: {
-    id: 'kids', label: '兒童', emoji: '🙂', sub: '標準速度,有長音要按住',
-    approach: 2.0, window: 0.22, holds: true, speakHowto: false,
+    id: 'kids', label: '兒童', emoji: '🙂', sub: '標準速度,長音要按住撐到底',
+    approach: 1.7, window: 0.17, holds: true, speakHowto: false,
   },
   teen: {
-    id: 'teen', label: '青少年', emoji: '🔥', sub: '掉得快、判定嚴,拼三星',
-    approach: 1.4, window: 0.14, holds: true, speakHowto: false,
+    id: 'teen', label: '青少年', emoji: '🔥', sub: '掉得快、判定嚴、放太早算斷,拼三星',
+    approach: 1.1, window: 0.10, holds: true, speakHowto: false,
   },
 }
 export function getAge(id) { return AGE[id] || AGE.kids }
