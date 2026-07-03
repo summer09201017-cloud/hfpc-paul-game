@@ -24,7 +24,7 @@ export class Game {
     this.input = new Input()
     this.audio = new TimbrelAudio()
 
-    this.notes = buildChart()
+    this.notes = buildChart(this.age)
     this.songLen = Math.max(...this.notes.map((n) => n.t)) + END_PAD
     this.songTime = -0.0001
     this.state = 'intro'
@@ -224,6 +224,8 @@ export class Game {
       ref: SCRIPTURE.winRef,
       line: `${SCRIPTURE.winBody}\n\n「${SCRIPTURE.winText}」`,
       stars,
+      acc: Math.round(acc * 100), // 成功打擊率(過關卡顯示,2026-07-04 牧師要求)
+      rolls: this.rollHits,
       cont: '',
     }
     setTimeout(() => { if (!this.stopped) speakScripture(SCRIPTURE.winText, { ref: SCRIPTURE.winRef }) }, 600)

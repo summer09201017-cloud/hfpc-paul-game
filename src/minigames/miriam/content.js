@@ -59,12 +59,23 @@ const RHYTHM = [
 // 輕快旋律墊底(每 2 拍一音;C 大調五聲,慶典感)——歌照譜面播,漏打不斷
 export const MELODY_LOOP = [523.25, 659.25, 783.99, 659.25, 880.0, 783.99, 659.25, 523.25]
 
-export function buildChart() {
+// 青少年加密音(dense 檔才加):反拍八分音塞進句子裡,密度近乎翻倍(2026-07-04 牧師嫌太簡單)
+const TEEN_FILL = [
+  [[0.5, 'd'], [2.5, 'd'], [4.5, 'd'], [6.5, 'd']],
+  [[1.5, 'd'], [4.5, 'd'], [6.5, 'k']],
+  [[0.5, 'd'], [2.5, 'd'], [5.5, 'k'], [6.5, 'd']],
+  [[2.5, 'k'], [5.5, 'k'], [6.5, 'd']],
+  [[0.5, 'd'], [1.5, 'd'], [3.5, 'k'], [6.5, 'k']],
+  [[2.5, 'd'], [3.5, 'k'], [7.5, 'd'], [9.5, 'd']],
+]
+
+export function buildChart(age) {
   const out = []
   let base = LEAD * BEAT
   RHYTHM.forEach((ph, pi) => {
     let phraseEnd = 0
-    for (const [b, kind, durB] of ph.notes) {
+    const rows = age && age.dense ? [...ph.notes, ...(TEEN_FILL[pi] || [])] : ph.notes
+    for (const [b, kind, durB] of rows) {
       if (kind === 'r') {
         out.push({ t: base + b * BEAT, dur: (durB || 1.5) * BEAT, type: 'roll', phrase: pi })
         phraseEnd = Math.max(phraseEnd, b + (durB || 1.5))
@@ -75,6 +86,8 @@ export function buildChart() {
     }
     base += phraseEnd * BEAT + ph.gapAfter * BEAT
   })
+  // 加密音打亂了順序 → 依時間排序(判定迴圈與排程器都假設譜面按時間排)
+  out.sort((a, b) => a.t - b.t)
   return out
 }
 

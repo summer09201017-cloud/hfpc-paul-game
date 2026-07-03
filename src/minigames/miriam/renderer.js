@@ -346,7 +346,7 @@ export class Renderer {
     ctx.fillStyle = 'rgba(26,20,14,0.62)'
     ctx.fillRect(0, 0, w, h)
     const cw = Math.min(w * 0.88, 560)
-    const ch = Math.min(h * 0.64, 340)
+    const ch = Math.min(h * 0.8, 430) /* 出 15:20-21 全引很長,卡片加高才不會壓到出處行 */
     const cx = (w - cw) / 2
     const cy = (h - ch) / 2
     ctx.fillStyle = '#fffdf7'
@@ -357,14 +357,22 @@ export class Renderer {
     ctx.fillStyle = '#5c4a28'
     ctx.font = `bold ${Math.min(24, cw / 16)}px system-ui`
     ctx.fillText(beat.kicker, w / 2, cy + 48)
+    let bodyY = cy + 84
     if (beat.stars) {
       ctx.font = '28px system-ui'
-      ctx.fillText('⭐'.repeat(beat.stars), w / 2, cy + 86)
+      ctx.fillText('⭐'.repeat(beat.stars), w / 2, cy + 84)
+      bodyY = cy + 112
+    }
+    if (beat.acc != null) {
+      ctx.fillStyle = '#b04a2f'
+      ctx.font = `bold ${Math.min(19, cw / 22)}px system-ui`
+      ctx.fillText(`成功打擊率 ${beat.acc}%${beat.rolls ? `　・　連打 ${beat.rolls} 下` : ''}`, w / 2, bodyY)
+      bodyY += 30
     }
     ctx.fillStyle = '#3d3123'
     const bodyFs = Math.min(16.5, cw / 25)
     ctx.font = `${bodyFs}px system-ui`
-    this._wrap(ctx, beat.line, w / 2, cy + (beat.stars ? 116 : 84), cw - 60, bodyFs * 1.6)
+    this._wrap(ctx, beat.line, w / 2, bodyY, cw - 60, bodyFs * 1.6)
     if (beat.ref) {
       ctx.fillStyle = '#8a6d3b'
       ctx.font = `bold ${bodyFs - 1}px system-ui`

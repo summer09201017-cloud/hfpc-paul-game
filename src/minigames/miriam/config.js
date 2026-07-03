@@ -24,8 +24,8 @@ export const AGE = {
     approach: 1.7, window: 0.17, anyKey: false, speakHowto: false,
   },
   teen: {
-    id: 'teen', label: '青少年', emoji: '🔥', sub: '快、判定嚴、紅藍分明,拼三星',
-    approach: 1.1, window: 0.10, anyKey: false, speakHowto: false,
+    id: 'teen', label: '青少年', emoji: '🔥', sub: '更快、判定嚴、鼓點加倍密,拼三星',
+    approach: 0.95, window: 0.09, anyKey: false, dense: true, speakHowto: false,
   },
 }
 export function getAge(id) { return AGE[id] || AGE.kids }
