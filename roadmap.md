@@ -17,7 +17,7 @@
 > | # | 項目 | ⏱ | 備註 |
 > |---|---|---|---|
 > | ✅ | ~~耶穌旅程①⑤卡片關~~（曠野試探=配對、好撒馬利亞人=抉擇） | — | **已做（2026-07-04 深夜，feat/jesus-cards-1-5）**：specs.js `wilderness`/`goodSamaritan` + scenes.js JESUS 十幕（試探者=無臉暗影不嚇小孩、對話框真經文）；經文太4/路10 已 cuv 逐字核對；validate 10 檔＋selfplay 10×1200＋build 全綠；Playwright 兩關全程通（含答錯溫柔重試、山幕對話框裁切已修）。文案待牧者審核 |
-> | 2 | **⑥客西馬尼「撐住不睡」**（牧師拍板要做） | ~半天 | 新小引擎；★守設計稿神學守法：撐住≠改寫聖經、撐不住=溫柔敘事不失敗 |
+> | ✅ | ~~⑥客西馬尼「撐住不睡」~~（牧師拍板要做） | — | **已做（2026-07-05，feat/gethsemane-watch）**：新引擎 `src/minigames/gethsemane/`（`?demo=gethsemane`）——三次守望、睏意條+眼皮闔上特效、按鍵/點按撐開；★神學守法全守：撐住或睡著都走到同一個聖經結局（太26:40 門徒睡了、主獨自順服）、永遠 won:true；朗讀走 speakScripture mp3 優先（4 句已烤曉臻入 precache 20 entries，治「機器聲」）；經文太26:36-46 cuv 核對（原文「警醒」）；validate/selfplay/build 綠、Playwright 全狀態實測。文案待牧者審核 |
 > | 3 | **⑦各各他五幕終局**（jesusFinale） | ~1天 | bible-card-finale 範式；受難呈現守定調（剪影不見血） |
 > | 4 | **嵌④彼得走海** 或照 peter 前例維持問答+連結 | 半天~ | 跨 repo 嵌入未有前例；peter 旅程同樣待接 |
 > | 5 | **耶穌旅程題庫送審**（export-quiz-review 產清單給牧師） | ~1hr | 過審後才點大廳卡 |
