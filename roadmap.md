@@ -1,6 +1,29 @@
 # 🗺️ 保羅大富翁 — 進度藍圖（已完成 vs 真正待做）
 
-> ## ⭐ 對齊現況：2026-07-04（最新，agape250 的 AI 先讀這段）
+> ## ⭐ 對齊現況：2026-07-05（最新，agape250 的 AI 先讀這段）
+>
+> **✅ 本輪(2026-07-05,HFP 機,PR #55-58 全併、A 站已上線驗證)——耶穌旅程 7 關接上 6 關:**
+> - ①曠野試探(卡片配對 `?demo=wilderness`)+⑤好撒馬利亞人(卡片抉擇 `?demo=goodSamaritan`):specs.js+scenes.js JESUS 十幕(試探者=無臉暗影、對話框真經文)。
+> - ⑥客西馬尼・警醒(`?demo=gethsemane`,新引擎 src/minigames/gethsemane/):撐住不睡,守「撐住≠改寫聖經」神學守法(撐不住=溫柔敘事,永遠 won:true);範式已抽成 skill stay-awake-minigame。
+> - ⑦各各他與空墳墓(`?demo=jesusFinale`,五幕終局):受難守定調——十架純剪影不見血、被捕只畫火把光點、猶大旁白一句。
+> - 🔊 **朗讀鐵則(牧者定案:不准機器聲)全面落地**:全站 27 句曉臻 mp3(precache 39 entries);speakScripture 的 spokenRef 加 66 卷書縮寫→全名表;jonah/paulsilas 複本 sync 到 ttsFix(#57;sync 來源=jonah feat/redsea-tts,戰爭關路由完好);CardGame 滿分只算計分題。新句子烤法見合輯 `/tts-bake`。
+> - 📋 送審清單已產:`docs/耶穌旅程-題庫送審-2026-07-05.html`(78KB,含全部站點題+①⑤⑦卡片文案),待牧師過目。
+> - 經文全部 cuv 逐字核對(注意:太 26 和合本原文是「警醒」不是「儆醒」);validate/selfplay/build 全綠;Playwright 逐幕實測。
+>
+> **🔜 真正待做(2026-07-05 更新;★第一列=使用者已拍板):**
+> | # | 項目 | ⏱ | 備註 |
+> |---|---|---|---|
+> | 1 | **④水面行走:跨 repo 嵌入彼得走海(★使用者 2026-07-05 拍板,別做問答+連結)** | 0.5~1天 | 照 paulsilas 前例:上游 hfpc-peter-sea-game 做 embed-aware(new Game(canvas,{embed,onComplete}),不吃 ui.js/main.js)→ 本 repo 加 scripts/sync-petersea-engine.mjs + minigame.engine:'petersea' → 站點接上。⚠ 節奏關時序測試會被背景分頁節流騙,用 rhythm skill 的原子單元測試;⚠ 朗讀句照鐵則同輪 /tts-bake |
+> | 2 | **牧師過審題庫**(docs/耶穌旅程-題庫送審-2026-07-05.html) | 牧師時間 | 過審後才點大廳卡 |
+> | 3 | **大廳點耶穌旅程卡**(④接上+過審後) | ~10min | 照牧師核准順序最後一步 |
+> | 4 | 太鼓第二關:大衛迎約櫃(撒下6,只取歡慶段) | ~半天 | miriam 引擎換皮 |
+> | 5 | 巴蘭/摩西動作版從 war-games 搬進 paul | 各~半天 | 舊待辦,自動部署受惠 |
+> | 6 | 離線啟動選單頁、投影計分板 | 各~半天 | 舊待辦,高 CP |
+> | 7 | 金句 mp3 鋪開(約拿六關+戰爭關,用 /tts-bake) | 0.5天 | 鐵則落地到老關卡 |
+>
+> ---
+>
+> ## ⭐ 對齊現況：2026-07-04（歷史段）
 >
 > **✅ 本輪(2026-07-04 午後)朗讀三層改進——PR #54 已併 main、已自動部署、線上已驗(tts/manifest 200、4 mp3 200、bundle 含破音字典)（機器味＋破音字）：**
 > - 🔊 **`src/ttsFix.js`**（正本=skills 合輯 web-speech-scripture/assets/tts-fix.js）：破音字同音替換 `toSpeakable()`（使徒行傳→行撰、便雅憫→變雅憫、供物→貢物…**只影響唸、不動畫面經文**）＋斷句抑揚 `chunkClauses()`（問句尾音升/感嘆稍強/末句放慢）＋選聲排序 `pickZhVoice()`（Edge Natural > Google 國語 > SAPI）＋章節數字轉國字 `numToZh()`（spokenRef 改唸「第十四章」）。

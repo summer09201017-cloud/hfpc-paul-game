@@ -1,6 +1,6 @@
 ============================================================
 讀我 — HANDOFF（保羅大富翁 hfpc-paul-game）
-交接日期：2026-07-04
+交接日期：2026-07-05
 給：agape250 那台 PC 的 AI / 接手的人
 GitHub 帳號：summer09201017-cloud。GitHub 是唯一真相；桌面 zip 只是備援快照。
 ============================================================
@@ -10,40 +10,48 @@ GitHub 帳號：summer09201017-cloud。GitHub 是唯一真相；桌面 zip 只�
   動作關/卡片關都住這（?journey= / ?demo=）。push main → Netlify 自動部署
   （hfpc-paul-game.netlify.app）。完整架構讀 CLAUDE.md（最權威）。
 
-■ 現在到哪（2026-07-04；「已完成 vs 真正待做」單一真相=roadmap.md 最上段）
-  1) 節奏家族五子型全活範例（大廳音樂闖關合輯七關）：
-     ?demo=psalm100（4K 下落式）/ davidharp（GuitarHero）/ miriam（太鼓+連打）
-     / harptoy（自由演奏幼兒版，與 davidharp two-forms 配對）+ FNF 三獨立站。
-     心法/坑全在 skill rhythm-beat-minigame（長條三段式、每檔獨立譜面密度+
-     排序不變式、背景節流測試陷阱——改節奏關前先讀）。
-  2) 耶穌生平之旅 ?journey=jesus（牧師核准設計+定調六項）：21 站聖地棋盤
-     +題庫+輕RPG；②風浪(約拿引擎 cast:false)③五餅二魚(loaves 引擎,
-     ?demo=loaves,分出去不減反增)已接；①⑤⑥⑦④待接（先用問答撐住、可完整玩）。
-     ★設計稿=skill bible-journey-planner references/耶穌生平-設計.md
-     （定調六項+客西馬尼「撐住不睡」神學守法+實作順序都在裡面，動工前必讀）。
-  3) 地圖美化（海陸漸層/淺水帶/海岸陰影/細海岸線）+路線虛線按長寬比補償
-     （聖地窄高圖 0.30、寬圖不變）。拖曳變藍的 GPU 修法一行未動——
-     別碰 left/top 平移那套（見 CLAUDE.md 頂部,踩過的大雷）。
+■ 現在到哪（2026-07-05；「已完成 vs 真正待做」單一真相=roadmap.md 最上段）
+  1) ✝️ 耶穌生平之旅 ?journey=jesus 七關已接六關（PR #55-58 全併、線上已驗）：
+     ①曠野試探(?demo=wilderness 卡片配對) ②平靜風浪(約拿引擎 cast:false)
+     ③五餅二魚(?demo=loaves) ⑤好撒馬利亞人(?demo=goodSamaritan 卡片抉擇)
+     ⑥客西馬尼(?demo=gethsemane 撐住不睡新引擎,守「撐住≠改寫聖經」神學守法)
+     ⑦各各他五幕終局(?demo=jesusFinale,十架剪影不見血)。
+     只剩④水面行走——★使用者已拍板(2026-07-05)：跨 repo 嵌入彼得走海（見下一步）。
+  2) 🔊 朗讀鐵則（牧者定案,絕不可違）：不准機器聲——固定句子一律
+     speakScripture(mp3 優先)、絕不用 speakText;新關卡同輪烤 mp3（合輯 /tts-bake）。
+     現況:manifest 27 句曉臻、precache 39 entries;spokenRef 有書卷全名表;
+     jonah/paulsilas 複本已 sync 到 ttsFix（#57）。
+  3) 📋 題庫送審清單已產：docs/耶穌旅程-題庫送審-2026-07-05.html（78KB,
+     含全部站點題+①⑤⑦卡片文案）——印給牧師過目,過審才點大廳卡。
 
 ■ 怎麼跑 / 驗證
   npm run dev（或雙擊 play-*.bat）；驗證鏈=npm run validate + test:selfplay
   + build；美術改動用 Playwright 實機截圖（canvas-playwright-verify）。
-  ⚠ 節奏關的時序測試會被背景分頁節流騙——用「constructor 直接 new、不
-  boot」的原子單元測試（rhythm skill 驗證段有完整寫法，本輪兩度誤判才學會）。
+  ⚠ 節奏關時序測試會被背景分頁節流騙——用「constructor 直接 new、不 boot」
+  的原子單元測試（rhythm skill 驗證段有完整寫法）。
 
 ■ 本機地雷
   - agape250 機 Node 24 vite build 會無聲死：先 Remove-Item dist 再 build，
     看 dist/index.html 時間戳確認真的建了（CLAUDE.md 有專段）。
   - .bat 純 ASCII + CRLF；經文一律先 cuv MCP lookup；文案標「待牧者審核」。
   - gen-map 管站點座標（journey JSON 的 x/y 是產物別手改；daniel/noah 例外）。
+  - sync:jonah 一律 --from=<jonah feat/redsea-tts 的 src>（main 沒戰爭關路由，
+    會弄壞 redsea/jehoshaphat；2026-07-05 實查警告仍有效）。
+  - gen-tts 的 manifest 是累加式：tts-verses.json 刪句後要修剪孤兒 mp3
+    （步驟見合輯 /tts-bake）。agape250 機 msedge-tts 一次烤一句就死 exit 127，
+    重跑到「新產 0」即可。
 
-■ 下一步（照牧師核准順序；工時/細節見 roadmap.md 最上段 CP 表）
-  ①⑤卡片關(各~半天) → ⑥客西馬尼撐住不睡(~半天,守神學守法) →
-  ⑦五幕終局(~1天) → 嵌④彼得走海 → 題庫送審(export-quiz-review) → 大廳點卡。
+■ 下一步（照序）
+  1. ④跨 repo 嵌入彼得走海（★已拍板,別做問答+連結;0.5~1天）：照 paulsilas 前例——
+     上游 hfpc-peter-sea-game 做 embed-aware(new Game(canvas,{embed,onComplete})、
+     不吃 ui.js/main.js)→ 本 repo 加 scripts/sync-petersea-engine.mjs →
+     站點 minigame.engine:'petersea' → 朗讀句同輪 /tts-bake → 驗證鏈+Playwright。
+  2. 牧師過審 docs/耶穌旅程-題庫送審-2026-07-05.html → 3. 大廳點耶穌旅程卡(~10min)。
+  其餘見 roadmap.md 最上段 CP 表（金句 mp3 鋪開/太鼓第二關/巴蘭摩西搬家…）。
 
 ■ 跨專案工具
-  /plugin marketplace update hfpc-skills 取得最新（95 skills；本輪更新
-  rhythm-beat-minigame 第五子型「自由演奏」+耶穌設計稿定調版）。
+  /plugin marketplace update hfpc-skills 取得最新（98 skills · 35 commands · 13 agents；
+  本輪新增 stay-awake-minigame、/tts-bake;另有 /onboard-machine 換機一鍵驗收）。
   ★skill 合輯兩台共寫：坐下第一件事先 git pull 合輯 repo；
   新 clone 跑一次 git config core.hooksPath githooks（防鏡像互蓋守門）。
 
