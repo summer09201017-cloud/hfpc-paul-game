@@ -1,196 +1,52 @@
 ============================================================
-讀我 — HANDOFF（給 HFPC 那台 PC 的 AI / 開發者）
-更新：2026-06-15（晚）。接手請先讀這份整段，再進各 repo 讀 CLAUDE.md / README.md。
+讀我 — HANDOFF（保羅大富翁 hfpc-paul-game）
+交接日期：2026-07-04
+給：agape250 那台 PC 的 AI / 接手的人
 GitHub 帳號：summer09201017-cloud。GitHub 是唯一真相；桌面 zip 只是備援快照。
-本檔已同步 commit 到 paul / bible-games / jonah 三個 repo 的 main。
 ============================================================
 
-════════════════════════════════════════════════════════════
-★ 最新對齊：2026-06-18（晚）（先讀這段，最新）
-════════════════════════════════════════════════════════════
-  本輪做完並上線（main 已併、Netlify 自動部署）：
-  • 🏆 通關獎狀（PR #39）：結束畫面每位玩家一顆「🏆 獎狀」鈕 → 下載「○○完成《○○》」PNG
-    （src/certificate.js，羊皮紙金框+得勝印章+旅程名/頭銜/分數/日期）。純 Canvas、零美術檔、可離線/列印；任何旅程通用。
-  • 📐 桌遊內卡片關滿版（PR #40）：牧師回報「桌遊內卡片關未全螢幕每列只 8 字、全螢幕才 21 字」。
-    原因＝桌遊內走 .modal__overlay 置中小框 + 16:9 短舞台把字擠窄。修正：卡片關（minigame.cards）一律走
-    .carddemo 滿版（不分 fill）→ 未全螢幕也跟全螢幕一樣寬、只剩一顆按鈕（與聖歌/反轉動作版一致）+ 右上 ⛶；
-    桌遊 Canvas 關（配對/蓋舟）維持原置中彈窗。.carddemo 加 z-index:60 才蓋得住棋盤。
-  本輪確認/結案：
-  • ✅ 實機驗全螢幕挖孔/置中：牧者在實機（有挖孔的手機）按 ⛶ 進全螢幕確認 OK，不再黑邊、置中正常 → 結案。
-  真正待做（CP 排序見 paul docs）：挪亞文案待牧者審（bible-content-reviewer）；巴蘭/摩西動作版搬進 paul；
-    離線啟動選單、投影計分板（各半天）；（選配）通關獎狀抽成 skill award-certificate。
-  MCP：Playwright MCP 是「安裝就好」（官方 @playwright/mcp，非自製）：claude mcp add playwright -- npx -y @playwright/mcp@latest
-    ——非必要（AI 已用 Bash+node 跑 Playwright 截圖驗收）；要 AI 即時點按再裝。GitHub/context7/memory MCP 已在用。
+■ 這是什麼
+  「保羅宣教之旅」React+Vite PWA——大富翁桌遊外框 + 十條旅程 + 系列多數
+  動作關/卡片關都住這（?journey= / ?demo=）。push main → Netlify 自動部署
+  （hfpc-paul-game.netlify.app）。完整架構讀 CLAUDE.md（最權威）。
 
-════════════════════════════════════════════════════════════
-★ 對齊：2026-06-18（早）
-════════════════════════════════════════════════════════════
-  挪亞記大富翁 三階段全部上線（自動部署）：
-  • ?journey=noah 完整旅程（14 站手繪洪水板 + arkbuild/arkpairs 闖關站 + 🌈彩虹之約 L6 五幕卡片終局關）。
-  • 大廳「挪亞方舟」合輯加「完整旅程」卡 → ?journey=noah。
-  • 修好 SetupScreen 沒讀 ?journey= 的潛在 bug（大廳所有旅程深連結本來都落在保羅，現已直達）；加 play-noah.bat。
-  新 Claude Code 工具（paul repo .claude/ + 全域 ~/.claude/skills/，打開 repo 即生效）：
-  • slash /playtest <key>（手機橫向截圖驗收一鍵化）
-  • agent bible-content-reviewer（題庫/卡片/旅程 經文+神學 送審清單，牧者把關前先跑）
-  • hook（改 .bat 提醒 CRLF+ASCII；改 journey*.json/specs.js 提醒跑 validate/selfplay）
-  • skill bible-card-finale（五幕手繪終局關心法）；另有 embed-fullscreen-fit、difficulty-knob。
-  • slash/agent/hook/MCP 完整 CP 排序清單 → paul docs/未來功能與skill點子-CP排序.md 最後一段。
-    建議優先裝：Playwright MCP（實機點按截圖驗收）；GitHub MCP 已在用。
-  待做（CP 排序見 paul docs）：挪亞文案待牧者審（用 bible-content-reviewer）；巴蘭/摩西動作版搬進 paul；
-    離線選單/投影計分板。（通關獎狀 ✅ 已上線 PR #39；實機驗挖孔/置中 ✅ 牧者確認 OK；皆結案——見最上方 06-18 晚段。）
-  鐵律不變：走 PR 不直推 main；大廳連 paul ?demo=/?journey= 要「先部署 paul 再併大廳」否則 404；
-    卡片關一律 L6 手繪、動作關遊玩時隱藏標題；零美術檔改完用 /playtest 截圖驗收。
+■ 現在到哪（2026-07-04；「已完成 vs 真正待做」單一真相=roadmap.md 最上段）
+  1) 節奏家族五子型全活範例（大廳音樂闖關合輯七關）：
+     ?demo=psalm100（4K 下落式）/ davidharp（GuitarHero）/ miriam（太鼓+連打）
+     / harptoy（自由演奏幼兒版，與 davidharp two-forms 配對）+ FNF 三獨立站。
+     心法/坑全在 skill rhythm-beat-minigame（長條三段式、每檔獨立譜面密度+
+     排序不變式、背景節流測試陷阱——改節奏關前先讀）。
+  2) 耶穌生平之旅 ?journey=jesus（牧師核准設計+定調六項）：21 站聖地棋盤
+     +題庫+輕RPG；②風浪(約拿引擎 cast:false)③五餅二魚(loaves 引擎,
+     ?demo=loaves,分出去不減反增)已接；①⑤⑥⑦④待接（先用問答撐住、可完整玩）。
+     ★設計稿=skill bible-journey-planner references/耶穌生平-設計.md
+     （定調六項+客西馬尼「撐住不睡」神學守法+實作順序都在裡面，動工前必讀）。
+  3) 地圖美化（海陸漸層/淺水帶/海岸陰影/細海岸線）+路線虛線按長寬比補償
+     （聖地窄高圖 0.30、寬圖不變）。拖曳變藍的 GPU 修法一行未動——
+     別碰 left/top 平移那套（見 CLAUDE.md 頂部,踩過的大雷）。
 
-════════════════════════════════════════════════════════════
-★ 最新對齊：2026-06-17（agape250 的 AI 先讀這段；以下全部已併 main、自動部署、線上可玩）
-════════════════════════════════════════════════════════════
-  本輪（06-15 晚～06-17）做完並上線：
-  • 挪亞兩關（arkpairs 配對+安排房間 / arkbuild 蓋舟）併 main + 大廳「挪亞方舟」合輯卡。
-  • arkpairs 難度旋鈕(輕鬆/普通/挑戰)+⭐星等+手機無黑邊。
-  • 聖歌(約沙法)+反轉(巴蘭) 卡片關升級 L6 手繪 Canvas、去 emoji → 系列**全部卡片關皆 L6 手繪**。
-  • 盼望·以利亞動作關：遇天使後**空中撒餅🍞水💧、跳起來吃**才回體力 + 第4/5天使台詞精簡。
-  • 聖歌動作版**搬進 paul**（?demo=jehoshaphat-action，戰爭關永久家=paul）+ 大廳改指向 paul
-    + 敵軍放大~1.35×、加眉毛嘴巴(三表情)。
-  • **動作關手機全螢幕一條龍**（8 關）：16:9 取最大框、遊玩時隱藏標題列(遊戲最大)、
-    ⛶ 全螢幕鈕 + 暫停鈕、開場框不被切、挖孔安全區鋪暖底、去掉「開發預覽」字 → 心法成 skill `embed-fullscreen-fit`。
+■ 怎麼跑 / 驗證
+  npm run dev（或雙擊 play-*.bat）；驗證鏈=npm run validate + test:selfplay
+  + build；美術改動用 Playwright 實機截圖（canvas-playwright-verify）。
+  ⚠ 節奏關的時序測試會被背景分頁節流騙——用「constructor 直接 new、不
+  boot」的原子單元測試（rhythm skill 驗證段有完整寫法，本輪兩度誤判才學會）。
 
-  真正待做（CP 排序見 paul `docs/未來功能與skill點子-CP排序.md`）：
-  • ⚠ **挖孔黑條**：:root:fullscreen 鋪底已上線，但 Playwright 無法模擬鏡頭挖孔 → 實機按 ⛶ 進全螢幕確認；
-    若還黑改用 env(safe-area-inset-*) padding。
-  • 巴蘭/摩西動作版仍在 war-games（手動部署）→ 可比照聖歌搬進 paul 自動上線。
-  • netlify CLI 已裝在 HFP 機（war-games 手動部署用）；本機 git 身分要設 summer09201017-cloud。
-  • 文案待牧者審：盼望/大光卡片版、挪亞各關教導、聖歌/巴蘭卡片。
-  鐵律：走 PR 不直推 main；大廳連 paul ?demo= 要「先部署 paul 再併大廳」否則 404；
-        卡片關一律 L6 手繪、動作關遊玩時隱藏標題；零美術檔改完用 Playwright 手機橫向截圖驗收。
-  ★ 新 skill：embed-fullscreen-fit（手機全螢幕嵌入固定比例 Canvas 關，debug 黑邊/不夠大/沒暫停/開場框被切先讀它）。
+■ 本機地雷
+  - agape250 機 Node 24 vite build 會無聲死：先 Remove-Item dist 再 build，
+    看 dist/index.html 時間戳確認真的建了（CLAUDE.md 有專段）。
+  - .bat 純 ASCII + CRLF；經文一律先 cuv MCP lookup；文案標「待牧者審核」。
+  - gen-map 管站點座標（journey JSON 的 x/y 是產物別手改；daniel/noah 例外）。
 
-■ 一句話現況（2026-06-15 晚）
-  暑假兒童營主題「逆轉奇兵」五奇兵已全部上線（每個都有卡片版+動作版，大廳 10 格 5列2欄全亮）；
-  紅海奔逃動作關大幅強化並上線；挪亞方舟兩關（另一 session 並行）已進 PR。今天大量收尾 + 上線。
+■ 下一步（照牧師核准順序；工時/細節見 roadmap.md 最上段 CP 表）
+  ①⑤卡片關(各~半天) → ⑥客西馬尼撐住不睡(~半天,守神學守法) →
+  ⑦五幕終局(~1天) → 嵌④彼得走海 → 題庫送審(export-quiz-review) → 大廳點卡。
 
-■ 三＋一個站台（都在 summer09201017-cloud，Netlify 自動部署，除 war-games）
-  ┌ repo / 站 ──────────────────┬ 線上 ───────────────────────────────────────────────┐
-  │ hfpc-bible-games（大廳）     │ hfpc-bible-games.netlify.app。逆轉奇兵(10格)+戰爭闖關合輯。│
-  │ hfpc-paul-game（React 主程式）│ hfpc-paul-game.netlify.app。七旅程 + 各 ?demo= 單關。      │
-  │ hfpc-jonah-game（vanilla 引擎）│ hfpc-jonah-game.netlify.app（六關正式站）。               │
-  │ hfpc-war-games（戰爭原型站）  │ hfpc-war-games.netlify.app。?level=moses/redsea/jehoshaphat/balaam │
-  └─────────────────────────────┴──────────────────────────────────────────────────────────┘
-  ⚠ war-games = 「約拿 feat/redsea build → netlify CLI 手動部署」(不連 GitHub 自動)。
-    指令：在 hfpc-jonah-game 下 `npm run build` →
-    `netlify deploy --prod --dir site --site 7addaadf-d3cd-4029-9a0b-7143b902fc98 --no-build`
-    改約拿動作關 = 重 build 重 deploy + sw 版本 +1。目前線上 = sw v18。
-    ✅ 這台(agape250)已裝 netlify CLI 且登入(DeYi/台北信友堂)；HFPC 那台若沒裝要先 `npm i -g netlify-cli` + `netlify login`。
+■ 跨專案工具
+  /plugin marketplace update hfpc-skills 取得最新（95 skills；本輪更新
+  rhythm-beat-minigame 第五子型「自由演奏」+耶穌設計稿定調版）。
+  ★skill 合輯兩台共寫：坐下第一件事先 git pull 合輯 repo；
+  新 clone 跑一次 git config core.hooksPath githooks（防鏡像互蓋守門）。
 
-■ 工作環境（重要！）
-  - 真 git 工作樹：C:\Users\agape250\Downloads\hfpc-git\（三個 clone）。
-    桌面的「0615…」等資料夾是解壓快照、沒有 .git，別在那邊改。
-  - 這台沒裝 gh CLI，但 Git Credential Manager 已快取憑證 → `git push` 直接可用；
-    開/合 PR 用 MCP github 工具（或網頁）。
-  - Node 24：`vite build` 偶爾無聲死 → 先手動刪 dist/ 再 build；看 dist/index.html 時間戳確認。
-  - 沒裝 jq（hook/腳本別依賴 jq）。
-
-■ ★ 逆轉奇兵【五奇兵 × 兩形態 = 10 格】現況（全部已上線，大廳 5列2欄）
-  ┌ 奇兵 ──┬ 卡片版（?demo=）─────────┬ 動作版（?demo= 或 war-games ?level=）─────┐
-  │🕊️福音 │ ✅cornelius            │ ✅cornelius-action（跑酷,約帕→該撒利亞）  │
-  │🌅盼望 │ ✅elijah（文案待審）   │ ✅elijah-action（撿餅水,天使有表情+遞餅水）│
-  │💡大光 │ ✅saul（文案待審）     │ ✅saul-action（曠野跑酷,大馬士革路→直街）  │
-  │🎵聖歌 │ ✅jehoshaphat（待審）  │ ✅war-games ?level=jehoshaphat（讚美得勝）│
-  │🫏反轉 │ ✅balaam（待審）       │ ✅war-games ?level=balaam（閃避,長按加速,天使×0.9,有背景音樂）│
-  └────────┴────────────────────────┴──────────────────────────────────────────┘
-  ＋戰爭合輯🌊紅海：?demo=redsea（出14,獨立入口,不綁約拿/不併保羅旅程）。
-
-■ 🌊 紅海奔逃 — 今天做到很完整（?demo=redsea + war-games ?level=redsea，都 live）
-  站住等海開 → 跑過海床 → 海合攏淹追兵=過關。反向RPG：沒有攻擊鍵，唯一的路是神開的海路。
-  已含：渡海時間×2(goalDistance 8400)、可加速衝刺(長按畫面任意處 或 →/D)、手機滿版全螢幕、
-  更緊張(障礙密、追兵逼)、水中動物障礙(🦀螃蟹快速衝/🐍海蛇/🦂水蠍子，數量×0.8)、
-  跳到動物身上=踩死(壓扁+💥,在空中即踩死、好踩)、追兵急促背景音樂、
-  法老追兵(馬頭朝右尾左、士兵兇狠表情+頭盔、5輛追/closing 7輛)、過關海水從上下合攏把全軍沖走、人仰馬翻、淹沒(出14:28)。
-  引擎源頭在 jonah feat/redsea；保羅端走 sync:jonah。校準：scripts/_redsea-tune.mjs 三閘門、_redsea-render-check.mjs。
-
-■ 🛕 挪亞方舟（另一 session 並行做，PR #15，未合併）
-  paul src/minigames/arkpairs/（一公一母翻牌配對 + 安排房間相鄰約束解謎）、arkbuild/（操作挪亞鎚擊放木板+嘲笑者，5段創6:14-22）。
-  ?demo=arkpairs / ?demo=arkbuild；play-ark-pairs.bat / play-ark-build.bat。大廳已加挪亞合輯卡(在 bible-games 分支，待合併部署)。
-  ⚠ 跨 session 教訓：未 commit 的源碼曾被 `git clean` 誤刪(已從 dist 救回)。一律做完即 commit+push；多 session 共用工作樹時各用 `git worktree`。
-
-■ ✅ 今天已完成並上線（合併進 main、已部署）
-  paul：#11 逆轉奇兵全套(2卡片關+紅海+福音/大光動作版+以利亞天使) / #12 紅海(×2+衝刺+手機滿版+更緊張) /
-        #13 手機地圖放大空白修復(縮放上限依DPR動態夾) / #14 紅海水中動物 / #16 長按加速+踩死+紅海/巴蘭背景音樂 /
-        #17 踩死更好踩+障礙×0.8+play-redsea.bat。
-  bible-games：#2 逆轉奇兵10格5列2欄+紅海卡 / #3 大廳預設改暖米白(+5種換色外皮可切換)。
-  war-games：部署到 sw v18（moses/jehoshaphat/balaam/redsea 全部最新；巴蘭天使×0.9慢×0.9少+長按加速+音樂）。
-
-■ 🔴 真正待做（接手第一優先）
-  1.【先做】牧者審核剩餘卡片版文案：盼望elijah、大光saul、聖歌jehoshaphat、反轉balaam（都已上線但文案是AI重用+草擬）。
-     送審工具：paul `npm run`（export-quiz-review）或直接玩 ?demo= 逐句看。— 0.5 天（審）。CP 最高（營會前必做）。
-  2. 合併兩個待合 PR 並實機驗收：
-     - paul #18（法老追兵表情/馬頭朝右/數量/過關海水把全軍沖走+人仰馬翻+淹沒）— 已驗證，可直接合。
-     - paul #15（挪亞兩關，另一 session）+ bible-games 的挪亞大廳卡分支 — 合併序：先 paul #15 部署，再合大廳。
-  3. 手機實機回歸測試：地圖放大不再空白(RASTER_BUDGET=3200 可再調保守)、紅海手機滿版/長按加速/踩死、巴蘭。
-
-■ 🚀 還能加的功能（CP 值高→低 × 開發時間短→長；給 HFPC 那台 AI 接著做）
-  【半天內、立刻有感、CP 極高】
-   A. 老師一鍵「今天可上課 ✓」.bat：跑 npm test + 印報告（綠燈才放心開課）。~1hr。
-   B. 全奇兵「離線啟動選單頁」一張（本機 HTML，連各 ?demo=/?level=）——分站投影最實用。~2-3hr。
-   C. 通關證書/獎狀畫面（名字+奇兵+金句，可截圖列印）。~2-3hr。
-   D. 大廳「逆轉奇兵」每卡的 soon 都已拿掉；剩補大光/福音動作版的 bespoke 場景（目前通用跑酷）。~各半天。
-  【1-2 天、明顯加值】
-   E. 金句收集冊/圖鑑（答對收金句貼紙，localStorage）。~1天。
-   F. 分組計分板自動進分（大廳已有 #/scoreboard，串接各關得分）。~半天-1天。
-   G. 卡片關 L6 級手繪 Canvas 場景（取代 emoji，見 card-canvas-scenes skill）逐關升級。~各半天。
-   H. 把 war-games 的 moses/jehoshaphat/balaam「搬進保羅」當 ?demo（像 elijah-action），擺脫 netlify CLI 依賴、跨機可自動部署。~1天。
-  【大型、營會後再說】
-   I. 挪亞接真棋盤站點 + 整卷旅程/題庫/道具（見 add-challenge-station / bible-journey-planner / bible-rpg-items）。
-   J. 挪亞畢業成獨立 repo hfpc-noah-game（見 bible-game-scaffold 走法 B）。
-   K. 真實美術 PNG（renderer/scenes 已隔離，可後換；先截圖比對再定案，見 game-art-upgrade）。
-   L. 雲端存檔/班級排行榜（Supabase）。
-
-■ 🧩 跨專案 Skill（已建立 ✅ / 建議再做）
-  ✅ 今天新增並驗證：
-     - reverse-rpg-design：得勝靠倚靠神、不靠攻擊力的反向RPG設計心法（紅海/摩西/約沙法/盼望…）。
-     - theme-skins：任何網站/PWA 加「換色外皮」切換器（活範例：大廳5皮）。
-     - arcade-juice：即時小遊戲「手感三件組」——長按加速 / 踩死敵人 / 每關不同程序化背景音樂（活範例：紅海/巴蘭）。
-     - match-pairs-minigame（另一 session）：翻牌記憶配對 +（可選）相鄰約束安排解謎（活範例：arkpairs）。
-  • 建議再做（CP 高→低）：
-     - quiz-authoring：幫某卷書產 N 題 + 自動跑 validator + 產牧者送審清單。直擊最大瓶頸（審題）。
-     - classroom-hub-lobby：大廳合輯卡 + 深連結 + soon 旗標 + 分站/輪流/離線守則（把 bible-games 慣例固化）。
-     - bible-minigame-two-forms：一故事→卡片版+動作版雙形態，並在大廳並列（逆轉奇兵的做法固化）。
-  • 可改進的現有 skill：
-     - embed-minigame：補「動作關兩種家」war-games ?level（需 netlify CLI）vs 保羅 in-repo ?demo（推薦、自動部署）。
-     - classroom-game-deploy：補 war-games 專屬 site id + --no-build 手動部署、沒裝 netlify CLI 的備援。
-
-■ 🛠️ 建議的 Tool Calling / 自動化（給 HFPC 那台 AI）
-  ✅ 已裝：危險指令防呆 hook（~/.claude/settings.json PreToolUse/Bash，攔 git clean -f / reset --hard / rm -rf → 要求先確認；
-     用 grep 不用 jq；若沒生效開一次 /hooks 載入）。
-  • 截圖驗收鏈：paul 已裝 Playwright，逐關開 ?demo=/?journey= 截圖 + 抓 pageerror（零美術檔=改完一定截圖）。
-     約拿沒裝 Playwright，可用 scripts/_redsea-render-check.mjs（假 canvas 驅動真 Renderer）抓執行期錯誤。
-  • 上線前檢查鏈：validate + selfplay + smoke + test:offline + 看 dist/index.html 時間戳（防本機 build 無聲死）。
-  • 多 session 同工作樹：各開 `git worktree` 隔離；危險 git 動作前先 dry-run（git clean -nd）、用 git stash --include-untracked。
-  • MCP：github（開/合 PR）、memory（跨對話記住決定）。寄信/寫表：skill send-email、gsheet-write（gated，寄前先給人看）。
-
-■ ⚠ 地雷（接手務必守）
-  1. GitHub 是唯一真相；一律在 hfpc-git 的 clone 工作；文件跟程式一起 commit；動手前先確認在哪個分支/有沒有別的 session。
-  2. 併 main = Netlify 自動部署（paul/大廳/約拿正式站）。約拿正式站別放動作關原型（會曝光）；動作關走 war-games 或保羅 ?demo。
-  3. 牧者把關：未審文案別當定稿；新產題/文案一律牧者審。
-  4. .bat 純英文 ASCII + CRLF（.gitattributes 已鎖）；啟動 `npm run dev -- --open "/?demo=KEY"`；別寫 Unix 的 >/dev/null（要 nul）。
-  5. 卡片 spec 的 answer/lives 不可越界；過 validate / npm test。
-  6. Node 24 vite build 偶爾無聲死：先刪 dist 再 build。Netlify(Node 20)不受影響。
-  7. 零美術檔：改完場景一定截圖（保羅 Playwright）或跑 headless 渲染檢查（約拿）驗收。
-  8. 約拿 level：7 摩西、8 紅海、9 聖歌、10 反轉；feat/redsea 才有這些（刻意不併約拿 main）。
-  9. 保羅 src/minigames/jonah/ 是 sync:jonah 的 verbatim 複製；改動作關手感改約拿端再 sync，別直接改保羅那份。
- 10. 多 session：未 commit 的檔會被別人 `git clean` 清掉——做完即 commit+push；共用工作樹各用 worktree。
-
-■ 怎麼跑 / 怎麼測
-  保羅（React+Vite）：npm install → npm run dev(:5173)。測：npm test（validate+selfplay+smoke）、npm run build、npm run test:offline。
-     單關：?demo=redsea / cornelius / cornelius-action / saul / saul-action / elijah / elijah-action / arkpairs / arkbuild / sling。
-  約拿（vanilla）：npm install → npm run dev。動作關單獨玩：?level=moses/redsea/jehoshaphat/balaam。
-     紅海驗證：node scripts/_redsea-tune.mjs、node scripts/_redsea-render-check.mjs。
-  大廳：npm run dev。push main 自動部署。
-
-■ 接手第一件事（建議順序）
-  1. git clone/pull 三 repo（在 hfpc-git\）；git fetch --all 看待合 PR（paul #18 法老追兵、#15 挪亞；bible-games 挪亞大廳卡）。
-  2. 讀本檔 → 找牧者審 4 個卡片版文案（待做 1）。
-  3. 合併 paul #18（可直接）；合併 #15 挪亞並部署，再合大廳挪亞卡。
-  4. 手機實機回歸（地圖縮放、紅海、巴蘭）。
-  5. 把 claude-skills（reverse-rpg-design / theme-skins / arcade-juice / match-pairs-minigame）裝進 ~/.claude/skills\；危險指令 hook 在 ~/.claude/settings.json。
-  6. 接著挑「還能加的功能」A→D（CP 高、半天內）做起。
+============================================================
+（最完整、會更新的版本：CLAUDE.md 與 roadmap.md；舊版歷史段見 git log）
 ============================================================
