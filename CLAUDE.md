@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > **修法**(`MapBackground.jsx` / `Board.jsx` / `styles.css`):海改成 `.board` 的 **CSS `background:#acd3e0`**(純色背景零點陣成本、移除 SVG 大 rect);平移改用 **`transform: translate3d`**(只在合成器移動、不重繪),縮放仍走 width/height %。實機驗收:地圖正常、拖曳平移正常、不再變色。心法見 skill `gpu-safe-rendering`(本案是它的活範例)。
 > 本輪也做:3D 骰子→2D(`DicePanel.jsx`)、`sync:paulsilas`、保羅西拉嵌入同步最新版。
 
+> ✝️ **耶穌生平之旅骨架上線(2026-07-04,`?journey=jesus`,牧師已核准設計+定調六項)**:21 站聖地 gen-map 棋盤(伯利恆→加利利→耶路撒冷),玩家=無名門徒「你」、耶穌永不受操控;②平靜風浪已接約拿暴風雨引擎(cast:false);①③④⑤⑥⑦先用問答撐住、待接(清單見 journey-jesus.json `_note`;⑥客西馬尼=牧師拍板要做「撐住不睡」,守「撐住≠改寫聖經」神學守法,見 bible-journey-planner references/耶穌生平-設計.md)。題庫全部待牧者審核;**大廳卡片照核准順序等全部關卡接上才點亮**。
 > 🥁 **節奏家族補完(2026-07-04):`?demo=davidharp` 大衛彈琴(GuitarHero 型透視琴弦,撒上16,愁煩條)、`?demo=miriam` 米利暗擊鼓(太鼓型單軌雙打點:紅拍鼓 F/J、藍搖鈴 D/K;觸控拍鈴鼓中間=鼓/旁邊=鈴;出15:20-21 慶祝關不會輸)** —— 加上 FNF 三站與 psalm100,四子型全有活範例(見 skill rhythm-beat-minigame)。長條規則(psalm100/davidharp):按頭=開始、撐到尾=命中、放早=斷。
 > 🎹 **新機制(2026-07-03):`?demo=psalm100` 讚美琴鍵** —— 系列第一個 **4K 下落式節奏關(VSRG)**(`src/minigames/psalm100/`,自成一體引擎,sync:jonah 不碰):四欄琴鍵落下,判定線=「稱謝之門」(詩 100:4),DFJK/方向鍵/多點觸控,單點+長條(按住),年齡三檔(幼稚園長條退化成單點)。★設計:旋律照譜面排程播、漏按歌不斷——歌是神的,按對是「加入讚美」;不會輸,星等看命中率。原創 84BPM 五聲音階曲,經文已過 cuv 核對,how/win 文案標待牧者審核。
 > 📌 **現況速覽（2026-06-17，全部已併 main 並自動部署）**：線上 = 七旅程 + 多個單獨可玩的 `?demo=`：

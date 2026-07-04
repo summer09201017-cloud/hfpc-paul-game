@@ -478,3 +478,46 @@ buildRegion({
     cornelius_cornerstone: { lat: 32.50, lon: 34.90 }, // 該撒利亞（哥尼流）· 房角石的見證（地中海岸）
   },
 })
+
+// ===========================================================================
+// 耶穌生平之旅(2026-07-04,牧師核准設計):同彼得的聖地範圍,南擴到伯利恆。
+// 玩家=無名門徒「你」;同區事件沿湖岸/繞耶路撒冷錯開(同彼得的做法)。
+// ===========================================================================
+buildRegion({
+  label: '耶穌生平之旅',
+  bounds: { lonMin: 34.6, lonMax: 35.95, latMin: 31.45, latMax: 33.45 },
+  iso: ['ISR', 'PSE', 'LBN', 'SYR', 'JOR'],
+  journeyFile: 'journey-jesus.json',
+  mapFile: 'region-map-jesus.json',
+  labels: [
+    { t: '加利利', lat: 32.98, lon: 35.35, kind: 'region' },
+    { t: '加利利海', lat: 32.82, lon: 35.59, kind: 'sea' },
+    { t: '地　中　海', lat: 32.55, lon: 34.70, kind: 'sea' },
+    { t: '撒馬利亞', lat: 32.25, lon: 35.20, kind: 'region' },
+    { t: '猶太 · 耶路撒冷一帶', lat: 31.80, lon: 35.00, kind: 'region' },
+    { t: '約旦河', lat: 32.40, lon: 35.57, kind: 'sea' },
+  ],
+  cities: {
+    bethlehem:       { lat: 31.705, lon: 35.20 },  // 伯利恆(起點,馬槽)
+    nazareth:        { lat: 32.70, lon: 35.30 },   // 拿撒勒(木匠家)
+    jordan_baptism:  { lat: 31.837, lon: 35.55 },  // 約旦河受洗(伯大尼渡口)
+    wilderness:      { lat: 31.68, lon: 35.43 },   // 猶太曠野(受試探)
+    calling_shore:   { lat: 32.83, lon: 35.505 },  // 加利利海邊蒙召(西岸)
+    cana:            { lat: 32.75, lon: 35.34 },   // 迦拿(頭一件神蹟)
+    capernaum:       { lat: 32.885, lon: 35.575 }, // 迦百農會堂
+    sermon_mount:    { lat: 32.95, lon: 35.53 },   // 八福山(登山寶訓)
+    storm_calmed:    { lat: 32.755, lon: 35.60 },  // 平靜風浪(湖中偏南)
+    feeding_5000:    { lat: 32.915, lon: 35.645 }, // 五餅二魚(伯賽大)
+    walk_water:      { lat: 32.815, lon: 35.62 },  // 夜四更天(湖面中央)
+    confession:      { lat: 33.28, lon: 35.69 },   // 該撒利亞腓立比(大認信)
+    transfiguration: { lat: 32.685, lon: 35.39 },  // 變像山(他泊山)
+    good_samaritan:  { lat: 31.86, lon: 35.36 },   // 耶利哥路上(比喻)
+    jericho:         { lat: 31.87, lon: 35.44 },   // 耶利哥(巴底買/撒該)
+    bethany:         { lat: 31.735, lon: 35.30 },  // 伯大尼(香膏)
+    triumphal_entry: { lat: 31.80, lon: 35.235 },  // 騎驢進城(城東門)
+    upper_room:      { lat: 31.775, lon: 35.115 }, // 馬可樓(洗腳,城西)
+    gethsemane:      { lat: 31.825, lon: 35.275 }, // 客西馬尼(橄欖山)
+    golgotha_tomb:   { lat: 31.745, lon: 35.175 }, // 各各他與空墳墓
+    commission:      { lat: 32.90, lon: 35.40 },   // 加利利山上(大使命,終點)
+  },
+})

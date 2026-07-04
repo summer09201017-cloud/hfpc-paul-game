@@ -8,6 +8,7 @@ import journeyExodus from '../data/journey-exodus.json'
 import journeyDaniel from '../data/journey-daniel.json'
 import journeyNoah from '../data/journey-noah.json'
 import journeyPeter from '../data/journey-peter.json'
+import journeyJesus from '../data/journey-jesus.json'
 import regionMapPaul from '../data/region-map.json'
 import regionMapPaul2 from '../data/region-map2.json'
 import regionMapPaul3 from '../data/region-map3.json'
@@ -17,6 +18,7 @@ import regionMapExodus from '../data/region-map-exodus.json'
 import regionMapDaniel from '../data/region-map-daniel.json'
 import regionMapNoah from '../data/region-map-noah.json'
 import regionMapPeter from '../data/region-map-peter.json'
+import regionMapJesus from '../data/region-map-jesus.json'
 import * as engine from '../core/engine'
 import { sound } from '../audio/sound'
 import { enterImmersive } from '../immersive'
@@ -33,6 +35,7 @@ const JOURNEYS = [
   { key: 'daniel', journey: journeyDaniel, map: regionMapDaniel, nextKey: null }, // 但以理（手繪時間軸棋盤，不走 gen-map）
   { key: 'noah', journey: journeyNoah, map: regionMapNoah, nextKey: null }, // 挪亞方舟（手繪洪水時間軸棋盤，不走 gen-map；接 arkbuild/arkpairs 兩個現成關）
   { key: 'peter', journey: journeyPeter, map: regionMapPeter, nextKey: null }, // 彼得跟隨主的一生（真實地理棋盤=聖地 gen-map，可放大；同地事件沿湖岸/繞耶路撒冷錯開；signature 水面行走待接『彼得走海』）
+  { key: 'jesus', journey: journeyJesus, map: regionMapJesus, nextKey: null }, // 耶穌生平之旅（2026-07-04 牧師核准；玩家=無名門徒「你」；②平靜風浪已接約拿暴風雨引擎，①③④⑤⑥⑦待接見 journey _note）
 ]
 
 const ROLL_MS = 3000 // 跑馬燈轉動時間（3 秒）

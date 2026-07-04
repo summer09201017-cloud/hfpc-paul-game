@@ -601,7 +601,7 @@
       },
       "_comment": "手繪座標（非 gen-map；philippi_prison 不在 gen-map CITIES，置於 philippi→暗妃波里 之間）。",
       "x": 18.2,
-      "y": 9.0,
+      "y": 9,
       "lat": 41.01,
       "lon": 24.29
     },
