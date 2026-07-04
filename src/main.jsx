@@ -24,6 +24,7 @@ import JehoshaphatActionDemo from './components/JehoshaphatActionDemo.jsx'
 import ArkPairsDemo from './components/ArkPairsDemo.jsx'
 import ArkBuildDemo from './components/ArkBuildDemo.jsx'
 import PaulSilasDemo from './components/PaulSilasDemo.jsx'
+import PeterSeaDemo from './components/PeterSeaDemo.jsx'
 import { CARD_GAMES } from './minigames/cards/specs'
 import './styles.css'
 import { registerSW } from 'virtual:pwa-register'
@@ -43,6 +44,7 @@ registerSW({ immediate: true })
 //   ?demo=davidharp         → 大衛彈琴（Guitar Hero 型節奏，撒上 16；琴弦由遠而近，彈得穩=掃羅的愁煩散開）
 //   ?demo=harptoy           → 大衛彈琴・自由演奏（音樂玩具，撒上 16；五聲音階沒有錯的音，幼稚園版；與 davidharp 同故事兩玩法）
 //   ?demo=loaves            → 五餅二魚・分餅（耶穌生平闖關③，約 6；分出去的不減反增，走完必過）
+//   ?demo=petersea          → 彼得走海（FNF 節奏,太 14 定睛看耶穌;耶穌生平闖關④,嵌入自 hfpc-peter-sea-game）
 //   ?demo=gethsemane        → 客西馬尼・警醒（耶穌生平闖關⑥，太 26；撐住不睡——結局不變、撐不住=溫柔敘事不會輸）
 //   ?demo=miriam            → 米利暗擊鼓（太鼓達人型節奏，出 15:20-21；紅拍鼓/藍搖鈴，過紅海的得勝慶祝、不會輸）
 //   ?demo=shore             → 海邊的復興（約 21；三次「你愛我嗎?」→ 餵養我的羊；炭火旁三次託付、跟從主）
@@ -75,6 +77,7 @@ function pickRoot() {
   if (demo === 'miriam') return <MiriamDemo />
   if (demo === 'loaves') return <LoavesDemo />
   if (demo === 'gethsemane') return <GethsemaneDemo />
+  if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />
   if (demo === 'elijah-action') return <ElijahDemo />

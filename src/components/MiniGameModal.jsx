@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Game } from '../minigames/jonah/game'
 import { Game as SlingGame } from '../minigames/sling/game'
 import { Game as PaulSilasGame } from '../minigames/paulsilas/game'
+import { Game as PeterSeaGame } from '../minigames/petersea/game'
 import { Game as ElijahGame } from '../minigames/elijah/game'
 import { Game as ArkPairsGame } from '../minigames/arkpairs/game'
 import { Game as ArkBuildGame } from '../minigames/arkbuild/game'
@@ -187,6 +188,8 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   const isArkBuild = minigame.engine === 'arkbuild'
   // in-repo 節拍音樂關（src/minigames/paulsilas/，保羅西拉半夜監牢唱詩讚美 徒16）：minigame.engine:'paulsilas'。
   const isPaulSilas = minigame.engine === 'paulsilas'
+  // in-repo 節拍音樂關(彼得走海,太14 定睛看耶穌;耶穌生平之旅闖關④):minigame.engine:'petersea'。
+  const isPeterSea = minigame.engine === 'petersea'
   // in-repo 分餅關（src/minigames/loaves/，五餅二魚 約6；耶穌生平之旅闖關③）：minigame.engine:'loaves'。
   // 收集反轉——分出去的不減反增(規則即講道);走完必過、不會輸。
   const isLoaves = minigame.engine === 'loaves'
@@ -329,6 +332,18 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
       // 依序放木板蓋方舟關：同一套嵌入契約。
       const game = new ArkBuildGame(canvasRef.current, {
         embed: true,
+        winPoints: minigame.winPoints || 5,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
+    if (isPeterSea) {
+      // 節拍音樂關(彼得走海):同一套嵌入契約(embed/onComplete/boot/destroy);mode 可由站點覆寫(walk/run)。
+      const game = new PeterSeaGame(canvasRef.current, {
+        embed: true,
+        mode: minigame.mode || 'run',
         winPoints: minigame.winPoints || 5,
         onComplete: (result) => onComplete(result),
       })
