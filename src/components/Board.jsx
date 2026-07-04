@@ -37,12 +37,21 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
 
   const aspect = (map && map.aspect) || 1.322
   const zp = useZoomPan({ aspect })
+  // 路線虛線粗細按長寬比補償:0.7 是按保羅寬圖(1.322)校的,窄高圖(聖地 0.57)
+  // 同單位會被拉粗近一倍、虛線又肥又醜(2026-07-04 牧師退件)。寬圖不變、窄圖等比變細。
+  const routeSw = +(0.7 * Math.min(1, aspect / 1.322)).toFixed(2)
 
   return (
     <div
       className="board"
       ref={zp.ref}
-      style={{ '--map-aspect': aspect, touchAction: 'none' }}
+      style={{
+        '--map-aspect': aspect,
+        '--route-sw': routeSw,
+        '--route-dash-land': `${(routeSw * 2).toFixed(2)} ${(routeSw * 2).toFixed(2)}`,
+        '--route-dash-sea': `${(routeSw * 2.6).toFixed(2)} ${(routeSw * 1.7).toFixed(2)}`,
+        touchAction: 'none',
+      }}
       {...zp.handlers}
     >
       {/* 可縮放 / 平移的整個地圖場景（地圖、路線、城市、棋子一起縮放）。
