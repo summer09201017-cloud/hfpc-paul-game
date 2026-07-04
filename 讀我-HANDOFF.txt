@@ -16,10 +16,10 @@ GitHub 帳號：summer09201017-cloud。GitHub 是唯一真相；桌面 zip 只�
      ③五餅二魚(?demo=loaves) ⑤好撒馬利亞人(?demo=goodSamaritan 卡片抉擇)
      ⑥客西馬尼(?demo=gethsemane 撐住不睡新引擎,守「撐住≠改寫聖經」神學守法)
      ⑦各各他五幕終局(?demo=jesusFinale,十架剪影不見血)。
-     只剩④水面行走——★使用者已拍板(2026-07-05)：跨 repo 嵌入彼得走海（見下一步）。
+     ④水面行走已嵌入彼得走海(engine:petersea,?demo=petersea)——**七關全齊!**
   2) 🔊 朗讀鐵則（牧者定案,絕不可違）：不准機器聲——固定句子一律
      speakScripture(mp3 優先)、絕不用 speakText;新關卡同輪烤 mp3（合輯 /tts-bake）。
-     現況:manifest 27 句曉臻、precache 39 entries;spokenRef 有書卷全名表;
+     現況:manifest 39 句曉臻(含約拿十關+彼得走海)、precache 51 entries;spokenRef 有書卷全名表;
      jonah/paulsilas 複本已 sync 到 ttsFix（#57）。
   3) 📋 題庫送審清單已產：docs/耶穌旅程-題庫送審-2026-07-05.html（78KB,
      含全部站點題+①⑤⑦卡片文案）——印給牧師過目,過審才點大廳卡。
@@ -42,12 +42,9 @@ GitHub 帳號：summer09201017-cloud。GitHub 是唯一真相；桌面 zip 只�
     重跑到「新產 0」即可。
 
 ■ 下一步（照序）
-  1. ④跨 repo 嵌入彼得走海（★已拍板,別做問答+連結;0.5~1天）：照 paulsilas 前例——
-     上游 hfpc-peter-sea-game 做 embed-aware(new Game(canvas,{embed,onComplete})、
-     不吃 ui.js/main.js)→ 本 repo 加 scripts/sync-petersea-engine.mjs →
-     站點 minigame.engine:'petersea' → 朗讀句同輪 /tts-bake → 驗證鏈+Playwright。
-  2. 牧師過審 docs/耶穌旅程-題庫送審-2026-07-05.html → 3. 大廳點耶穌旅程卡(~10min)。
-  其餘見 roadmap.md 最上段 CP 表（金句 mp3 鋪開/太鼓第二關/巴蘭摩西搬家…）。
+  1. 牧師過審 docs/耶穌旅程-題庫送審-2026-07-05.html（含 ④⑥ 新文案要補進去:重跑 export-quiz-review）。
+  2. 過審後大廳點耶穌旅程卡(~10min,add-to-collection)。
+  其餘見 roadmap.md 最上段 CP 表（太鼓第二關/巴蘭摩西搬家/離線選單…）。
 
 ■ 跨專案工具
   /plugin marketplace update hfpc-skills 取得最新（98 skills · 35 commands · 13 agents；

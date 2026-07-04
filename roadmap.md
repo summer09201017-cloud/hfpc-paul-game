@@ -13,13 +13,13 @@
 > **🔜 真正待做(2026-07-05 更新;★第一列=使用者已拍板):**
 > | # | 項目 | ⏱ | 備註 |
 > |---|---|---|---|
-> | 1 | **④水面行走:跨 repo 嵌入彼得走海(★使用者 2026-07-05 拍板,別做問答+連結)** | 0.5~1天 | 照 paulsilas 前例:上游 hfpc-peter-sea-game 做 embed-aware(new Game(canvas,{embed,onComplete}),不吃 ui.js/main.js)→ 本 repo 加 scripts/sync-petersea-engine.mjs + minigame.engine:'petersea' → 站點接上。⚠ 節奏關時序測試會被背景分頁節流騙,用 rhythm skill 的原子單元測試;⚠ 朗讀句照鐵則同輪 /tts-bake |
+> | ✅ | ~~④水面行走:跨 repo 嵌入彼得走海~~ | — | **已做(2026-07-05,feat/embed-petersea)**:上游已 embed-aware(僅補 ttsFix);paul 加 scripts/sync-petersea-engine.mjs+npm run sync:petersea → src/minigames/petersea/(9 模組);MiniGameModal engine:petersea+?demo=petersea+站點 walk_water 接上——**耶穌旅程七關全齊!** Playwright 實測嵌入可玩 |
 > | 2 | **牧師過審題庫**(docs/耶穌旅程-題庫送審-2026-07-05.html) | 牧師時間 | 過審後才點大廳卡 |
 > | 3 | **大廳點耶穌旅程卡**(④接上+過審後) | ~10min | 照牧師核准順序最後一步 |
 > | 4 | 太鼓第二關:大衛迎約櫃(撒下6,只取歡慶段) | ~半天 | miriam 引擎換皮 |
 > | 5 | 巴蘭/摩西動作版從 war-games 搬進 paul | 各~半天 | 舊待辦,自動部署受惠 |
 > | 6 | 離線啟動選單頁、投影計分板 | 各~半天 | 舊待辦,高 CP |
-> | 7 | 金句 mp3 鋪開(約拿六關+戰爭關,用 /tts-bake) | 0.5天 | 鐵則落地到老關卡 |
+> | ✅ | ~~金句 mp3 鋪開~~ | — | **已做(2026-07-05)**:jonah 十關(六關+摩西/紅海/約沙法/巴蘭)+彼得走海 12 句入列,manifest 39 句曉臻、precache 51 entries |
 >
 > ---
 >
