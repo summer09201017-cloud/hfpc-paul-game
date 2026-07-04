@@ -2,7 +2,7 @@
 
 > ## ⭐ 對齊現況：2026-07-04（最新，agape250 的 AI 先讀這段）
 >
-> **✅ 本輪(2026-07-04 午後,branch `feat/tts-upgrade`,PR 待併)朗讀三層改進（機器味＋破音字）：**
+> **✅ 本輪(2026-07-04 午後)朗讀三層改進——PR #54 已併 main、已自動部署、線上已驗(tts/manifest 200、4 mp3 200、bundle 含破音字典)（機器味＋破音字）：**
 > - 🔊 **`src/ttsFix.js`**（正本=skills 合輯 web-speech-scripture/assets/tts-fix.js）：破音字同音替換 `toSpeakable()`（使徒行傳→行撰、便雅憫→變雅憫、供物→貢物…**只影響唸、不動畫面經文**）＋斷句抑揚 `chunkClauses()`（問句尾音升/感嘆稍強/末句放慢）＋選聲排序 `pickZhVoice()`（Edge Natural > Google 國語 > SAPI）＋章節數字轉國字 `numToZh()`（spokenRef 改唸「第十四章」）。
 > - 🔊 **預錄 mp3 優先**：`scripts/gen-tts.mjs`（devDep msedge-tts,曉臻神經語音）把 `scripts/tts-verses.json` 的固定過關金句烤成 `public/tts/<ttsKey>.mp3`＋manifest；`speak.js` 先查 manifest 播 mp3、缺檔/失敗自動退回 Web Speech；mp3 已入 PWA precache（vite globPatterns 加 mp3），離線可用。已烤 4 句（elijah/cornelius/jehoshaphat/saul 過關經文,共約 300KB）。**新增句子：把 ActionScripture 實際組出的字串（verse+「。」+refSpoken）原樣加進 tts-verses.json 重跑**（⚠ 這台 lib 的 socket 會讓 node 一次只烤一句就死,重跑幾次到「新產 0」即可,manifest 逐句落盤不丟進度）。
 > - ⚠ `src/minigames/jonah/speak.js`、`paulsilas/speak.js` 是 sync 管的複本**沒動**——上游改進要去 hfpc-jonah-game 做再 sync（待辦）。
