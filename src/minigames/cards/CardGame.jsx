@@ -137,7 +137,7 @@ export default function CardGame({ spec, onComplete }) {
   const [sub, setSub] = useState('ask')
   const [score, setScore] = useState(0)
   const [wrongs, setWrongs] = useState(0) // 本題答錯次數(算分:第一次答對最高分)
-  const maxScore = (spec.steps ? spec.steps.length : 0) * 3 // 滿分 = 每題 3 分
+  const maxScore = (spec.steps ? spec.steps.filter((s) => s.kind !== 'info').length : 0) * 3 // 滿分 = 每「題」3 分(info 純劇情幕不計分,別灌進分母——反思型終局才不會永遠看起來低分)
 
   // 場景配色(Canvas 背景動畫用);可在 spec 設 accent:[r,g,b]
   const accent = spec.accent || [120, 140, 170]

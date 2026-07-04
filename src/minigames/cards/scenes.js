@@ -1450,4 +1450,76 @@ function samGo(ctx, w, h, t) {
   person(ctx, w * 0.28, gy, k * 1.0, { robe: '#6a5a9c', beard: true, face: 'awe' }) // 律法師(聽進去了)
   person(ctx, w * 0.14, gy, k * 0.9, { robe: '#9c5a6a', face: 'joy' }); person(ctx, w * 0.42, gy, k * 0.88, { robe: '#7a8a52', face: 'joy' })
 }
-export const JESUS = { wildDesert, wildStones, wildTemple, wildMountain, wildAngels, samAsk, samHurt, samBind, samInn, samGo }
+// ===================== 耶穌生平 · 終局⑦ 各各他與空墳墓(太 26-28)五幕手繪 =====================
+// 定調鐵則:受難「敬畏地看」——無鞭打受審畫面、十架遠景剪影不見血、猶大出賣旁白一句帶過、被捕不畫暴力。
+// ⑦幕1 客西馬尼之夜:火把的人群遠來(只畫光點)、主平靜站立、門徒逃走(太 26:55-56)
+function finGarden(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#141a33'); sky.addColorStop(1, '#2c3350'); ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#f2edd8'; ctx.beginPath(); ctx.arc(w * 0.16, h * 0.16, 22, 0, TAU); ctx.fill() // 月
+  ctx.fillStyle = '#2a3324'; ctx.fillRect(0, gy, w, h - gy)
+  ctx.strokeStyle = '#4a4232'; ctx.lineWidth = 6 * k; ctx.beginPath(); ctx.moveTo(w * 0.3, gy); ctx.quadraticCurveTo(w * 0.32, gy - 30 * k, w * 0.28, gy - 50 * k); ctx.stroke() // 橄欖樹
+  ctx.fillStyle = '#5f7a5a'; ctx.beginPath(); ctx.arc(w * 0.28, gy - 62 * k, 18 * k, 0, TAU); ctx.arc(w * 0.34, gy - 54 * k, 13 * k, 0, TAU); ctx.fill()
+  // 右方遠來的火把人群:只畫一排搖曳的橘光點(不畫刀棒、不畫暴力)
+  for (let i = 0; i < 6; i++) {
+    const fx = w * (0.78 + (i % 3) * 0.06), fy = gy - (18 + i * 7) * k
+    const fl = 0.6 + 0.4 * Math.abs(Math.sin(t * 5 + i * 1.7))
+    ctx.fillStyle = 'rgba(240,160,70,' + (0.5 * fl).toFixed(2) + ')'
+    ctx.beginPath(); ctx.arc(fx, fy, 5 * k * fl, 0, TAU); ctx.fill()
+  }
+  jesusFig(ctx, w * 0.55, gy, k * 1.1, {}) // 主平靜站立,面向來的人
+  person(ctx, w * 0.16, gy, k * 0.8, { robe: '#7a5a9c', walk: t * 10, face: 'worry' }) // 門徒逃走(遠小)
+  person(ctx, w * 0.07, gy, k * 0.72, { robe: '#3d6e8e', walk: t * 10 + 1.5, face: 'worry' })
+}
+// ⑦幕2 「成了」:遍地黑暗、各各他三個十架純剪影(不見血),中央十架後一線微光
+function finCross(ctx, w, h, t) {
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#1a1626'); sky.addColorStop(0.75, '#3a3142'); sky.addColorStop(1, '#4a4152'); ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h) // 午正的黑暗
+  const k = h / 240, hy = h * 0.72
+  const gl = ctx.createRadialGradient(w * 0.5, hy - 90 * k, 6, w * 0.5, hy - 90 * k, 130 * k)
+  gl.addColorStop(0, 'rgba(240,230,200,0.18)'); gl.addColorStop(1, 'rgba(240,230,200,0)')
+  ctx.fillStyle = gl; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#241f2e' // 山丘剪影
+  ctx.beginPath(); ctx.moveTo(0, h); ctx.quadraticCurveTo(w * 0.5, hy - 26 * k, w, h); ctx.closePath(); ctx.fill()
+  const cross = (x, ch, cw2) => { ctx.fillRect(x - 3 * k, hy - ch, 6 * k, ch); ctx.fillRect(x - cw2 / 2, hy - ch + 16 * k, cw2, 5.5 * k) }
+  ctx.fillStyle = '#120f1a' // 三個十架:純剪影,不畫人形細節、不見血
+  cross(w * 0.5, 108 * k, 56 * k)
+  cross(w * 0.3, 84 * k, 44 * k)
+  cross(w * 0.7, 84 * k, 44 * k)
+}
+// ⑦幕3 安放:磐石新墳、大石頭滾到墓門口、約瑟離去,天地安靜
+function finTomb(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#5a5a72'); sky.addColorStop(1, '#b8a88e'); ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h) // 到了晚上
+  ctx.fillStyle = '#8e8272'; ctx.fillRect(0, gy, w, h - gy)
+  ctx.fillStyle = '#6f6656'; ctx.beginPath(); ctx.moveTo(w * 0.4, gy); ctx.quadraticCurveTo(w * 0.44, gy - 96 * k, w * 0.66, gy - 92 * k); ctx.quadraticCurveTo(w * 0.9, gy - 88 * k, w * 0.94, gy); ctx.closePath(); ctx.fill() // 磐石鑿的墳
+  ctx.fillStyle = '#2e2a24'; ctx.beginPath(); ctx.arc(w * 0.62, gy - 2 * k, 26 * k, Math.PI, 0); ctx.fill() // 墓門洞
+  const sx = w * 0.55 // 大石頭封住墓門(蓋住門洞左半)
+  ctx.fillStyle = '#9a9284'; ctx.beginPath(); ctx.arc(sx, gy - 24 * k, 27 * k, 0, TAU); ctx.fill()
+  ctx.strokeStyle = '#7a7264'; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.arc(sx, gy - 24 * k, 27 * k, 0, TAU); ctx.stroke()
+  ctx.beginPath(); ctx.arc(sx - 8 * k, gy - 30 * k, 6 * k, 0, TAU); ctx.stroke()
+  person(ctx, w * 0.16, gy, k * 0.95, { robe: '#6a5a9c', beard: true, walk: t * 4, face: 'worry' }) // 約瑟離去
+}
+// ⑦幕4 七日的頭一日:晨光、石頭滾開、天使坐在石頭旁、空的墓門
+function finDawn(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#f2c98a'); sky.addColorStop(0.55, '#e8a97a'); sky.addColorStop(1, '#c9b184'); ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h) // 天快亮
+  rays(ctx, w, h, t, w * 0.62, 0.6)
+  ctx.fillStyle = '#a89a7e'; ctx.fillRect(0, gy, w, h - gy)
+  ctx.fillStyle = '#8a7e68'; ctx.beginPath(); ctx.moveTo(w * 0.4, gy); ctx.quadraticCurveTo(w * 0.44, gy - 96 * k, w * 0.66, gy - 92 * k); ctx.quadraticCurveTo(w * 0.9, gy - 88 * k, w * 0.94, gy); ctx.closePath(); ctx.fill()
+  ctx.fillStyle = '#241f1a'; ctx.beginPath(); ctx.arc(w * 0.62, gy - 2 * k, 26 * k, Math.PI, 0); ctx.fill() // 空的墓門洞
+  const sx = w * 0.3 // 石頭滾開在一旁
+  ctx.fillStyle = '#b3a892'; ctx.beginPath(); ctx.arc(sx, gy - 20 * k, 24 * k, 0, TAU); ctx.fill()
+  angelFig(ctx, sx + 2 * k, gy - 38 * k, k * 0.85, t) // 主的使者(相貌如同閃電,衣服潔白如雪)
+}
+// ⑦幕5 「不要害怕!」:天使報信、兩位婦女又害怕又大大地歡喜
+function finRisen(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  const sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#bfd8e8'); sky.addColorStop(1, '#f2dfae'); ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+  rays(ctx, w, h, t, w * 0.5, 0.7)
+  ctx.fillStyle = '#a8b36a'; ctx.fillRect(0, gy, w, h - gy)
+  angelFig(ctx, w * 0.62, gy, k * 1.05, t)
+  speechBubble(ctx, w * 0.62, gy - 150 * k, k, '不要害怕!')
+  person(ctx, w * 0.3, gy, k * 1.0, { robe: '#9c5a6a', arms: 'up', face: 'awe' }) // 兩位馬利亞:又害怕
+  person(ctx, w * 0.16, gy, k * 0.95, { robe: '#7a5a9c', arms: 'up', face: 'joy' }) // 又大大地歡喜
+}
+export const JESUS = { wildDesert, wildStones, wildTemple, wildMountain, wildAngels, samAsk, samHurt, samBind, samInn, samGo, finGarden, finCross, finTomb, finDawn, finRisen }
