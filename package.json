@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
+    "msedge-tts": "^2.0.6",
     "playwright": "^1.60.0",
     "vite": "^6.0.7",
     "vite-plugin-pwa": "^0.21.1"

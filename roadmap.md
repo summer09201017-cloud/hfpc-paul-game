@@ -2,7 +2,13 @@
 
 > ## ⭐ 對齊現況：2026-07-04（最新，agape250 的 AI 先讀這段）
 >
-> **✅ 本輪(2026-07-03~04)做完並上線（main 已併、自動部署）：**
+> **✅ 本輪(2026-07-04 午後,branch `feat/tts-upgrade`,PR 待併)朗讀三層改進（機器味＋破音字）：**
+> - 🔊 **`src/ttsFix.js`**（正本=skills 合輯 web-speech-scripture/assets/tts-fix.js）：破音字同音替換 `toSpeakable()`（使徒行傳→行撰、便雅憫→變雅憫、供物→貢物…**只影響唸、不動畫面經文**）＋斷句抑揚 `chunkClauses()`（問句尾音升/感嘆稍強/末句放慢）＋選聲排序 `pickZhVoice()`（Edge Natural > Google 國語 > SAPI）＋章節數字轉國字 `numToZh()`（spokenRef 改唸「第十四章」）。
+> - 🔊 **預錄 mp3 優先**：`scripts/gen-tts.mjs`（devDep msedge-tts,曉臻神經語音）把 `scripts/tts-verses.json` 的固定過關金句烤成 `public/tts/<ttsKey>.mp3`＋manifest；`speak.js` 先查 manifest 播 mp3、缺檔/失敗自動退回 Web Speech；mp3 已入 PWA precache（vite globPatterns 加 mp3），離線可用。已烤 4 句（elijah/cornelius/jehoshaphat/saul 過關經文,共約 300KB）。**新增句子：把 ActionScripture 實際組出的字串（verse+「。」+refSpoken）原樣加進 tts-verses.json 重跑**（⚠ 這台 lib 的 socket 會讓 node 一次只烤一句就死,重跑幾次到「新產 0」即可,manifest 逐句落盤不丟進度）。
+> - ⚠ `src/minigames/jonah/speak.js`、`paulsilas/speak.js` 是 sync 管的複本**沒動**——上游改進要去 hfpc-jonah-game 做再 sync（待辦）。
+> - 驗證：validate 10 檔全過、selfplay 10 旅程各 1200 場全結束、build 乾淨（dist/tts 4 mp3 入 precache 16 entries）。
+>
+> **✅ 上輪(2026-07-03~04)做完並上線（main 已併、自動部署）：**
 > - 🗺️ **地圖美化三層 + 拖曳不再變藍**：海/陸漸層+淺水帶+海岸陰影+細海岸線(0.16u)；當年 GPU 修法一行未動。路線虛線按長寬比補償（聖地窄高圖 0.30、寬圖不變）。
 > - 🎵 **節奏家族五子型全活範例（音樂闖關合輯七關）**：`?demo=psalm100`(4K 下落式,詩100,判定線=稱謝之門)、`?demo=davidharp`(GuitarHero 透視琴弦,撒上16,愁煩條)、`?demo=miriam`(太鼓雙打點+連打段,出15,慶祝關)、`?demo=harptoy`(**自由演奏 music toy**,幼稚園,五聲音階沒有錯的音；與 davidharp two-forms 配對)。長條三段式規則（按頭=開始/撐尾=命中/放早=斷）；teen 檔獨立加密譜面+排序不變式；過關卡顯示打擊率%。
 > - ✝️ **耶穌生平之旅（`?journey=jesus`，牧師核准設計+定調六項）**：21 站聖地棋盤、題庫、輕RPG；②平靜風浪=約拿暴風雨(cast:false)、③五餅二魚=新引擎 `loaves`(`?demo=loaves`,分出去不減反增)。設計稿=skill bible-journey-planner references/耶穌生平-設計.md（含客西馬尼「撐住不睡」神學守法）。
