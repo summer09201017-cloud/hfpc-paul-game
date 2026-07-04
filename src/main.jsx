@@ -11,6 +11,7 @@ import FishingDemo from './components/FishingDemo.jsx'
 import Psalm100Demo from './components/Psalm100Demo.jsx'
 import DavidHarpDemo from './components/DavidHarpDemo.jsx'
 import MiriamDemo from './components/MiriamDemo.jsx'
+import LoavesDemo from './components/LoavesDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
 import RedSeaDemo from './components/RedSeaDemo.jsx'
@@ -67,6 +68,7 @@ function pickRoot() {
   if (demo === 'psalm100') return <Psalm100Demo />
   if (demo === 'davidharp') return <DavidHarpDemo />
   if (demo === 'miriam') return <MiriamDemo />
+  if (demo === 'loaves') return <LoavesDemo />
   if (demo === 'shore') return <ShoreDemo />
   if (demo === 'elijah-action') return <ElijahDemo />
   if (demo === 'redsea') return <RedSeaDemo />
