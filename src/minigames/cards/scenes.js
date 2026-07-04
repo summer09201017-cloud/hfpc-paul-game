@@ -1318,3 +1318,136 @@ function noahArkDoor(ctx, w, h, t) {
   rays(ctx, w, h, t, dx, 0.7)
 }
 export const NOAH = { noahExit, noahAltar, noahPromise, noahRainbow, noahArkDoor }
+
+// ===================== 耶穌生平 · 曠野試探(太 4)+ 好撒馬利亞人(路 10)逐幕手繪 =====================
+// 定調鐵則(牧師拍板):耶穌以側影/溫和簡筆呈現、不特寫;試探者不畫恐怖形象——無臉暗影剪影,孩子不害怕。
+function desertSky(ctx, w, h) { const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#d9b380'); g.addColorStop(1, '#f0ddb2'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h) }
+function desertGround(ctx, w, h, gy) { ctx.fillStyle = '#cf9f66'; ctx.fillRect(0, gy, w, h - gy); ctx.fillStyle = '#b98a52'; for (let i = 0; i < 5; i++) { const x = ((i * 197) % 100) / 100 * w; ctx.beginPath(); ctx.ellipse(x, gy + 8 + (i % 3) * 6, 26, 4, 0, 0, TAU); ctx.fill() } }
+function duneHills(ctx, w, gy, k) { ctx.fillStyle = '#c1955c'; ctx.beginPath(); ctx.moveTo(0, gy); ctx.quadraticCurveTo(w * 0.22, gy - 46 * k, w * 0.45, gy); ctx.quadraticCurveTo(w * 0.7, gy - 60 * k, w, gy); ctx.closePath(); ctx.fill() }
+function stonePile(ctx, x, gy, k, glow) { if (glow) { ctx.fillStyle = 'rgba(255,214,140,.35)'; ctx.beginPath(); ctx.ellipse(x, gy - 8 * k, 30 * k, 16 * k, 0, 0, TAU); ctx.fill() } ctx.fillStyle = '#9a8a72'; ctx.beginPath(); ctx.ellipse(x - 10 * k, gy - 5 * k, 11 * k, 7 * k, 0, 0, TAU); ctx.ellipse(x + 9 * k, gy - 5 * k, 10 * k, 6.5 * k, 0, 0, TAU); ctx.ellipse(x, gy - 13 * k, 9 * k, 6 * k, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#b3a186'; ctx.beginPath(); ctx.ellipse(x - 12 * k, gy - 7 * k, 4 * k, 2.6 * k, 0, 0, TAU); ctx.ellipse(x + 2 * k, gy - 15 * k, 3.4 * k, 2.2 * k, 0, 0, TAU); ctx.fill() }
+// 試探者=無臉暗影(深灰紫斗篷剪影,底部霧化,微微飄動;絕不畫臉/角/爪)
+function shadowFig(ctx, x, gy, k, t, fade = 1) {
+  const sway = Math.sin(t * 1.6) * 3 * k
+  ctx.save(); ctx.globalAlpha = 0.62 * fade
+  const g = ctx.createLinearGradient(x, gy - 96 * k, x, gy)
+  g.addColorStop(0, '#4a3f5e'); g.addColorStop(0.75, '#4a3f5e'); g.addColorStop(1, 'rgba(74,63,94,0)')
+  ctx.fillStyle = g
+  ctx.beginPath(); ctx.moveTo(x - 24 * k + sway, gy); ctx.quadraticCurveTo(x - 30 * k + sway, gy - 60 * k, x - 12 * k, gy - 88 * k)
+  ctx.arc(x + sway * 0.4, gy - 92 * k, 13 * k, Math.PI * 0.95, Math.PI * 0.05)
+  ctx.quadraticCurveTo(x + 30 * k + sway, gy - 60 * k, x + 24 * k + sway, gy); ctx.closePath(); ctx.fill()
+  for (let i = -1; i <= 1; i++) { ctx.globalAlpha = 0.28 * fade; ctx.beginPath(); ctx.ellipse(x + i * 14 * k + sway, gy - 4 * k, 8 * k, 3.4 * k, 0, 0, TAU); ctx.fill() } // 下擺霧化
+  ctx.restore()
+}
+function jesusFig(ctx, x, gy, k, o = {}) { person(ctx, x, gy, k, { robe: '#ece3cd', beard: true, ...o }) } // 米白袍,溫和簡筆
+
+// ① 幕1 曠野禁食:荒漠沙丘、烈日、耶穌跪禱
+function wildDesert(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  desertSky(ctx, w, h); ctx.fillStyle = '#f7e9b0'; ctx.beginPath(); ctx.arc(w * 0.8, h * 0.2, 20 * k, 0, TAU); ctx.fill()
+  duneHills(ctx, w, gy, k); desertGround(ctx, w, h, gy)
+  stonePile(ctx, w * 0.24, gy, k); stonePile(ctx, w * 0.68, gy, k * 0.8)
+  jesusFig(ctx, w * 0.46, gy, k * 1.1, { pose: 'kneel', arms: 'pray' })
+  rays(ctx, w, h, t, w * 0.46, 0.3)
+}
+// ① 幕2 試探一:石頭變食物——暗影指石堆(石堆泛著像餅的暖光),耶穌以經文回答
+function wildStones(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  desertSky(ctx, w, h); duneHills(ctx, w, gy, k); desertGround(ctx, w, h, gy)
+  stonePile(ctx, w * 0.42, gy, k * 1.15, true)
+  shadowFig(ctx, w * 0.18, gy, k, t)
+  jesusFig(ctx, w * 0.72, gy, k * 1.1, { arms: 'speak' })
+  speechBubble(ctx, w * 0.72, gy - 150 * k, k, '人活著,不是單靠食物')
+}
+// ① 幕3 試探二:聖城殿頂——高台、殿宇輪廓、底下深遠
+function wildTemple(ctx, w, h, t) {
+  const k = h / 240
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#b8c8dc'); g.addColorStop(1, '#e3d8bd'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#cdb98e'; for (let i = 0; i < 6; i++) ctx.fillRect(w * (0.06 + i * 0.16), h * 0.78 + (i % 3) * 8 * k, 22 * k, 26 * k) // 底下的城(深遠)
+  const py = h * 0.55 // 殿頂平台
+  ctx.fillStyle = '#e8dcc0'; ctx.fillRect(w * 0.18, py, w * 0.64, 14 * k)
+  ctx.fillStyle = '#cdb98e'; ctx.fillRect(w * 0.24, py + 14 * k, w * 0.52, h - py) // 殿身
+  ctx.fillStyle = '#b89f6e'; for (let i = 0; i < 4; i++) ctx.fillRect(w * (0.3 + i * 0.11), py + 22 * k, 8 * k, h * 0.3) // 柱
+  shadowFig(ctx, w * 0.32, py, k * 0.95, t)
+  jesusFig(ctx, w * 0.62, py, k * 1.0, { arms: 'speak' })
+  speechBubble(ctx, w * 0.62, py - 128 * k, k, '不可試探主—你的神')
+}
+// ① 幕4 試探三:最高的山、萬國榮華的金光——耶穌命令退去,暗影消散
+function wildMountain(ctx, w, h, t) {
+  const k = h / 240
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#9a86b8'); g.addColorStop(1, '#e8cf9c'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#7a6a8e'; ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(w * 0.5, h * 0.42); ctx.lineTo(w, h); ctx.closePath(); ctx.fill() // 高山
+  for (let i = 0; i < 7; i++) { const x = w * (0.08 + i * 0.14), y = h * (0.72 + (i % 3) * 0.07), tw = Math.sin(t * 2 + i) * 0.2 + 0.8; ctx.fillStyle = 'rgba(255,214,110,' + (0.55 * tw).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(x, y, 7 * k, 0, TAU); ctx.fill(); ctx.fillStyle = '#8a764e'; ctx.fillRect(x - 5 * k, y - 3 * k, 10 * k, 6 * k) } // 遠處萬國金光
+  const gy = h * 0.6 // 人物放低一點:對話框才不會被畫布頂裁掉(l6 鐵則:字不被切)
+  shadowFig(ctx, w * 0.3, gy, k * 0.78, t, Math.max(0.25, 1 - t * 0.12)) // 暗影漸淡=退去
+  jesusFig(ctx, w * 0.64, gy, k * 0.9, { arms: 'speak', face: 'awe' })
+  speechBubble(ctx, w * 0.64, gy - 112 * k, k, '撒但,退去吧!')
+}
+// ① 幕5 天使伺候:魔鬼離開,天使送餅與水
+function wildAngels(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  desertSky(ctx, w, h); duneHills(ctx, w, gy, k); desertGround(ctx, w, h, gy)
+  rays(ctx, w, h, t, w * 0.5, 0.55)
+  angelFig(ctx, w * 0.24, gy, k, t); angelFig(ctx, w * 0.78, gy, k * 0.9, t + 1.2)
+  jesusFig(ctx, w * 0.5, gy, k * 1.1, { face: 'joy' })
+  ctx.fillStyle = '#e8b45a'; ctx.beginPath(); ctx.ellipse(w * 0.38, gy - 6 * k, 8 * k, 5 * k, 0, 0, TAU); ctx.fill() // 餅
+  ctx.fillStyle = '#7ab0d8'; ctx.fillRect(w * 0.62 - 4 * k, gy - 16 * k, 8 * k, 14 * k) // 水瓶
+}
+
+// ⑤ 幕1 律法師問耶穌:「誰是我的鄰舍呢?」
+function samAsk(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#bfd8e8'); g.addColorStop(1, '#ead9b4'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#c9b184'; ctx.fillRect(0, gy, w, h - gy)
+  house(ctx, w * 0.86, gy, k * 0.9)
+  person(ctx, w * 0.3, gy, k * 1.05, { robe: '#6a5a9c', beard: true, arms: 'speak', face: 'worry' }) // 律法師
+  speechBubble(ctx, w * 0.3, gy - 140 * k, k, '誰是我的鄰舍呢?')
+  jesusFig(ctx, w * 0.62, gy, k * 1.1, { arms: 'speak', face: 'joy' })
+  person(ctx, w * 0.74, gy, k * 0.85, { robe: '#9c5a6a', face: 'awe' }); person(ctx, w * 0.5, gy, k * 0.8, { robe: '#7a8a52', face: 'awe' }) // 圍聽的人
+}
+// ⑤ 幕2 耶利哥路上:傷者躺路邊,祭司與利未人走遠
+function samHurt(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  desertSky(ctx, w, h); duneHills(ctx, w, gy, k); desertGround(ctx, w, h, gy)
+  ctx.fillStyle = '#b98a52'; ctx.beginPath(); ctx.moveTo(0, gy + 10 * k); ctx.quadraticCurveTo(w * 0.5, gy - 8 * k, w, gy + 4 * k); ctx.lineTo(w, gy + 18 * k); ctx.quadraticCurveTo(w * 0.5, gy + 4 * k, 0, gy + 22 * k); ctx.closePath(); ctx.fill() // 下坡的路
+  sleeper(ctx, w * 0.42, gy, k, '#8a7a5a') // 傷者(側臥)
+  ctx.fillStyle = '#b0523a'; ctx.beginPath(); ctx.arc(w * 0.45, gy - 10 * k, 2.6 * k, 0, TAU); ctx.arc(w * 0.4, gy - 6 * k, 2.2 * k, 0, TAU); ctx.fill() // 傷處(小紅點,不血腥)
+  person(ctx, w * 0.72, gy - 14 * k, k * 0.72, { robe: '#e3d8bd', walk: t * 5 }) // 祭司走遠(小=遠)
+  person(ctx, w * 0.86, gy - 18 * k, k * 0.62, { robe: '#8a9ab0', walk: t * 5 + 1.4 }) // 利未人更遠
+}
+// ⑤ 幕3 動了慈心:撒馬利亞人蹲身包紮、油和酒、驢在旁
+function samBind(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  desertSky(ctx, w, h); duneHills(ctx, w, gy, k); desertGround(ctx, w, h, gy)
+  donkey(ctx, w * 0.78, gy, k)
+  sleeper(ctx, w * 0.34, gy, k, '#8a7a5a')
+  ctx.fillStyle = '#f4f1e6'; ctx.fillRect(w * 0.37 - 8 * k, gy - 12 * k, 16 * k, 5 * k) // 包紮的細麻布
+  person(ctx, w * 0.5, gy, k * 1.05, { robe: '#3a6a9c', pose: 'kneel', arms: 'reach', reach: -26, face: 'worry' }) // 撒馬利亞人蹲身
+  ctx.fillStyle = '#c9902e'; ctx.fillRect(w * 0.6 - 3.4 * k, gy - 14 * k, 6.8 * k, 12 * k) // 油瓶
+  ctx.fillStyle = '#8a3b4e'; ctx.fillRect(w * 0.65 - 3.4 * k, gy - 12 * k, 6.8 * k, 10 * k) // 酒袋
+  rays(ctx, w, h, t, w * 0.5, 0.25)
+}
+// ⑤ 幕4 店裡照應:二錢銀子交給店主,「我回來必還你」
+function samInn(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#9a86b8'); g.addColorStop(1, '#e3c894'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h) // 隔天清晨
+  ctx.fillStyle = '#c9b184'; ctx.fillRect(0, gy, w, h - gy)
+  house(ctx, w * 0.76, gy, k * 1.1)
+  sleeper(ctx, w * 0.88, gy - 2 * k, k * 0.62, '#8a7a5a') // 傷者在店旁休息(遠小)
+  person(ctx, w * 0.32, gy, k * 1.05, { robe: '#3a6a9c', arms: 'reach', reach: 30, face: 'joy' }) // 撒馬利亞人遞銀子
+  person(ctx, w * 0.56, gy, k * 1.0, { robe: '#7a8a52', arms: 'reach', reach: -24, face: 'awe' }) // 店主接
+  const coinT = Math.sin(t * 2) * 2 * k
+  ctx.fillStyle = '#e8d06a'; ctx.beginPath(); ctx.arc(w * 0.445, gy - 62 * k + coinT, 4.4 * k, 0, TAU); ctx.arc(w * 0.465, gy - 56 * k + coinT, 4.4 * k, 0, TAU); ctx.fill() // 二錢銀子
+  ctx.strokeStyle = '#b8963a'; ctx.lineWidth = 1.2 * k; ctx.beginPath(); ctx.arc(w * 0.445, gy - 62 * k + coinT, 4.4 * k, 0, TAU); ctx.arc(w * 0.465, gy - 56 * k + coinT, 4.4 * k, 0, TAU); ctx.stroke()
+}
+// ⑤ 幕5 「你去照樣行吧」:耶穌對聽的人說,柔光
+function samGo(ctx, w, h, t) {
+  const k = h / 240, gy = h * 0.85
+  const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#bfd8e8'); g.addColorStop(1, '#ead9b4'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#c9b184'; ctx.fillRect(0, gy, w, h - gy)
+  rays(ctx, w, h, t, w * 0.6, 0.5)
+  jesusFig(ctx, w * 0.6, gy, k * 1.12, { arms: 'speak', face: 'joy' })
+  speechBubble(ctx, w * 0.6, gy - 152 * k, k, '你去照樣行吧')
+  person(ctx, w * 0.28, gy, k * 1.0, { robe: '#6a5a9c', beard: true, face: 'awe' }) // 律法師(聽進去了)
+  person(ctx, w * 0.14, gy, k * 0.9, { robe: '#9c5a6a', face: 'joy' }); person(ctx, w * 0.42, gy, k * 0.88, { robe: '#7a8a52', face: 'joy' })
+}
+export const JESUS = { wildDesert, wildStones, wildTemple, wildMountain, wildAngels, samAsk, samHurt, samBind, samInn, samGo }
