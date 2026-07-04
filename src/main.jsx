@@ -12,6 +12,7 @@ import Psalm100Demo from './components/Psalm100Demo.jsx'
 import DavidHarpDemo from './components/DavidHarpDemo.jsx'
 import MiriamDemo from './components/MiriamDemo.jsx'
 import LoavesDemo from './components/LoavesDemo.jsx'
+import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
 import RedSeaDemo from './components/RedSeaDemo.jsx'
@@ -39,6 +40,8 @@ registerSW({ immediate: true })
 //   ?demo=fishing           → 下網得魚（收集，路 5；點水面下網收魚，整夜勞力→依你的話開到水深之處豐收）
 //   ?demo=psalm100          → 讚美琴鍵（4K 下落式節奏，詩 100；琴鍵掉進「聖殿的門」按對=稱謝進門，歌照唱不會輸）
 //   ?demo=davidharp         → 大衛彈琴（Guitar Hero 型節奏，撒上 16；琴弦由遠而近，彈得穩=掃羅的愁煩散開）
+//   ?demo=harptoy           → 大衛彈琴・自由演奏（音樂玩具，撒上 16；五聲音階沒有錯的音，幼稚園版；與 davidharp 同故事兩玩法）
+//   ?demo=loaves            → 五餅二魚・分餅（耶穌生平闖關③，約 6；分出去的不減反增，走完必過）
 //   ?demo=miriam            → 米利暗擊鼓（太鼓達人型節奏，出 15:20-21；紅拍鼓/藍搖鈴，過紅海的得勝慶祝、不會輸）
 //   ?demo=shore             → 海邊的復興（約 21；三次「你愛我嗎?」→ 餵養我的羊；炭火旁三次託付、跟從主）
 //   ?demo=elijah-action     → 盼望·以利亞重得力（收集/恢復動作關，王上 19）
@@ -69,6 +72,7 @@ function pickRoot() {
   if (demo === 'davidharp') return <DavidHarpDemo />
   if (demo === 'miriam') return <MiriamDemo />
   if (demo === 'loaves') return <LoavesDemo />
+  if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />
   if (demo === 'elijah-action') return <ElijahDemo />
   if (demo === 'redsea') return <RedSeaDemo />
