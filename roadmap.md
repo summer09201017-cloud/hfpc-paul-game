@@ -14,8 +14,8 @@
 > | # | 項目 | ⏱ | 備註 |
 > |---|---|---|---|
 > | ✅ | ~~④水面行走:跨 repo 嵌入彼得走海~~ | — | **已做(2026-07-05,feat/embed-petersea)**:上游已 embed-aware(僅補 ttsFix);paul 加 scripts/sync-petersea-engine.mjs+npm run sync:petersea → src/minigames/petersea/(9 模組);MiniGameModal engine:petersea+?demo=petersea+站點 walk_water 接上——**耶穌旅程七關全齊!** Playwright 實測嵌入可玩 |
-> | 2 | **牧師過審題庫**(docs/耶穌旅程-題庫送審-2026-07-05.html) | 牧師時間 | 過審後才點大廳卡 |
-> | 3 | **大廳點耶穌旅程卡**(④接上+過審後) | ~10min | 照牧師核准順序最後一步 |
+> | ✅ | ~~牧師過審題庫~~ | — | **已過審(2026-07-05)** |
+> | ✅ | ~~大廳點耶穌旅程卡~~ | — | **已點亮(2026-07-05,hfpc-bible-games 4f9732e)**:首頁「✝️ 耶穌生平之旅」直達卡→?journey=jesus;sw v13;煙霧測試 21 卡綠——**耶穌旅程全線完工** |
 > | 4 | 太鼓第二關:大衛迎約櫃(撒下6,只取歡慶段) | ~半天 | miriam 引擎換皮 |
 > | 5 | 巴蘭/摩西動作版從 war-games 搬進 paul | 各~半天 | 舊待辦,自動部署受惠 |
 > | 6 | 離線啟動選單頁、投影計分板 | 各~半天 | 舊待辦,高 CP |
