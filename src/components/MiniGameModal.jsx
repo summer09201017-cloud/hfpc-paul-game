@@ -6,6 +6,7 @@ import { Game as ElijahGame } from '../minigames/elijah/game'
 import { Game as ArkPairsGame } from '../minigames/arkpairs/game'
 import { Game as ArkBuildGame } from '../minigames/arkbuild/game'
 import { Game as LoavesGame } from '../minigames/loaves/game'
+import { Game as GethsemaneGame } from '../minigames/gethsemane/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -189,6 +190,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   // in-repo 分餅關（src/minigames/loaves/，五餅二魚 約6；耶穌生平之旅闖關③）：minigame.engine:'loaves'。
   // 收集反轉——分出去的不減反增(規則即講道);走完必過、不會輸。
   const isLoaves = minigame.engine === 'loaves'
+  // in-repo 客西馬尼關（src/minigames/gethsemane/，太 26:36-46；耶穌生平之旅闖關⑥）：minigame.engine:'gethsemane'。
+  // 撐住不睡——無論撐得多好,經文結局不變;撐不住=溫柔敘事,永遠 won:true(神學守法見引擎頂註)。
+  const isGethsemane = minigame.engine === 'gethsemane'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -289,6 +293,17 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
     if (isLoaves) {
       // 分餅關(五餅二魚,約 6):同一套嵌入契約;分出去不減反增、走完必過。
       const game = new LoavesGame(canvasRef.current, {
+        embed: true,
+        winPoints: minigame.winPoints || 5,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
+    if (isGethsemane) {
+      // 客西馬尼關(太 26):同一套嵌入契約;撐住或睡著都溫柔走到同一個聖經結局、永遠過關。
+      const game = new GethsemaneGame(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 5,
         onComplete: (result) => onComplete(result),
