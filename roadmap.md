@@ -2,6 +2,12 @@
 
 > ## ⭐ 對齊現況：2026-07-05（最新，agape250 的 AI 先讀這段）
 >
+> **✅ 新類型①迷宮尋路(2026-07-05,agape250 機,feat/shepherd-maze)——🐑 好牧人尋羊(路 15:3-7):**
+> - 系列第一個「迷宮尋路」機制:`src/minigames/shepherd/`(單檔引擎,照 gethsemane 前例)+ `?demo=shepherd` + `engine:'shepherd'`(MiniGameModal 已接,可掛旅程站點)+ play-shepherd.bat。
+> - 玩法:循「咩~」(音效+朝羊方向漂浮字)找迷失的羊 → 找著卡(15:5)→ 扛肩上走回羊圈(黃昏色)→ 過關(15:5-6 朗讀 + 15:7 教導)。年齡三檔:幼/童/青——**青=夜裡提燈尋羊**(夜霧視野+提燈光圈)。★永不會輸:「直到找著呢?」牧人必找到底。
+> - 朗讀鐵則:15:5-6 過關句已烤曉臻 mp3(manifest c24eea42,共 40 句;precache 52 entries);引文 15:4/15:5-6/15:7 全部 cuv 逐字查證。Playwright 五狀態截圖 console 零錯誤;smoke/validate/selfplay/build 全綠。
+> - ⚠ **文案 AI 草擬待牧者審**——過審前不進大廳卡。下一批新類型(使用者已排序):②記憶序列(撒母耳)→ ③滑塊拼圖(約瑟彩衣)→ ④經營管理(約瑟糧倉,做大、獨立 repo)。
+>
 > **📝 補記(2026-07-05 午,agape250 機,文件對賬——`/route-doc-check` 首跑抓漏):**
 > - **七個引擎(06-26~06-28 所做)從未進過任何文件**:saul-spear(掃羅擲槍閃避)、nehemiah(修牆)、joash(得勝箭)、slingshot(彈弓原型)、jericho(耶利哥城牆)、fishing(下網得魚)、shore(海邊的復興)——已補進 CLAUDE.md 新增的「**引擎總覽**」表(21 引擎一行一個,含 play-*.bat 檔名↔路由鍵對照)。
 > - 日後每加引擎補一行;交接前跑 `/route-doc-check`(skills 合輯 scripts/route-doc-check.mjs)驗 🔴=0。

@@ -13,6 +13,7 @@ import DavidHarpDemo from './components/DavidHarpDemo.jsx'
 import MiriamDemo from './components/MiriamDemo.jsx'
 import LoavesDemo from './components/LoavesDemo.jsx'
 import GethsemaneDemo from './components/GethsemaneDemo.jsx'
+import ShepherdDemo from './components/ShepherdDemo.jsx'
 import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
@@ -48,6 +49,9 @@ registerSW({ immediate: true })
 //   ?demo=loaves            → 五餅二魚・分餅（耶穌生平闖關③，約 6；分出去的不減反增，走完必過）
 //   ?demo=petersea          → 彼得走海（FNF 節奏,太 14 定睛看耶穌;耶穌生平闖關④,嵌入自 hfpc-peter-sea-game）
 //   ?demo=gethsemane        → 客西馬尼・警醒（耶穌生平闖關⑥，太 26；撐住不睡——結局不變、撐不住=溫柔敘事不會輸）
+//   ?demo=shepherd          → 好牧人尋羊（迷宮尋路,路 15:3-7;循「咩~」找迷失的羊、扛回羊圈;永不會輸）
+//   ?demo=moses-action      → 摩西舉手之戰（約拿引擎 L7,出 17:8-13;撐住舉手、亞倫戶珥扶手,撐到日落得勝）
+//   ?demo=balaam-action     → 反轉奇兵・巴蘭的驢（約拿引擎 L10,民 22;上下閃避拔刀的使者,驢比先知先看見）
 //   ?demo=miriam            → 米利暗擊鼓（太鼓達人型節奏，出 15:20-21；紅拍鼓/藍搖鈴，過紅海的得勝慶祝、不會輸）
 //   ?demo=shore             → 海邊的復興（約 21；三次「你愛我嗎?」→ 餵養我的羊；炭火旁三次託付、跟從主）
 //   ?demo=elijah-action     → 盼望·以利亞重得力（收集/恢復動作關，王上 19）
@@ -79,6 +83,7 @@ function pickRoot() {
   if (demo === 'miriam') return <MiriamDemo />
   if (demo === 'loaves') return <LoavesDemo />
   if (demo === 'gethsemane') return <GethsemaneDemo />
+  if (demo === 'shepherd') return <ShepherdDemo />
   if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />
