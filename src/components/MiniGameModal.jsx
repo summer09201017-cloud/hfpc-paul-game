@@ -8,6 +8,7 @@ import { Game as ArkPairsGame } from '../minigames/arkpairs/game'
 import { Game as ArkBuildGame } from '../minigames/arkbuild/game'
 import { Game as LoavesGame } from '../minigames/loaves/game'
 import { Game as GethsemaneGame } from '../minigames/gethsemane/game'
+import { Game as ShepherdGame } from '../minigames/shepherd/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -196,6 +197,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   // in-repo 客西馬尼關（src/minigames/gethsemane/，太 26:36-46；耶穌生平之旅闖關⑥）：minigame.engine:'gethsemane'。
   // 撐住不睡——無論撐得多好,經文結局不變;撐不住=溫柔敘事,永遠 won:true(神學守法見引擎頂註)。
   const isGethsemane = minigame.engine === 'gethsemane'
+  // in-repo 迷宮尋路關(src/minigames/shepherd/,好牧人尋羊 路 15:3-7):minigame.engine:'shepherd'。
+  // 系列第一個迷宮機制——找迷失的羊、扛回羊圈;永不會輸(牧人必找到底,15:4)。
+  const isShepherd = minigame.engine === 'shepherd'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -298,6 +302,17 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
       const game = new LoavesGame(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 5,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
+    if (isShepherd) {
+      // 好牧人尋羊(路 15):同一套嵌入契約;迷宮尋路,永不會輸。
+      const game = new ShepherdGame(canvasRef.current, {
+        embed: true,
+        winPoints: minigame.winPoints || 3,
         onComplete: (result) => onComplete(result),
       })
       gameRef.current = game
