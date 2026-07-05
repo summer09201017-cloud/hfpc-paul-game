@@ -1,9 +1,29 @@
 ============================================================
 讀我 — HANDOFF（保羅大富翁 hfpc-paul-game）
-交接日期：2026-07-05
-給：agape250 那台 PC 的 AI / 接手的人
-GitHub 帳號：summer09201017-cloud。GitHub 是唯一真相；桌面 zip 只是備援快照。
+交接日期：2026-07-05(晚,agape250 → HFP 機)
+給:HFP 那台 PC 的 AI / 接手的人
+GitHub 帳號:summer09201017-cloud。GitHub 是唯一真相;桌面 zip 只是備援快照。
 ============================================================
+
+★★★ 2026-07-05 晚(agape250 機)本日四 PR 全併上線+一個 WIP,HFP 接手先讀 ★★★
+ ① PR #60 引擎文件對賬:CLAUDE.md 新增「引擎總覽」表(24 引擎一行一個;之前 7 個引擎文件零記載)。
+    日後每加引擎補一行;交接前跑 /route-doc-check(skills 合輯 scripts/)驗 🔴=0。
+ ② PR #61 路線虛線美化(使用者+牧者過目):參照路得記觀感——陸路 dash 2×→1.2×線寬、
+    公式改「等比+寬圖上限 0.42」(耶穌窄圖 0.27 凍結不動)。線上已驗。
+ ③ PR #62 摩西/巴蘭動作版搬進 paul:?demo=moses-action(L7)/balaam-action(L10)——
+    戰爭四關全數住 paul;大廳三卡已改指 paul(sw v17);war-games(B 站)可退役(等使用者定)。
+ ④ PR #63 好牧人尋羊:系列第一個「迷宮尋路」(?demo=shepherd,src/minigames/shepherd/ 單檔引擎;
+    年齡三檔,青=夜霧提燈;路15:5-6 新烤 mp3,manifest 40 句/precache 52)。牧者已過審、大廳卡已亮。
+    範式已抽成 skill maze-find-minigame。
+ ⑤ ⏳ WIP 分支 feat/samuel-simon-wip——新類型②記憶序列「撒母耳聽呼喚」(撒上 3,?demo=samuel):
+    引擎+Demo+路由完成、smoke 過;**差(在 HFP 機做,烤 mp3 沒地雷)**:
+    a. 撒上 3:10 過關句烤 mp3(組字 T.winVerse+「。」+spokenRef('撒母耳記上 3:10') 加進
+       scripts/tts-verses.json → node scripts/gen-tts.mjs 跑到「新產 0」)
+    b. play-samuel.bat(純 ASCII+CRLF) c. MiniGameModal engine:'samuel' 分支(照 shepherd 前例)
+    d. Playwright 逐狀態截圖(window.__samuel 可跳狀態) e. 文件+PR → 牧者審 → 大廳卡
+    f. 完工後抽 skill memory-sequence-minigame
+ ⑥ 之後的新類型佇列(使用者已拍板,照工時短優先):③滑塊拼圖(約瑟彩衣)→
+    ④經營管理約瑟糧倉(做大 → 獨立 repo)。新關一律住 paul(?demo=)。
 
 ■ 這是什麼
   「保羅宣教之旅」React+Vite PWA——大富翁桌遊外框 + 十條旅程 + 系列多數
