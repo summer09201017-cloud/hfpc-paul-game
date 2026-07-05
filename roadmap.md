@@ -6,19 +6,19 @@
 > - Simon 型記憶序列:`src/minigames/samuel/`(單檔引擎)+ `?demo=samuel` + `engine:'samuel'`(MiniGameModal 已接,可掛旅程站點)+ play-samuel.bat(第 25 支)。
 > - 玩法:四盞油燈依序亮、照順序點回(聽與順服);故事節拍照撒上 3(前幾輪跑到以利那裡、倒數第二輪 3:9 吩咐、最後「請說,僕人敬聽」3:10);聽錯溫柔重聽、**永不會輸**;年齡三檔(幼3/童4/青5輪更快)。
 > - 朗讀鐵則:撒上 3:10 過關句已烤曉臻 mp3(manifest f93b7f6c,共 41 句,gen-tts 跑到「新產 0」);引文 3:4-5/3:9/3:10/3:19 全部 cuv 逐字查證(3:10 於 HFP 機複驗)。Playwright 五狀態截圖(intro/watch/repeat/story/win)console 僅 favicon 404;validate/selfplay/smoke 141 項全綠。
-> - ⚠ **文案 AI 草擬待牧者審**——過審前不進大廳卡。完工後待抽 skill memory-sequence-minigame(見合輯 roadmap)。
+> - ✅ 補記(07-06):**牧者已過審、PR #64 已併 main、大廳卡已點亮**。範式已抽成 skill memory-sequence-minigame。同日牧者亦補審 06-26~28 批次(joash/jericho/fishing/shore)。
 >
 > **✅ 新類型①迷宮尋路(2026-07-05,agape250 機,feat/shepherd-maze)——🐑 好牧人尋羊(路 15:3-7):**
 > - 系列第一個「迷宮尋路」機制:`src/minigames/shepherd/`(單檔引擎,照 gethsemane 前例)+ `?demo=shepherd` + `engine:'shepherd'`(MiniGameModal 已接,可掛旅程站點)+ play-shepherd.bat。
 > - 玩法:循「咩~」(音效+朝羊方向漂浮字)找迷失的羊 → 找著卡(15:5)→ 扛肩上走回羊圈(黃昏色)→ 過關(15:5-6 朗讀 + 15:7 教導)。年齡三檔:幼/童/青——**青=夜裡提燈尋羊**(夜霧視野+提燈光圈)。★永不會輸:「直到找著呢?」牧人必找到底。
 > - 朗讀鐵則:15:5-6 過關句已烤曉臻 mp3(manifest c24eea42,共 40 句;precache 52 entries);引文 15:4/15:5-6/15:7 全部 cuv 逐字查證。Playwright 五狀態截圖 console 零錯誤;smoke/validate/selfplay/build 全綠。
 > - ✅ 補記(07-05 晚):**牧者已過審、大廳卡已點亮**(hfpc-bible-games cebb7af,23 卡+路加 15:4 金句)。範式已抽成 skill maze-find-minigame。
-> - ⏳ **WIP:`feat/samuel-simon-wip`——新類型②記憶序列「撒母耳聽呼喚」(撒上 3,?demo=samuel)**:引擎+Demo+路由完成、smoke 過;差 mp3 烤製(**HFP 機做,沒烤製地雷**)/play-samuel.bat/MiniGameModal 分支/Playwright/PR(完整清單見該分支 commit 訊息與 讀我-HANDOFF.txt ★段⑤)。之後:③滑塊拼圖(約瑟彩衣)→ ④經營管理糧倉(做大、獨立 repo)。
+> - ✅ 撒母耳 WIP 已於 07-06 收尾併 main(見最上段)。之後:③滑塊拼圖(約瑟彩衣)→ ④經營管理糧倉(做大、獨立 repo)。
 >
 > **📝 補記(2026-07-05 午,agape250 機,文件對賬——`/route-doc-check` 首跑抓漏):**
 > - **七個引擎(06-26~06-28 所做)從未進過任何文件**:saul-spear(掃羅擲槍閃避)、nehemiah(修牆)、joash(得勝箭)、slingshot(彈弓原型)、jericho(耶利哥城牆)、fishing(下網得魚)、shore(海邊的復興)——已補進 CLAUDE.md 新增的「**引擎總覽**」表(21 引擎一行一個,含 play-*.bat 檔名↔路由鍵對照)。
 > - 日後每加引擎補一行;交接前跑 `/route-doc-check`(skills 合輯 scripts/route-doc-check.mjs)驗 🔴=0。
-> - ⚠ 該批關卡的牧者送審紀錄未見於 docs;對外正式推廣前用 `/review-queue` 盤點補審。
+> - ✅ 該批(joash/jericho/fishing/shore)已於 2026-07-06 隨路得/撒母耳一併過牧者審,補審結案。
 >
 > **✅ 本輪(2026-07-05,HFP 機,PR #55-58 全併、A 站已上線驗證)——耶穌旅程 7 關接上 6 關:**
 > - ①曠野試探(卡片配對 `?demo=wilderness`)+⑤好撒馬利亞人(卡片抉擇 `?demo=goodSamaritan`):specs.js+scenes.js JESUS 十幕(試探者=無臉暗影、對話框真經文)。
