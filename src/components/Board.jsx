@@ -37,9 +37,12 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
 
   const aspect = (map && map.aspect) || 1.322
   const zp = useZoomPan({ aspect })
-  // 路線虛線粗細按長寬比補償:0.7 是按保羅寬圖(1.322)校的,窄高圖(聖地 0.57)
-  // 同單位會被拉粗近一倍、虛線又肥又醜(2026-07-04 牧師退件)。寬圖不變、窄圖等比變細。
-  const routeSw = +(0.7 * Math.min(1, aspect / 1.322)).toFixed(2)
+  // 路線虛線粗細按長寬比補償(窄高圖同單位會被拉粗近一倍、又肥又醜,2026-07-04 牧師退件)。
+  // 2026-07-05 參考路得記地圖觀感(使用者點名好看)兩輪調整:
+  //   ① 陸路 dash 由 2×線寬 → 1.2×線寬(ruth 的 3/2.5 比例,較短較密)。
+  //   ② 使用者複審:窄圖(耶穌 0.62×0.57/1.322≈0.27)OK 凍結;寬圖(保羅)要更細更短
+  //      → 公式改「等比 + 上限 0.42」:窄圖算出來 <0.42 完全不變,寬圖從 0.62 壓到 0.42。
+  const routeSw = +Math.min(0.42, 0.62 * (aspect / 1.322)).toFixed(2)
 
   return (
     <div
@@ -48,7 +51,7 @@ export default function Board({ stations, players, currentPlayerId, pendingStati
       style={{
         '--map-aspect': aspect,
         '--route-sw': routeSw,
-        '--route-dash-land': `${(routeSw * 2).toFixed(2)} ${(routeSw * 2).toFixed(2)}`,
+        '--route-dash-land': `${(routeSw * 1.2).toFixed(2)} ${(routeSw * 1.2).toFixed(2)}`,
         '--route-dash-sea': `${(routeSw * 2.6).toFixed(2)} ${(routeSw * 1.7).toFixed(2)}`,
         touchAction: 'none',
       }}
