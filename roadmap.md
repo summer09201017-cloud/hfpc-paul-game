@@ -1,6 +1,12 @@
 # 🗺️ 保羅大富翁 — 進度藍圖（已完成 vs 真正待做）
 
-> ## ⭐ 對齊現況：2026-07-05（最新，agape250 的 AI 先讀這段）
+> ## ⭐ 對齊現況：2026-07-06（最新，接手的 AI 先讀這段）
+>
+> **✅ 新類型②記憶序列(2026-07-06,HFP 機收尾,feat/samuel-simon-wip)——🕯️ 撒母耳聽呼喚(撒上 3):**
+> - Simon 型記憶序列:`src/minigames/samuel/`(單檔引擎)+ `?demo=samuel` + `engine:'samuel'`(MiniGameModal 已接,可掛旅程站點)+ play-samuel.bat(第 25 支)。
+> - 玩法:四盞油燈依序亮、照順序點回(聽與順服);故事節拍照撒上 3(前幾輪跑到以利那裡、倒數第二輪 3:9 吩咐、最後「請說,僕人敬聽」3:10);聽錯溫柔重聽、**永不會輸**;年齡三檔(幼3/童4/青5輪更快)。
+> - 朗讀鐵則:撒上 3:10 過關句已烤曉臻 mp3(manifest f93b7f6c,共 41 句,gen-tts 跑到「新產 0」);引文 3:4-5/3:9/3:10/3:19 全部 cuv 逐字查證(3:10 於 HFP 機複驗)。Playwright 五狀態截圖(intro/watch/repeat/story/win)console 僅 favicon 404;validate/selfplay/smoke 141 項全綠。
+> - ⚠ **文案 AI 草擬待牧者審**——過審前不進大廳卡。完工後待抽 skill memory-sequence-minigame(見合輯 roadmap)。
 >
 > **✅ 新類型①迷宮尋路(2026-07-05,agape250 機,feat/shepherd-maze)——🐑 好牧人尋羊(路 15:3-7):**
 > - 系列第一個「迷宮尋路」機制:`src/minigames/shepherd/`(單檔引擎,照 gethsemane 前例)+ `?demo=shepherd` + `engine:'shepherd'`(MiniGameModal 已接,可掛旅程站點)+ play-shepherd.bat。

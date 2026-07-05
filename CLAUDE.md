@@ -129,6 +129,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 | `loaves/` | `?demo=loaves` | 太 14 五餅二魚(耶穌旅程③) | 分餅給群眾——分出去不減反增 |
 | `gethsemane/` | `?demo=gethsemane` | 太 26:36-46 客西馬尼・警醒(⑥) | 撐住不睡([[stay-awake-minigame]]);撐不住=溫柔敘事,永遠 won:true |
 | `shepherd/` | `?demo=shepherd` | 路 15:3-7 好牧人尋羊 | **系列第一個迷宮尋路**:循「咩~」找迷失的羊、扛回羊圈;年齡三檔(青=夜霧提燈);永不會輸;文案待牧者審(07-05) |
+| `samuel/` | `?demo=samuel` | 撒上 3 撒母耳聽呼喚 | **新類型②記憶序列(Simon 型)**:油燈依序亮、照順序點回(聽與順服);年齡三檔(幼3/童4/青5輪更快);聽錯溫柔重聽、永不會輸;撒上 3:10 mp3 已烤;文案待牧者審(07-06) |
 | `petersea/` | `?demo=petersea` | 太 14 水面行走(耶穌旅程④) | 跨 repo 嵌入彼得走海(sync:petersea 複本) |
 | `paulsilas/` | `?demo=paulsilas` | 徒 16 保羅西拉監獄 | 跨 repo 嵌入(sync:paulsilas 複本) |
 | `psalm100/` | `?demo=psalm100` | 詩 100 | 下落式節奏([[rhythm-beat-minigame]]) |
@@ -136,7 +137,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 | `miriam/` | `?demo=miriam` | 出 15:20-21 米利暗擊鼓 | 太鼓型單軌雙打點;慶祝關不會輸 |
 | `harptoy/` | `?demo=harptoy` | 自由演奏 | 琴玩具模式(無輸贏) |
 
-- **雙擊啟動器 `play-*.bat`(repo 根,24 支;07-05 加 play-moses-action.bat、play-balaam-action.bat、play-shepherd.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
+- **雙擊啟動器 `play-*.bat`(repo 根,25 支;07-05 加 play-moses-action.bat、play-balaam-action.bat、play-shepherd.bat;07-06 加 play-samuel.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
 - `cards/`/`jonah/`(部分關)只被旅程站點的 `minigame` 欄使用、沒有同名 `?demo=` 路由——正常,不是漏接。
 - 文案審核:joash/jericho/fishing/shore 等 06-26~28 那批的送審紀錄未見於 docs(當時牧者自審居多);要對外正式推廣前,建議用 `/review-queue` 盤一次、缺的補送 [[pastor-review]]。
 
