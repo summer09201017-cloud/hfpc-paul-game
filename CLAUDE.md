@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > 入口分派在 `src/main.jsx`（`SlingDemo`/`ElijahDemo`/`RedSeaDemo`/`CorneliusActionDemo`/`SaulActionDemo`/`JehoshaphatActionDemo`/`ArkPairsDemo`/`ArkBuildDemo`/`CardDemo`）。
 > 🖥️ **動作關手機全螢幕已一條龍處理**（16:9 取最大框、遊玩時隱藏標題列讓遊戲最大、⛶ 全螢幕鈕 + 暫停鈕、開場框可捲動不被切、挖孔安全區鋪暖底）——
 > 走 `MiniGameModal` 的 `fill` 參數 + `.carddemo--game`/`.carddemo--playing`；心法見 skill **`embed-fullscreen-fit`**（debug 「黑邊/不夠大/沒暫停鈕/開場框被切」先讀它）。
-> ⚔️ **戰爭關永久家 = 本 repo**：聖歌(level 9)已搬進來當 `?demo=jehoshaphat-action`；摩西/巴蘭仍在 `hfpc-war-games`（手動部署的原型站），可比照搬入。
+> ⚔️ **戰爭關永久家 = 本 repo(2026-07-05 全數到齊)**:聖歌 `?demo=jehoshaphat-action`、紅海 `?demo=redsea`、**摩西 `?demo=moses-action`、巴蘭 `?demo=balaam-action`(07-05 搬入,L7/L10)**——四關都住 paul 自動部署,大廳卡改指 paul 後 `hfpc-war-games`(手動 B 站)可退役。
 > 🚢 **挪亞記大富翁已上線（2026-06-18）**：`?journey=noah`（14 站手繪洪水板 + arkbuild/arkpairs 闖關站 + 🌈 noahCovenant 五幕卡片終局關）。`?journey=` 深連結預選已修好（之前 SetupScreen 沒讀、大廳連結都落在保羅）。
 > 🏆 **通關獎狀（2026-06-18 晚，PR #39）**：結束畫面每位玩家可下載一張 PNG 獎狀（`src/certificate.js`，純 Canvas、零美術檔、可離線/列印）；任何旅程通用（帶旅程名/頭銜/分數/日期）。
 > 📐 **桌遊內卡片關已滿版（2026-06-18 晚，PR #40）**：卡片關（`minigame.cards`）一律走 `.carddemo` 滿版（不分 `fill`）——以前桌遊內走 `.modal__overlay` 置中小框、字被擠窄（每列 ~8 字），現在跟 `?demo=`／聖歌·反轉動作版一樣寬（~21 字）、只剩一顆按鈕、右上有 ⛶；桌遊內 Canvas 關（配對/蓋舟）維持原置中彈窗。`.carddemo` 加 `z-index:60` 才蓋得住棋盤。
@@ -113,7 +113,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 | 引擎資料夾 | 單獨玩 | 書卷/主題 | 機制(對應 skill) |
 |---|---|---|---|
-| `jonah/` | 旅程站點嵌入;`?demo=redsea` 等 | 約拿書全六關 + 戰爭關子模組(摩西/紅海/約沙法/巴蘭) | 跑酷/風暴/卡片;**sync:jonah 複本,來源必 `--from=<jonah feat/redsea-tts>`** |
+| `jonah/` | 旅程站點嵌入;`?demo=redsea` / `jehoshaphat-action` / `moses-action` / `balaam-action` | 約拿書全六關 + 戰爭關子模組(摩西 L7/紅海 L8/約沙法 L9/巴蘭 L10) | 跑酷/風暴/卡片;**sync:jonah 複本,來源必 `--from=<jonah feat/redsea-tts>`**;戰爭四關 2026-07-05 全數搬進 paul(擺脫 war-games B 站) |
 | `cards/` | `?demo=<cardKey>`(balaam/wilderness…) | 各卷卡片關(specs.js 全部 key) | 純 React 卡片流程,L6 手繪([[card-flow-minigame]]) |
 | `sling/` | `?demo=sling` | 撒上 17 大衛甩石 | 拖曳彈弓瞄準([[slingshot-physics-minigame]]);未接旅程 |
 | `joash/` | `?demo=joash` | 王下 13:14-19 約阿施射得勝箭 | 甩石引擎換皮・多箭「射越多次=得勝越完全」;大廳有卡(06-26) |
@@ -135,7 +135,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 | `miriam/` | `?demo=miriam` | 出 15:20-21 米利暗擊鼓 | 太鼓型單軌雙打點;慶祝關不會輸 |
 | `harptoy/` | `?demo=harptoy` | 自由演奏 | 琴玩具模式(無輸贏) |
 
-- **雙擊啟動器 `play-*.bat`(repo 根,21 支)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
+- **雙擊啟動器 `play-*.bat`(repo 根,23 支;07-05 加 play-moses-action.bat、play-balaam-action.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
 - `cards/`/`jonah/`(部分關)只被旅程站點的 `minigame` 欄使用、沒有同名 `?demo=` 路由——正常,不是漏接。
 - 文案審核:joash/jericho/fishing/shore 等 06-26~28 那批的送審紀錄未見於 docs(當時牧者自審居多);要對外正式推廣前,建議用 `/review-queue` 盤一次、缺的補送 [[pastor-review]]。
 
