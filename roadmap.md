@@ -22,7 +22,7 @@
 > | ✅ | ~~牧師過審題庫~~ | — | **已過審(2026-07-05)** |
 > | ✅ | ~~大廳點耶穌旅程卡~~ | — | **已點亮(2026-07-05,hfpc-bible-games 4f9732e)**:首頁「✝️ 耶穌生平之旅」直達卡→?journey=jesus;sw v13;煙霧測試 21 卡綠——**耶穌旅程全線完工** |
 > | 4 | 太鼓第二關:大衛迎約櫃(撒下6,只取歡慶段) | ~半天 | miriam 引擎換皮 |
-> | 5 | 巴蘭/摩西動作版從 war-games 搬進 paul | 各~半天 | 舊待辦,自動部署受惠 |
+> | ✅ | ~~巴蘭/摩西動作版從 war-games 搬進 paul~~ | — | **已做(2026-07-05,feat/war-moses-balaam-demos)**:引擎早在 sync:jonah 複本(L7/L10,白名單本就含 7-10),只補兩個 Demo 元件+路由 `?demo=moses-action`/`balaam-action`+2 支 bat;結束卡經文逐字沿用已烤 mp3(manifest f55f79fe/6521fc6f 實測 HIT,零新烤);Playwright 兩關可玩、console 零錯誤;validate/selfplay/build 綠。**戰爭四關全數住進 paul,大廳卡改指後 war-games 可退役** |
 > | 6 | 離線啟動選單頁、投影計分板 | 各~半天 | 舊待辦,高 CP |
 > | ✅ | ~~金句 mp3 鋪開~~ | — | **已做(2026-07-05)**:jonah 十關(六關+摩西/紅海/約沙法/巴蘭)+彼得走海 12 句入列,manifest 39 句曉臻、precache 51 entries |
 >
