@@ -9,6 +9,7 @@ import { Game as ArkBuildGame } from '../minigames/arkbuild/game'
 import { Game as LoavesGame } from '../minigames/loaves/game'
 import { Game as GethsemaneGame } from '../minigames/gethsemane/game'
 import { Game as ShepherdGame } from '../minigames/shepherd/game'
+import { Game as SamuelGame } from '../minigames/samuel/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -200,6 +201,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   // in-repo 迷宮尋路關(src/minigames/shepherd/,好牧人尋羊 路 15:3-7):minigame.engine:'shepherd'。
   // 系列第一個迷宮機制——找迷失的羊、扛回羊圈;永不會輸(牧人必找到底,15:4)。
   const isShepherd = minigame.engine === 'shepherd'
+  // in-repo 記憶序列關(src/minigames/samuel/,撒母耳聽呼喚 撒上 3):minigame.engine:'samuel'。
+  // 新類型②記憶序列(Simon 型)——油燈依序亮、照順序點回(聽與順服);聽錯溫柔重聽、永不會輸。
+  const isSamuel = minigame.engine === 'samuel'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -311,6 +315,17 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
     if (isShepherd) {
       // 好牧人尋羊(路 15):同一套嵌入契約;迷宮尋路,永不會輸。
       const game = new ShepherdGame(canvasRef.current, {
+        embed: true,
+        winPoints: minigame.winPoints || 3,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
+    if (isSamuel) {
+      // 撒母耳聽呼喚(撒上 3):同一套嵌入契約;記憶序列,聽錯溫柔重聽、永不會輸。
+      const game = new SamuelGame(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 3,
         onComplete: (result) => onComplete(result),
