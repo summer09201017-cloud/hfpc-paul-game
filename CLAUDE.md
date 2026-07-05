@@ -107,6 +107,38 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 ## Embedded mini-games (`src/minigames/`)
 
+### 引擎總覽(2026-07-05 對賬;21 個引擎一行一個,防「程式有、文件沒提」)
+
+> ⚠ 這張表是 2026-07-05 用 `/route-doc-check` 對賬補的——當時發現 saul-spear/nehemiah/joash/slingshot/jericho/fishing/shore **七個引擎(06-26~06-28 HFP 機所做)完全沒進過文件**。日後每加一個引擎,在這裡補一行(交接前跑 `/route-doc-check` 驗證 🔴=0)。
+
+| 引擎資料夾 | 單獨玩 | 書卷/主題 | 機制(對應 skill) |
+|---|---|---|---|
+| `jonah/` | 旅程站點嵌入;`?demo=redsea` 等 | 約拿書全六關 + 戰爭關子模組(摩西/紅海/約沙法/巴蘭) | 跑酷/風暴/卡片;**sync:jonah 複本,來源必 `--from=<jonah feat/redsea-tts>`** |
+| `cards/` | `?demo=<cardKey>`(balaam/wilderness…) | 各卷卡片關(specs.js 全部 key) | 純 React 卡片流程,L6 手繪([[card-flow-minigame]]) |
+| `sling/` | `?demo=sling` | 撒上 17 大衛甩石 | 拖曳彈弓瞄準([[slingshot-physics-minigame]]);未接旅程 |
+| `joash/` | `?demo=joash` | 王下 13:14-19 約阿施射得勝箭 | 甩石引擎換皮・多箭「射越多次=得勝越完全」;大廳有卡(06-26) |
+| `saul-spear/` | `?demo=saul-spear` | 撒上 18-19 掃羅擲槍・大衛閃避 | 閃避不還手([[dodge-projectile-minigame]]);大廳「🛡️ 靠神得勝·閃避」合輯(06-26) |
+| `nehemiah/` | `?demo=nehemiah` | 尼 4;6 尼希米修牆躲攻擊 | 閃避引擎換皮+築牆進度(城牆 maxH 210);同上合輯(06-26) |
+| `slingshot/` | `?demo=slingshot` | 技術原型(無書卷) | 忿怒鳥式拖曳彈弓+疊磚崩塌;**原型**,正式關=jericho(06-27) |
+| `jericho/` | `?demo=jericho` | 書 6:20 耶利哥城牆 | 蓄力吹角吶喊震塌;**牆是神拆的不是人砸的**;大廳直達卡(06-27) |
+| `fishing/` | `?demo=fishing` | 路 5:1-11 下網得魚 | 收集類:魚種大小/顏色/速度、大魚高分、青少年更難;「彼得的一生」合輯(06-28) |
+| `shore/` | `?demo=shore` | 約 21:15-19 海邊的復興 | 三問「你愛我嗎」點答+逐隻餵羊;**不見殉道**;「彼得的一生」收尾(06-28) |
+| `arkpairs/` | `?demo=arkpairs` | 創 6-7 一公一母進方舟 | 翻牌配對+排房謎題([[match-pairs-minigame]]) |
+| `arkbuild/` | `?demo=arkbuild` | 創 6:14-22 一步一步蓋方舟 | 走板釘釘時機瞄準;挪亞有臉、鬍子隨進度變白 |
+| `elijah/` | `?demo=elijah-action` | 王上 19 盼望・以利亞 | 收集恢復([[collect-recover-minigame]]);拾穗/嗎哪類的母引擎 |
+| `loaves/` | `?demo=loaves` | 太 14 五餅二魚(耶穌旅程③) | 分餅給群眾——分出去不減反增 |
+| `gethsemane/` | `?demo=gethsemane` | 太 26:36-46 客西馬尼・警醒(⑥) | 撐住不睡([[stay-awake-minigame]]);撐不住=溫柔敘事,永遠 won:true |
+| `petersea/` | `?demo=petersea` | 太 14 水面行走(耶穌旅程④) | 跨 repo 嵌入彼得走海(sync:petersea 複本) |
+| `paulsilas/` | `?demo=paulsilas` | 徒 16 保羅西拉監獄 | 跨 repo 嵌入(sync:paulsilas 複本) |
+| `psalm100/` | `?demo=psalm100` | 詩 100 | 下落式節奏([[rhythm-beat-minigame]]) |
+| `davidharp/` | `?demo=davidharp` | 撒上 16 大衛彈琴 | 透視琴弦節奏(GuitarHero 型,愁煩條) |
+| `miriam/` | `?demo=miriam` | 出 15:20-21 米利暗擊鼓 | 太鼓型單軌雙打點;慶祝關不會輸 |
+| `harptoy/` | `?demo=harptoy` | 自由演奏 | 琴玩具模式(無輸贏) |
+
+- **雙擊啟動器 `play-*.bat`(repo 根,21 支)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
+- `cards/`/`jonah/`(部分關)只被旅程站點的 `minigame` 欄使用、沒有同名 `?demo=` 路由——正常,不是漏接。
+- 文案審核:joash/jericho/fishing/shore 等 06-26~28 那批的送審紀錄未見於 docs(當時牧者自審居多);要對外正式推廣前,建議用 `/review-queue` 盤一次、缺的補送 [[pastor-review]]。
+
 A station can trigger a real-time 2D mini-game by carrying a `minigame: { level, mode?, winPoints, label?, how?, hudLabels?, cast? }` field (`cast: false` on Paul's sea-challenge stations skips the storm level's「拋約拿入海」ending — that beat belongs only to the Jonah story; the engine option is `opts.stormCast`) (decoupled from `type`, like quiz/card; the dedicated tile uses `type: "challenge"`). `src/minigames/jonah/` is a **copy of the `約拿闖關` (Jonah) arcade engine** (vanilla Canvas, zero deps) driven in **embed mode**: `new Game(canvas, { ui, embed: true, level, mode, hudLabels, onComplete })` — `embed` skips the title screen + suppresses fullscreen/orientation takeover, and the level-finish paths call `onComplete({ won, score, level })` instead of the Jonah overlay. `Game.destroy()` stops the loop, removes listeners (`Input.detach()`), and stops its audio.
 
 **In-repo card-flow minigames (2026-06-12, `src/minigames/cards/`):** a station can instead carry `minigame: { cards: "<key>", winPoints, label? }` — `MiniGameModal` then renders the pure-React `CardGame.jsx` player with the spec from `specs.js` (goldImage / wallWriting / tenPlagues / tenCommandments / danielFinale / exodusFinale) and never boots the Canvas engine. These live **outside the Jonah fork**, so `sync:jonah` never touches them; they cannot lose (wrong answers gently retry; order-steps shake), and finish via the same `onComplete({ won:true, score })` path. To add one, write a spec in `specs.js` (step kinds: `info` / `question` / `order`) and point a station's `minigame.cards` at it. Their copy goes through the same pastoral review gate as quizzes (`scripts/export-quiz-review.mjs --cards=src/minigames/cards/specs.js`).

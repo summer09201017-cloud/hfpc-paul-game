@@ -2,6 +2,11 @@
 
 > ## ⭐ 對齊現況：2026-07-05（最新，agape250 的 AI 先讀這段）
 >
+> **📝 補記(2026-07-05 午,agape250 機,文件對賬——`/route-doc-check` 首跑抓漏):**
+> - **七個引擎(06-26~06-28 所做)從未進過任何文件**:saul-spear(掃羅擲槍閃避)、nehemiah(修牆)、joash(得勝箭)、slingshot(彈弓原型)、jericho(耶利哥城牆)、fishing(下網得魚)、shore(海邊的復興)——已補進 CLAUDE.md 新增的「**引擎總覽**」表(21 引擎一行一個,含 play-*.bat 檔名↔路由鍵對照)。
+> - 日後每加引擎補一行;交接前跑 `/route-doc-check`(skills 合輯 scripts/route-doc-check.mjs)驗 🔴=0。
+> - ⚠ 該批關卡的牧者送審紀錄未見於 docs;對外正式推廣前用 `/review-queue` 盤點補審。
+>
 > **✅ 本輪(2026-07-05,HFP 機,PR #55-58 全併、A 站已上線驗證)——耶穌旅程 7 關接上 6 關:**
 > - ①曠野試探(卡片配對 `?demo=wilderness`)+⑤好撒馬利亞人(卡片抉擇 `?demo=goodSamaritan`):specs.js+scenes.js JESUS 十幕(試探者=無臉暗影、對話框真經文)。
 > - ⑥客西馬尼・警醒(`?demo=gethsemane`,新引擎 src/minigames/gethsemane/):撐住不睡,守「撐住≠改寫聖經」神學守法(撐不住=溫柔敘事,永遠 won:true);範式已抽成 skill stay-awake-minigame。
