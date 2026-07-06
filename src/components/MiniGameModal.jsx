@@ -11,6 +11,8 @@ import { Game as GethsemaneGame } from '../minigames/gethsemane/game'
 import { Game as ShepherdGame } from '../minigames/shepherd/game'
 import { Game as SamuelGame } from '../minigames/samuel/game'
 import { Game as JosephGame } from '../minigames/joseph/game'
+import { Game as WallguardGame } from '../minigames/wallguard/game'
+import { Game as EzraGame } from '../minigames/ezra/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -208,6 +210,10 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   // in-repo 滑塊拼圖關(src/minigames/joseph/,約瑟的彩衣 創 37→50):minigame.engine:'joseph'。
   // 新類型③滑塊拼圖——點空格旁碎塊拼回彩衣;永不會輸,卡住有提示;神把破碎拼回(創 50:20)。
   const isJoseph = minigame.engine === 'joseph'
+  // in-repo 塔防關(src/minigames/wallguard/,尼希米守望 尼 3-6):minigame.engine:'wallguard'。新類型⑤佈置守望——吹角退敵不殺敵。
+  const isWallguard = minigame.engine === 'wallguard'
+  // in-repo 護送關(src/minigames/ezra/,以斯拉護送 拉 8):minigame.engine:'ezra'。新類型⑥——沒有武器,唯一動作是禱告。
+  const isEzra = minigame.engine === 'ezra'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -319,6 +325,26 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
     if (isShepherd) {
       // 好牧人尋羊(路 15):同一套嵌入契約;迷宮尋路,永不會輸。
       const game = new ShepherdGame(canvasRef.current, {
+        embed: true,
+        winPoints: minigame.winPoints || 3,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
+    if (isWallguard) {
+      const game = new WallguardGame(canvasRef.current, {
+        embed: true,
+        winPoints: minigame.winPoints || 3,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
+    if (isEzra) {
+      const game = new EzraGame(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 3,
         onComplete: (result) => onComplete(result),
