@@ -14,7 +14,7 @@ import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
 const AGES = {
   young: { label: '🐣 幼', desc: '三次呼喚', rounds: 3, startLen: 2, speed: 0.62 },
   kid: { label: '🙂 童', desc: '四次呼喚', rounds: 4, startLen: 2, speed: 0.52 },
-  teen: { label: '🔥 青', desc: '五次呼喚・更快', rounds: 5, startLen: 3, speed: 0.4 },
+  teen: { label: '🔥 青', desc: '五次呼喚・更快・最後純聽', rounds: 5, startLen: 3, speed: 0.38, soundOnly: true },
 }
 // 四盞燈:位置(相對)+ 音高 + 燈焰色
 const LAMPS = [
@@ -44,6 +44,7 @@ const T = {
     line: '你仍去睡罷;若再呼喚你,你就說:耶和華啊,請說,僕人敬聽!',
     ref: '撒上 3:9',
     hint: '最後一次呼喚要來了——這次,學撒母耳回應。',
+    hintDark: '最後一次呼喚要來了——夜更深,看不見燈了。單單用「聽」的,每盞燈的聲音都不一樣。',
   },
   winVerse: '耶和華又來站著,像前三次呼喚說:撒母耳啊!撒母耳啊!撒母耳回答說:請說,僕人敬聽!',
   winRef: '撒母耳記上 3:10',
@@ -133,7 +134,9 @@ export class Game {
       if (i > this.playIdx && i < this.seq.length) {
         this.playIdx = i
         const lamp = this.seq[i]
-        this.flash.set(lamp, this._t + step * 0.6)
+        // 青年檔最後一輪「純聽」:夜裡的呼喚是用聽的——不亮燈,只有各燈不同的音高(撒上 3:10 前的最後考驗)
+        const dark = this.cfg.soundOnly && this.round === this.cfg.rounds
+        if (!dark) this.flash.set(lamp, this._t + step * 0.6)
         this._tone(LAMPS[lamp].tone, step * 0.5)
       }
       if (i >= this.seq.length) this.state = 'repeat'
@@ -367,7 +370,8 @@ export class Game {
     wrap2(ctx, `「${s.line}」`, W / 2, H * 0.41, W * 0.62, H * 0.048)
     ctx.fillStyle = '#8a6a33'
     ctx.font = `${Math.max(12, H * 0.032)}px "Noto Sans TC",sans-serif`
-    ctx.fillText(s.hint, W / 2, H * 0.66)
+    const useDark = this.cfg && this.cfg.soundOnly && this.round === this.cfg.rounds - 1 && s.hintDark
+    ctx.fillText(useDark ? s.hintDark : s.hint, W / 2, H * 0.66)
     ctx.fillText('點畫面 / 按空白鍵 → 繼續', W / 2, H * 0.72)
   }
 
