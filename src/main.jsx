@@ -16,6 +16,8 @@ import GethsemaneDemo from './components/GethsemaneDemo.jsx'
 import ShepherdDemo from './components/ShepherdDemo.jsx'
 import SamuelDemo from './components/SamuelDemo.jsx'
 import JosephDemo from './components/JosephDemo.jsx'
+import WallguardDemo from './components/WallguardDemo.jsx'
+import EzraDemo from './components/EzraDemo.jsx'
 import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
@@ -88,6 +90,8 @@ function pickRoot() {
   if (demo === 'shepherd') return <ShepherdDemo />
   if (demo === 'samuel') return <SamuelDemo />
   if (demo === 'joseph') return <JosephDemo />
+  if (demo === 'wallguard') return <WallguardDemo />
+  if (demo === 'ezra') return <EzraDemo />
   if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />
