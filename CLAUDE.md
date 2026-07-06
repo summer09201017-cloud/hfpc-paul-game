@@ -107,7 +107,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 ## Embedded mini-games (`src/minigames/`)
 
-### 引擎總覽(2026-07-05 對賬;21 個引擎一行一個,防「程式有、文件沒提」)
+### 引擎總覽(2026-07-06 對賬;26 個引擎一行一個,防「程式有、文件沒提」)
 
 > ⚠ 這張表是 2026-07-05 用 `/route-doc-check` 對賬補的——當時發現 saul-spear/nehemiah/joash/slingshot/jericho/fishing/shore **七個引擎(06-26~06-28 HFP 機所做)完全沒進過文件**。日後每加一個引擎,在這裡補一行(交接前跑 `/route-doc-check` 驗證 🔴=0)。
 
@@ -137,8 +137,10 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 | `davidharp/` | `?demo=davidharp` | 撒上 16 大衛彈琴 | 透視琴弦節奏(GuitarHero 型,愁煩條) |
 | `miriam/` | `?demo=miriam` | 出 15:20-21 米利暗擊鼓 | 太鼓型單軌雙打點;慶祝關不會輸 |
 | `harptoy/` | `?demo=harptoy` | 自由演奏 | 琴玩具模式(無輸贏) |
+| `wallguard/` | `?demo=wallguard` | 尼 3-6 尼希米守望 | **新類型⑤塔防(佈置守望)**:牆六段工人自動修,點牆段佈置吹角守望者(人數有限),仇敵靠近角聲退敵(尼 4:20/6:16);守望者不殺敵、永不會輸;與 nehemiah 閃避版 two-forms;⚠ 文案待牧者審(feat/wallguard-ezra) |
+| `ezra/` | `?demo=ezra` | 拉 8:21-23 以斯拉護送 | **新類型⑥護送**:隊伍自動前行,點暗影=以斯拉去舉手禱告、光罩退敵;玩家無武器唯一動作是禱告(拉 8:22 不求兵丁);永不會輸;⚠ 文案待牧者審(feat/wallguard-ezra) |
 
-- **雙擊啟動器 `play-*.bat`(repo 根,26 支;07-05 加 play-moses-action.bat、play-balaam-action.bat、play-shepherd.bat;07-06 加 play-samuel.bat、play-joseph.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
+- **雙擊啟動器 `play-*.bat`(repo 根,28 支;07-05 加 play-moses-action.bat、play-balaam-action.bat、play-shepherd.bat;07-06 加 play-samuel.bat、play-joseph.bat;07-06 晚加 play-wallguard.bat、play-ezra.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
 - `cards/`/`jonah/`(部分關)只被旅程站點的 `minigame` 欄使用、沒有同名 `?demo=` 路由——正常,不是漏接。
 - 文案審核:joash/jericho/fishing/shore 等 06-26~28 那批的送審紀錄未見於 docs(當時牧者自審居多);要對外正式推廣前,建議用 `/review-queue` 盤一次、缺的補送 [[pastor-review]]。
 
