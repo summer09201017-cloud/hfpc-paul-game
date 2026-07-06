@@ -13,6 +13,9 @@ import { Game as SamuelGame } from '../minigames/samuel/game'
 import { Game as JosephGame } from '../minigames/joseph/game'
 import { Game as WallguardGame } from '../minigames/wallguard/game'
 import { Game as EzraGame } from '../minigames/ezra/game'
+import { Game as SowerGame } from '../minigames/sower/game'
+import { Game as FoxesGame } from '../minigames/foxes/game'
+import { Game as SparksGame } from '../minigames/sparks/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -214,6 +217,10 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   const isWallguard = minigame.engine === 'wallguard'
   // in-repo 護送關(src/minigames/ezra/,以斯拉護送 拉 8):minigame.engine:'ezra'。新類型⑥——沒有武器,唯一動作是禱告。
   const isEzra = minigame.engine === 'ezra'
+  // in-repo 守護反應(打地鼠家族)三式(新類型⑦):sower 護種子趕飛鳥(太13)/foxes 擒拿小狐狸(歌2:15)/sparks 撲滅小火苗(雅3:5)。
+  const isSower = minigame.engine === 'sower'
+  const isFoxes = minigame.engine === 'foxes'
+  const isSparks = minigame.engine === 'sparks'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -345,6 +352,18 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
     }
     if (isEzra) {
       const game = new EzraGame(canvasRef.current, {
+        embed: true,
+        winPoints: minigame.winPoints || 3,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
+    if (isSower || isFoxes || isSparks) {
+      // 守護反應三式:同一套嵌入契約(constructor 同形),依 engine 選類
+      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : SparksGame
+      const game = new Cls(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 3,
         onComplete: (result) => onComplete(result),
