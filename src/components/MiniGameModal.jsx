@@ -17,6 +17,7 @@ import { Game as SowerGame } from '../minigames/sower/game'
 import { Game as FoxesGame } from '../minigames/foxes/game'
 import { Game as SparksGame } from '../minigames/sparks/game'
 import { Game as ArmorGame } from '../minigames/armor/game'
+import { Game as BasketGame } from '../minigames/basket/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -224,6 +225,8 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   const isSparks = minigame.engine === 'sparks'
   // in-repo 換裝關(src/minigames/armor/,穿戴全副軍裝 弗 6):minigame.engine:'armor'。新類型⑧拖曳裝備——無敵人不揮砍。
   const isArmor = minigame.engine === 'armor'
+  // in-repo 漂流閃避關(src/minigames/basket/,摩西的籃子 出 2):minigame.engine:'basket'。新類型⑨縱向捲軸——只躲不打,嬰孩永遠平安。
+  const isBasket = minigame.engine === 'basket'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -363,9 +366,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
       game.boot()
       return
     }
-    if (isSower || isFoxes || isSparks || isArmor) {
-      // 守護反應三式+換裝:同一套嵌入契約(constructor 同形),依 engine 選類
-      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : ArmorGame
+    if (isSower || isFoxes || isSparks || isArmor || isBasket) {
+      // 守護反應三式+換裝+漂流:同一套嵌入契約(constructor 同形),依 engine 選類
+      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : BasketGame
       const game = new Cls(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 3,
