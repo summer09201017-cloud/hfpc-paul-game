@@ -21,6 +21,7 @@ import EzraDemo from './components/EzraDemo.jsx'
 import SowerDemo from './components/SowerDemo.jsx'
 import FoxesDemo from './components/FoxesDemo.jsx'
 import SparksDemo from './components/SparksDemo.jsx'
+import ArmorDemo from './components/ArmorDemo.jsx'
 import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
@@ -98,6 +99,7 @@ function pickRoot() {
   if (demo === 'sower') return <SowerDemo />
   if (demo === 'foxes') return <FoxesDemo />
   if (demo === 'sparks') return <SparksDemo />
+  if (demo === 'armor') return <ArmorDemo />
   if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />

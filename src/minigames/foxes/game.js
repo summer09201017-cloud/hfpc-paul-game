@@ -11,12 +11,13 @@
 // 朗讀鐵則:過關經文走 speakScripture(mp3 優先;歌 2:15 同輪烤,見 scripts/tts-verses.json)。
 import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
 
+// 難度三檔(2026-07-06 使用者點名加難):洞數 6/8/10、每波同時出 1/2/3-4 隻——
+// 幼兒檔維持 6 洞慢速不勸退;童/青用「更多洞+多狐齊出」拉出真正的掃視壓力。
 const AGES = {
-  young: { label: '🐣 幼', desc: '狐狸慢・無誘餌', goal: 5, stay: 3.6, spawnEvery: 3.4, decoyRate: 0 },
-  kid: { label: '🙂 童', desc: '小心蝴蝶', goal: 7, stay: 2.7, spawnEvery: 2.8, decoyRate: 0.35 },
-  teen: { label: '🔥 青', desc: '誘餌多・狐狸快', goal: 9, stay: 1.9, spawnEvery: 2.2, decoyRate: 0.5 },
+  young: { label: '🐣 幼', desc: '6 洞・一次一隻', goal: 5, spots: 6, burst: 1, stay: 3.6, spawnEvery: 3.4, decoyRate: 0 },
+  kid: { label: '🙂 童', desc: '8 洞・一次兩隻', goal: 9, spots: 8, burst: 2, stay: 2.7, spawnEvery: 3.0, decoyRate: 0.35 },
+  teen: { label: '🔥 青', desc: '10 洞・一次三四隻', goal: 14, spots: 10, burst: 3, stay: 2.0, spawnEvery: 2.6, decoyRate: 0.5 },
 }
-const SPOTS = 6 // 藏身處(葡萄藤下的洞口)
 
 const T = {
   title: '🦊 擒拿小狐狸',
@@ -98,7 +99,7 @@ export class Game {
 
   _freeSpots() {
     const used = new Set(this.pops.filter((p) => p.state === 'up').map((p) => p.spot))
-    return Array.from({ length: SPOTS }, (_, i) => i).filter((i) => !used.has(i))
+    return Array.from({ length: this.cfg.spots }, (_, i) => i).filter((i) => !used.has(i))
   }
 
   _update(dt) {
@@ -107,14 +108,16 @@ export class Game {
     this.spawnT -= dt
     if (this.spawnT <= 0) {
       this.spawnT = this.cfg.spawnEvery * (0.7 + Math.random() * 0.6)
-      const free = this._freeSpots()
-      if (free.length) {
-        const kind = Math.random() < this.cfg.decoyRate ? (Math.random() < 0.5 ? 'butterfly' : 'ladybug') : 'fox'
-        this.pops.push({ spot: free[Math.floor(Math.random() * free.length)], kind, t0: this._t, stay: this.cfg.stay * (0.85 + Math.random() * 0.3), state: 'up', liftT: 0 })
-        if (this.age === 'teen' && Math.random() < 0.35) {
-          const free2 = this._freeSpots()
-          if (free2.length) this.pops.push({ spot: free2[Math.floor(Math.random() * free2.length)], kind: 'fox', t0: this._t, stay: this.cfg.stay, state: 'up', liftT: 0 })
-        }
+      // 一波出 burst 隻狐狸(青偶爾 +1 = 一次四隻),各佔不同洞;誘餌另外抽
+      let n = this.cfg.burst + (this.age === 'teen' && Math.random() < 0.4 ? 1 : 0)
+      while (n-- > 0) {
+        const free = this._freeSpots()
+        if (!free.length) break
+        this.pops.push({ spot: free[Math.floor(Math.random() * free.length)], kind: 'fox', t0: this._t, stay: this.cfg.stay * (0.85 + Math.random() * 0.3), state: 'up', liftT: 0 })
+      }
+      if (Math.random() < this.cfg.decoyRate) {
+        const free = this._freeSpots()
+        if (free.length) this.pops.push({ spot: free[Math.floor(Math.random() * free.length)], kind: Math.random() < 0.5 ? 'butterfly' : 'ladybug', t0: this._t, stay: this.cfg.stay * (0.85 + Math.random() * 0.3), state: 'up', liftT: 0 })
       }
     }
     for (const p of this.pops) {
@@ -203,13 +206,14 @@ export class Game {
 
   _layout() {
     const { W, H } = this
-    // 3×2 藏身處
-    const x0 = W * 0.16, gx = W * 0.34
+    // 藏身處網格:洞數依年齡檔(6/8/10 → 3/4/5 欄 × 2 列)
+    const cols = Math.ceil(this.cfg.spots / 2)
+    const x0 = W * 0.13, gx = (W * 0.74) / Math.max(1, cols - 1)
     const y0 = H * 0.5, gy = H * 0.24
-    return { x0, gx, y0, gy }
+    return { x0, gx, y0, gy, cols }
   }
   _popPos(p, g) {
-    const col = p.spot % 3, row = Math.floor(p.spot / 3)
+    const col = p.spot % g.cols, row = Math.floor(p.spot / g.cols)
     const lift = p.state === 'caught' ? p.liftT * this.H * 0.3 : 0
     return { x: g.x0 + col * g.gx, y: g.y0 + row * g.gy - lift }
   }
@@ -241,8 +245,8 @@ export class Game {
       }
     }
     // 藏身處(洞口)與探頭者
-    for (let i = 0; i < SPOTS; i++) {
-      const col = i % 3, row = Math.floor(i / 3)
+    for (let i = 0; i < this.cfg.spots; i++) {
+      const col = i % g.cols, row = Math.floor(i / g.cols)
       const x = g.x0 + col * g.gx, y = g.y0 + row * g.gy
       ctx.fillStyle = '#6a5230'
       ctx.beginPath(); ctx.ellipse(x, y + H * 0.035, W * 0.075, H * 0.03, 0, 0, 7); ctx.fill()
@@ -265,8 +269,8 @@ export class Game {
       ctx.fillStyle = '#3a2e16'; ctx.strokeStyle = 'rgba(255,252,235,0.85)'; ctx.lineWidth = 4
       ctx.font = `bold ${Math.max(13, H * 0.03)}px "Noto Sans TC",sans-serif`
       ctx.textAlign = 'center'
-      const col = t.spot % 3
-      const tx = g.x0 + col * g.gx, ty = g.y0 + Math.floor(t.spot / 3) * g.gy - H * 0.09 - k * 24
+      const col = t.spot % g.cols
+      const tx = g.x0 + col * g.gx, ty = g.y0 + Math.floor(t.spot / g.cols) * g.gy - H * 0.09 - k * 24
       ctx.strokeText(t.text, tx, ty); ctx.fillText(t.text, tx, ty)
       ctx.globalAlpha = 1
     }
