@@ -14,7 +14,7 @@ import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
 const CFG = {
   // 迷宮尺寸(必須是奇數):幼/童/青。2026-07-06 全面加大(牧者指示:更大地圖)——曠野更像曠野。
   sizes: { young: { cols: 11, rows: 9 }, kid: { cols: 17, rows: 11 }, teen: { cols: 23, rows: 13 } },
-  fogRadius: 3.2, // 青少年檔:夜霧可見半徑(格)
+  fogRadius: 2.0, // 青少年檔:夜霧可見半徑(格)。07-06 使用者指示:更黑、光圈更小(3.2→2.0)
   bleatEvery: 6, // 每幾秒羊自動咩一聲(方向提示)
   moveMs: 110, // 一步的滑動動畫毫秒
 }
@@ -232,40 +232,47 @@ export class Game {
     this.toasts.push({ text: '咩~', ang: this.age === 'teen' ? null : ang, t: this._t, manual })
   }
 
-  // 擬真羊叫(零音檔,Web Audio 合成):鋸齒波富含諧波 + 6.8Hz 顫音(羊的「ㄟㄟㄟ」)+
-  // 帶通濾波(喉腔共振峰 ~1150Hz)+ 尾音下滑;短咩+長咩~兩聲。
+  // 擬真羊叫 v2(零音檔,Web Audio 合成;07-06 使用者回饋「不像」後重調):
+  //   ①音高輪廓:起音低→快速上揚→持平→尾音下滑(真羊的「咩———ㄟ」)
+  //   ②喉顫斷續:9Hz 振幅調製(AM)——羊咩的「ㄟㄟㄟ」是斷續的,不是平滑顫音
+  //   ③8Hz 音高顫音(FM)疊加 ④雙共振峰並聯(1000Hz+2600Hz,鼻腔味) ⑤一聲長咩(0.75s)
   // ★ 聲音就是導航:StereoPanner 依羊的方向左右定位、音量依距離衰減——閉著眼也找得到。
   _baa(dist, ang) {
     try {
       if (!this._audio) this._audio = new (window.AudioContext || window.webkitAudioContext)()
       const ctx = this._audio, t0 = ctx.currentTime
       const far = Math.min(1, dist / Math.max(this.cols, this.rows))
-      const vol = 0.06 + 0.26 * (1 - far * 0.8) // 越近越大聲
+      const vol = 0.07 + 0.3 * (1 - far * 0.8) // 越近越大聲
       const pan = Math.max(-1, Math.min(1, Math.cos(ang) * 0.9)) // 水平方向 → 立體聲
-      const one = (start, dur, f0) => {
-        const o = ctx.createOscillator()
-        o.type = 'sawtooth'
-        o.frequency.setValueAtTime(f0, t0 + start)
-        o.frequency.linearRampToValueAtTime(f0 * 0.82, t0 + start + dur) // 尾音下滑
-        const lfo = ctx.createOscillator(), lg = ctx.createGain()
-        lfo.type = 'sine'; lfo.frequency.value = 6.8
-        lg.gain.value = f0 * 0.06
-        lfo.connect(lg); lg.connect(o.frequency) // 顫音
-        const bp = ctx.createBiquadFilter()
-        bp.type = 'bandpass'; bp.frequency.value = 1150; bp.Q.value = 1.4 // 喉腔共振
-        const g = ctx.createGain()
-        g.gain.setValueAtTime(0.0001, t0 + start)
-        g.gain.exponentialRampToValueAtTime(vol, t0 + start + 0.04)
-        g.gain.setValueAtTime(vol, t0 + start + dur * 0.6)
-        g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur)
-        o.connect(bp); bp.connect(g)
-        if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = pan; g.connect(p); p.connect(ctx.destination) }
-        else g.connect(ctx.destination)
-        o.start(t0 + start); o.stop(t0 + start + dur + 0.05)
-        lfo.start(t0 + start); lfo.stop(t0 + start + dur + 0.05)
-      }
-      one(0, 0.2, 700) // 短「咩」
-      one(0.26, 0.55, 640) // 長「咩~」
+      const dur = 0.75, f0 = 580
+      const o = ctx.createOscillator()
+      o.type = 'sawtooth'
+      o.frequency.setValueAtTime(f0 * 0.78, t0) // 起音低
+      o.frequency.linearRampToValueAtTime(f0, t0 + 0.07) // 快速上揚
+      o.frequency.setValueAtTime(f0, t0 + dur * 0.55)
+      o.frequency.linearRampToValueAtTime(f0 * 0.7, t0 + dur) // 尾音下滑
+      // FM 音高顫音(8Hz,±8%)
+      const vib = ctx.createOscillator(), vg = ctx.createGain()
+      vib.type = 'sine'; vib.frequency.value = 8.2; vg.gain.value = f0 * 0.08
+      vib.connect(vg); vg.connect(o.frequency)
+      // 雙共振峰並聯(喉+鼻腔)
+      const f1 = ctx.createBiquadFilter(); f1.type = 'bandpass'; f1.frequency.value = 1000; f1.Q.value = 1.8
+      const f2 = ctx.createBiquadFilter(); f2.type = 'bandpass'; f2.frequency.value = 2600; f2.Q.value = 3
+      // AM 喉顫斷續(9Hz 深度 0.45——「ㄟㄟㄟ」的抖)
+      const amp = ctx.createGain(); amp.gain.value = 1
+      const am = ctx.createOscillator(), amd = ctx.createGain()
+      am.type = 'sine'; am.frequency.value = 9; amd.gain.value = 0.45
+      am.connect(amd); amd.connect(amp.gain)
+      // 音量包絡
+      const g = ctx.createGain()
+      g.gain.setValueAtTime(0.0001, t0)
+      g.gain.exponentialRampToValueAtTime(vol, t0 + 0.06)
+      g.gain.setValueAtTime(vol, t0 + dur * 0.7)
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur)
+      o.connect(f1); o.connect(f2); f1.connect(amp); f2.connect(amp); amp.connect(g)
+      if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = pan; g.connect(p); p.connect(ctx.destination) }
+      else g.connect(ctx.destination)
+      for (const n of [o, vib, am]) { n.start(t0); n.stop(t0 + dur + 0.05) }
     } catch {}
   }
 
@@ -358,17 +365,19 @@ export class Game {
     const PX = ox + ax * cell + cell / 2, PY = oy + ay * cell + cell / 2
     drawShepherd(ctx, PX, PY, cell * 0.42, this.state === 'carry' || this.state === 'found', night)
 
-    // 夜霧(青少年):以牧人為中心的提燈光圈
+    // 夜霧(青少年):以牧人為中心的提燈光圈。07-06 使用者指示:光圈外「全黑」——
+    // 最外色標 alpha 1(不是 0.93),圈外什麼都看不見,真的只能靠聽。
     if (night && (this.state === 'find' || this.state === 'carry')) {
       const R = CFG.fogRadius * cell
-      const fog = ctx.createRadialGradient(PX, PY, R * 0.45, PX, PY, R)
-      fog.addColorStop(0, 'rgba(8,10,24,0)')
-      fog.addColorStop(1, 'rgba(8,10,24,0.93)')
+      const fog = ctx.createRadialGradient(PX, PY, R * 0.35, PX, PY, R)
+      fog.addColorStop(0, 'rgba(4,5,14,0)')
+      fog.addColorStop(0.8, 'rgba(4,5,14,0.9)')
+      fog.addColorStop(1, 'rgba(4,5,14,1)')
       ctx.fillStyle = fog
       ctx.fillRect(0, 0, W, H)
-      // 提燈微光
-      const lamp = ctx.createRadialGradient(PX, PY, 0, PX, PY, R * 0.5)
-      lamp.addColorStop(0, 'rgba(255,214,120,0.18)')
+      // 提燈微光(範圍跟著縮小)
+      const lamp = ctx.createRadialGradient(PX, PY, 0, PX, PY, R * 0.4)
+      lamp.addColorStop(0, 'rgba(255,214,120,0.16)')
       lamp.addColorStop(1, 'rgba(255,214,120,0)')
       ctx.fillStyle = lamp
       ctx.fillRect(0, 0, W, H)
