@@ -12,8 +12,8 @@
 import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
 
 const CFG = {
-  // 迷宮尺寸(必須是奇數):幼/童/青
-  sizes: { young: { cols: 9, rows: 7 }, kid: { cols: 13, rows: 9 }, teen: { cols: 17, rows: 11 } },
+  // 迷宮尺寸(必須是奇數):幼/童/青。2026-07-06 全面加大(牧者指示:更大地圖)——曠野更像曠野。
+  sizes: { young: { cols: 11, rows: 9 }, kid: { cols: 17, rows: 11 }, teen: { cols: 23, rows: 13 } },
   fogRadius: 3.2, // 青少年檔:夜霧可見半徑(格)
   bleatEvery: 6, // 每幾秒羊自動咩一聲(方向提示)
   moveMs: 110, // 一步的滑動動畫毫秒
@@ -224,10 +224,49 @@ export class Game {
   _bleat(manual = false) {
     if (this.state !== 'find') return
     this.bleatT = CFG.bleatEvery
-    this._beep(740, 0.09); this._beep(620, 0.12, 0.1) // 兩聲=咩~
-    // 「咩~」漂浮字出現在「朝羊的方向」的畫面邊緣(聽聲辨位)
-    const ang = Math.atan2(this.sy - this.py, this.sx - this.px)
-    this.toasts.push({ text: '咩~', ang, t: this._t, manual })
+    const dx = this.sx - this.px, dy = this.sy - this.py
+    const dist = Math.hypot(dx, dy)
+    const ang = Math.atan2(dy, dx)
+    this._baa(dist, ang) // 真的聽得到的「咩~」:立體聲=方向、音量=遠近
+    // 漂浮字:幼/童帶方向(視覺輔助);青=置中不帶方向——夜裡提燈,方向要用「聽」的
+    this.toasts.push({ text: '咩~', ang: this.age === 'teen' ? null : ang, t: this._t, manual })
+  }
+
+  // 擬真羊叫(零音檔,Web Audio 合成):鋸齒波富含諧波 + 6.8Hz 顫音(羊的「ㄟㄟㄟ」)+
+  // 帶通濾波(喉腔共振峰 ~1150Hz)+ 尾音下滑;短咩+長咩~兩聲。
+  // ★ 聲音就是導航:StereoPanner 依羊的方向左右定位、音量依距離衰減——閉著眼也找得到。
+  _baa(dist, ang) {
+    try {
+      if (!this._audio) this._audio = new (window.AudioContext || window.webkitAudioContext)()
+      const ctx = this._audio, t0 = ctx.currentTime
+      const far = Math.min(1, dist / Math.max(this.cols, this.rows))
+      const vol = 0.06 + 0.26 * (1 - far * 0.8) // 越近越大聲
+      const pan = Math.max(-1, Math.min(1, Math.cos(ang) * 0.9)) // 水平方向 → 立體聲
+      const one = (start, dur, f0) => {
+        const o = ctx.createOscillator()
+        o.type = 'sawtooth'
+        o.frequency.setValueAtTime(f0, t0 + start)
+        o.frequency.linearRampToValueAtTime(f0 * 0.82, t0 + start + dur) // 尾音下滑
+        const lfo = ctx.createOscillator(), lg = ctx.createGain()
+        lfo.type = 'sine'; lfo.frequency.value = 6.8
+        lg.gain.value = f0 * 0.06
+        lfo.connect(lg); lg.connect(o.frequency) // 顫音
+        const bp = ctx.createBiquadFilter()
+        bp.type = 'bandpass'; bp.frequency.value = 1150; bp.Q.value = 1.4 // 喉腔共振
+        const g = ctx.createGain()
+        g.gain.setValueAtTime(0.0001, t0 + start)
+        g.gain.exponentialRampToValueAtTime(vol, t0 + start + 0.04)
+        g.gain.setValueAtTime(vol, t0 + start + dur * 0.6)
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur)
+        o.connect(bp); bp.connect(g)
+        if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = pan; g.connect(p); p.connect(ctx.destination) }
+        else g.connect(ctx.destination)
+        o.start(t0 + start); o.stop(t0 + start + dur + 0.05)
+        lfo.start(t0 + start); lfo.stop(t0 + start + dur + 0.05)
+      }
+      one(0, 0.2, 700) // 短「咩」
+      one(0.26, 0.55, 640) // 長「咩~」
+    } catch {}
   }
 
   // ── Web Audio 小音效(零音檔)──
@@ -335,11 +374,12 @@ export class Game {
       ctx.fillRect(0, 0, W, H)
     }
 
-    // 「咩~」漂浮提示(朝羊方向的邊緣)
+    // 「咩~」漂浮提示(幼/童=朝羊方向的邊緣;青 ang:null=置中上方,方向用聽的)
     for (const t of this.toasts) {
       const k = (this._t - t.t) / 1.6
       const R = Math.min(W, H) * 0.32
-      const tx = PX + Math.cos(t.ang) * R, ty = PY + Math.sin(t.ang) * R - k * 24
+      const tx = t.ang == null ? W / 2 : PX + Math.cos(t.ang) * R
+      const ty = (t.ang == null ? H * 0.17 : PY + Math.sin(t.ang) * R) - k * 24
       ctx.globalAlpha = 1 - k
       ctx.fillStyle = '#fffdf2'
       ctx.strokeStyle = 'rgba(60,40,10,0.5)'
