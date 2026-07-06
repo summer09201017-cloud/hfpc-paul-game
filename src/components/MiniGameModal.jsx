@@ -10,6 +10,7 @@ import { Game as LoavesGame } from '../minigames/loaves/game'
 import { Game as GethsemaneGame } from '../minigames/gethsemane/game'
 import { Game as ShepherdGame } from '../minigames/shepherd/game'
 import { Game as SamuelGame } from '../minigames/samuel/game'
+import { Game as JosephGame } from '../minigames/joseph/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -204,6 +205,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   // in-repo 記憶序列關(src/minigames/samuel/,撒母耳聽呼喚 撒上 3):minigame.engine:'samuel'。
   // 新類型②記憶序列(Simon 型)——油燈依序亮、照順序點回(聽與順服);聽錯溫柔重聽、永不會輸。
   const isSamuel = minigame.engine === 'samuel'
+  // in-repo 滑塊拼圖關(src/minigames/joseph/,約瑟的彩衣 創 37→50):minigame.engine:'joseph'。
+  // 新類型③滑塊拼圖——點空格旁碎塊拼回彩衣;永不會輸,卡住有提示;神把破碎拼回(創 50:20)。
+  const isJoseph = minigame.engine === 'joseph'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -315,6 +319,17 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
     if (isShepherd) {
       // 好牧人尋羊(路 15):同一套嵌入契約;迷宮尋路,永不會輸。
       const game = new ShepherdGame(canvasRef.current, {
+        embed: true,
+        winPoints: minigame.winPoints || 3,
+        onComplete: (result) => onComplete(result),
+      })
+      gameRef.current = game
+      game.boot()
+      return
+    }
+    if (isJoseph) {
+      // 約瑟的彩衣(創 37→50):同一套嵌入契約;滑塊拼圖,永不會輸。
+      const game = new JosephGame(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 3,
         onComplete: (result) => onComplete(result),
