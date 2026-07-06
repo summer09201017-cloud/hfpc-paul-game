@@ -6,7 +6,7 @@
 > - `src/minigames/joseph/`(單檔引擎)+ `?demo=joseph` + `engine:'joseph'`(MiniGameModal 已接)+ play-joseph.bat(第 26 支)。
 > - 玩法:點空格旁碎塊把手繪彩衣拼回(離屏 Canvas 條紋彩袍切塊,零美術檔);年齡三檔(幼 3×3 淺亂 10 步/童 3×3 深亂 40 步/青 4×4 90 步);**打亂=從完成態合法亂走 → 必可解**;💡提示:3×3=BFS 最佳解下一步(貪心會原地打轉,已實測換掉)、4×4=閃示完成圖 2.5 秒;完成圖 16% 透明墊底給幼兒對照;**永不會輸**。
 > - 信息:哥哥們撕碎彩衣,神把破碎拼回——過關創 50:20+教導創 45:5,已烤曉臻 mp3(596bac62,manifest 42 句);引文 37:3/45:5/50:20 全 cuv 逐字查證。npm test 142 全綠;Playwright 實測(BFS 提示 18 步直達 win、4×4 peek、觸控移動)。
-> - ⚠ **文案 AI 草擬待牧者審**——過審前不進大廳卡。之後:④經營管理糧倉(獨立 repo)。
+> - ✅ 補記(07-06):**牧者已過審、PR #65 併、大廳卡已亮**(sw v20,25 卡)。同日 PR #66(撒母耳純聽)過審併入、PR #67 好牧人加難併入(地圖加大+擬真咩聲立體聲導航)。④經營管理糧倉 MVP 已完成(獨立 repo hfpc-joseph-granary,待建 GitHub+Netlify)。
 >
 > **✅ 新類型②記憶序列(2026-07-06,HFP 機收尾,feat/samuel-simon-wip)——🕯️ 撒母耳聽呼喚(撒上 3):**
 > - Simon 型記憶序列:`src/minigames/samuel/`(單檔引擎)+ `?demo=samuel` + `engine:'samuel'`(MiniGameModal 已接,可掛旅程站點)+ play-samuel.bat(第 25 支)。
