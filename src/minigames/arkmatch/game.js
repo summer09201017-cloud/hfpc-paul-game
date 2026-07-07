@@ -14,9 +14,10 @@
 import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
 
 const AGES = {
-  young: { label: '🐣 幼', desc: '3 種動物・3 排', kinds: 3, rows: 3, cols: 8 },
-  kid: { label: '🙂 童', desc: '4 種動物・4 排', kinds: 4, rows: 4, cols: 9 },
-  teen: { label: '🔥 青', desc: '5 種動物・5 排', kinds: 5, rows: 5, cols: 10 },
+  // grow=每幾發從頂端長出新一排(0=不長);guide=瞄準虛線長度(青檔更短,要自己抓角度)
+  young: { label: '🐣 幼', desc: '3 種動物・3 排', kinds: 3, rows: 3, cols: 8, grow: 0, guide: 150 },
+  kid: { label: '🙂 童', desc: '4 種動物・4 排', kinds: 4, rows: 4, cols: 9, grow: 9, guide: 130 },
+  teen: { label: '🔥 青', desc: '5 種・動物越聚越多', kinds: 5, rows: 5, cols: 10, grow: 6, guide: 70 },
 }
 
 const KINDS = ['lion', 'sheep', 'pig', 'frog', 'bird']
@@ -35,6 +36,7 @@ const T = {
   hud: (n, ark) => `🦁 場上還有 ${n} 隻 ・ 方舟裡 ${ark} 隻`,
   gather: '各從其類,一起進方舟!',
   float: '神親自招聚牠們…',
+  more: '又有動物聚過來了…',
   low: '堆太低了——神親自招聚下層的動物',
   closeLine: '耶和華就把他關在方舟裡頭。(創 7:16)',
   winTitle: '🎉 都進入方舟,門關上了!',
@@ -118,6 +120,7 @@ export class Game {
     this.arkCount = 0
     this.flyers = []
     this.flying = null
+    this.shots = 0
     this.toasts = []
     this.cur = this._pick()
     this.next = this._pick()
@@ -146,7 +149,31 @@ export class Game {
     this.flying = { x: VW / 2, y: VH - 70, vx: Math.cos(this.aim) * sp, vy: Math.sin(this.aim) * sp, kind: this.cur }
     this.cur = this.next
     this.next = this._pick()
+    this.shots = (this.shots || 0) + 1
+    // 童/青檔加壓:每 grow 發,又有一排動物從上方聚過來(永不會輸:堆太低有神親自招聚的保底)
+    if (this.cfg.grow && this.shots % this.cfg.grow === 0) this._growRow()
     this._tone(440, 0.07, 0, 'sine', 0.08)
+  }
+
+  _growRow() {
+    if (this.state !== 'play' || this.grid.size === 0) return
+    const shifted = new Map()
+    for (const [key, kind] of this.grid) {
+      const [r, c] = key.split(',').map(Number)
+      shifted.set(`${r + 1},${c}`, kind)
+    }
+    this.grid = shifted
+    const kinds = [...new Set(this.grid.values())]
+    for (let c = 0; c < this.cfg.cols; c++) this.grid.set(`0,${c}`, kinds[Math.floor(Math.random() * kinds.length)])
+    this.toasts.push({ text: T.more, t: this._t })
+    // 長出來的那排可能把最底排推過線:走同一條「神親自招聚」保底
+    const tooLow = [...this.grid.keys()].filter((k) => Number(k.split(',')[0]) >= MAXROW)
+    if (tooLow.length) {
+      for (const key of [...this.grid.keys()].filter((k) => Number(k.split(',')[0]) >= MAXROW - 1)) {
+        const [fr, fc] = key.split(',').map(Number); this._toArk(fr, fc)
+      }
+      this.toasts.push({ text: T.low, t: this._t })
+    }
   }
 
   _snap(b) {
@@ -378,7 +405,7 @@ export class Game {
       // 瞄準虛線
       ctx.strokeStyle = 'rgba(60,80,60,0.5)'; ctx.lineWidth = 3; ctx.setLineDash([8, 10])
       ctx.beginPath(); ctx.moveTo(sx, sy)
-      ctx.lineTo(sx + Math.cos(this.aim) * 130, sy + Math.sin(this.aim) * 130); ctx.stroke()
+      ctx.lineTo(sx + Math.cos(this.aim) * this.cfg.guide, sy + Math.sin(this.aim) * this.cfg.guide); ctx.stroke()
       ctx.setLineDash([])
       // 挪亞(簡筆)
       ctx.fillStyle = '#7a5a3a'
