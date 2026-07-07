@@ -25,6 +25,10 @@ import ArmorDemo from './components/ArmorDemo.jsx'
 import BasketDemo from './components/BasketDemo.jsx'
 import TempleDemo from './components/TempleDemo.jsx'
 import GideonDemo from './components/GideonDemo.jsx'
+import StewardDemo from './components/StewardDemo.jsx'
+import LostCoinDemo from './components/LostCoinDemo.jsx'
+import LotRunDemo from './components/LotRunDemo.jsx'
+import ArkMatchDemo from './components/ArkMatchDemo.jsx'
 import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
@@ -74,6 +78,10 @@ registerSW({ immediate: true })
 //   ?demo=arkbuild          → 挪亞·一步一步蓋方舟（依序放木板，創 6:14-22）
 //   ?demo=temple            → 活石蓋聖殿（落石砌合，王上 6:7＋彼前 2:5；砌合發光非爆炸、堆頂歇口氣不會輸）
 //   ?demo=gideon            → 基甸拆祭壇（打磚塊，士 6:25-27；夜裡奉命拆巴力壇、球掉出僕人撿回不扣命）
+//   ?demo=steward           → 好管家（經營管理②，太 25；銀袋分市集/坑，星等按忠心不按金額、永不會輸）
+//   ?demo=lostcoin          → 失錢找物（找物/找碴，路 15:8-10；油燈照暗屋細細地找，直到找著、不會輸）
+//   ?demo=lotrun            → 羅得紅綠燈（忍住誘惑向前跑，創 19；「回頭看一眼」鈕千萬別按，按了天使拉住不算輸）
+//   ?demo=arkmatch          → 各從其類・動物歸艙（彈珠配對，創 7:14-16；配對=一起進方舟非爆破、耶和華關門、不會輸）
 //   ?demo=<卡片關 key>      → 任一卡片關單獨玩，例 ?demo=cornelius（福音奇兵）
 const demo = (() => {
   try {
@@ -108,6 +116,10 @@ function pickRoot() {
   if (demo === 'basket') return <BasketDemo />
   if (demo === 'temple') return <TempleDemo />
   if (demo === 'gideon') return <GideonDemo />
+  if (demo === 'steward') return <StewardDemo />
+  if (demo === 'lostcoin') return <LostCoinDemo />
+  if (demo === 'lotrun') return <LotRunDemo />
+  if (demo === 'arkmatch') return <ArkMatchDemo />
   if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />
