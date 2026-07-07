@@ -107,7 +107,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 ## Embedded mini-games (`src/minigames/`)
 
-### 引擎總覽(2026-07-07 晚對賬;36 個引擎一行一個,防「程式有、文件沒提」)
+### 引擎總覽(2026-07-07 晚對賬;37 個引擎一行一個,防「程式有、文件沒提」)
 
 > ⚠ 這張表是 2026-07-05 用 `/route-doc-check` 對賬補的——當時發現 saul-spear/nehemiah/joash/slingshot/jericho/fishing/shore **七個引擎(06-26~06-28 HFP 機所做)完全沒進過文件**。日後每加一個引擎,在這裡補一行(交接前跑 `/route-doc-check` 驗證 🔴=0)。
 
@@ -148,9 +148,10 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 | `gideon/` | `?demo=gideon` | 士 6:25-27 基甸拆祭壇 | **新類型⑪打磚塊**:夜色+火把光,←→/拖曳移木槓彈石球拆巴力壇石塊,頂上木偶 2 下砍倒;球掉出=僕人悄悄撿回不扣命,永不會輸;拆完必接「築真壇」一幕(士 6:26,先拆假的才立真的);⚠ **絕不可換皮成耶利哥**(牆是神拆的不是人砸的);年齡三檔=球速/槓寬/磚層(3/4/5);✅ 牧者已過審(2026-07-07,PR #73 併入)、大廳卡已亮 |
 | `steward/` | `?demo=steward` | 太 25:14-30 好管家 | **經營管理②(④家族第二個活實作)**:每季把銀袋分到「市集(做買賣)」或「地裡的坑(埋起來)」;★星等按「忠心運用比例」不按金額(比喻裡五千的和二千的得同一句稱讚,幼檔二千全運用=童檔五千全運用=3 星);做買賣永遠有收成(兩忠僕都翻倍,無虧損劇情);埋太多=主人溫柔教導(不罵「又惡又懶」),永不會輸;年齡三檔=二千 2 季/五千 3 季/五千 4 季;⚠ 文案待牧者審(feat/steward-lostcoin-lotrun) |
 | `lostcoin/` | `?demo=lostcoin` | 路 15:8-10 失錢找物 | **新類型⑫找物/找碴(點燈尋找)**:暗屋+油燈跟手指,在罐籃布凳間細細地找失落的一塊錢(偶爾閃光引導);青檔錢幣藏家具底下要先點「打掃」挪開;★沒有時間失敗——「直到找著」,永不會輸;找著=請鄰舍一同歡喜(路 15:9-10 天上的歡喜);年齡三檔=亮度/家具數/要不要打掃;⚠ 文案待牧者審(同分支) |
+| `arkmatch/` | `?demo=arkmatch` | 創 6:20;7:8-9,14-16 各從其類・動物歸艙 | **新類型⑭彈珠配對(泡泡龍反向化)**:六角網格動物泡泡(獅/羊/豬/蛙/鳥向量圓臉),瞄準發射,同類連通 3+=「各從其類」**一起進方舟**(絕非爆破消失);懸空的=神親自招聚也歸艙;堆太低=神招聚下層(溫柔收回),永不會輸;全清=**耶和華關門**(創 7:16)+光;只發場上還有的種類(防死局);年齡三檔=動物種類(3/4/5)×排數;⚠ 文案待牧者審(feat/steward-lostcoin-lotrun) |
 | `lotrun/` | `?demo=lotrun` | 創 19:15-17;路 17:32 羅得紅綠燈 | **新類型⑬忍住誘惑・向前跑(123 木頭人反向化)**:按住=往山上跑;誘惑時刻跳出大大的「👀 回頭看一眼」鈕(千萬別按!)+忍耐倒數圈;按了=定住鹽白化驚險一刻→**天使拉住**(創 19:16 耶和華憐恤),繼續逃、永不會輸;星等=忍住幾次(0 回頭=3 星);羅得妻子結局不畫,用路 17:32 溫柔帶教導;青檔誘惑中鬆手=頭不由自主轉過去;⚠ 文案待牧者審(同分支) |
 
-- **雙擊啟動器 `play-*.bat`(repo 根,38 支;07-07 晚加 play-steward.bat、play-lostcoin.bat、play-lotrun.bat;07-07 加 play-temple.bat、play-gideon.bat;07-06 晚加 play-wallguard.bat、play-ezra.bat、play-sower.bat、play-foxes.bat、play-sparks.bat、play-armor.bat、play-basket.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
+- **雙擊啟動器 `play-*.bat`(repo 根,39 支;07-07 晚加 play-steward.bat、play-lostcoin.bat、play-lotrun.bat、play-arkmatch.bat;07-07 加 play-temple.bat、play-gideon.bat;07-06 晚加 play-wallguard.bat、play-ezra.bat、play-sower.bat、play-foxes.bat、play-sparks.bat、play-armor.bat、play-basket.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
 - `cards/`/`jonah/`(部分關)只被旅程站點的 `minigame` 欄使用、沒有同名 `?demo=` 路由——正常,不是漏接。
 - 文案審核:joash/jericho/fishing/shore 等 06-26~28 那批的送審紀錄未見於 docs(當時牧者自審居多);要對外正式推廣前,建議用 `/review-queue` 盤一次、缺的補送 [[pastor-review]]。
 
