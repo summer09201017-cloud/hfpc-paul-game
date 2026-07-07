@@ -24,6 +24,7 @@ import { Game as StewardGame } from '../minigames/steward/game'
 import { Game as LostCoinGame } from '../minigames/lostcoin/game'
 import { Game as LotRunGame } from '../minigames/lotrun/game'
 import { Game as ArkMatchGame } from '../minigames/arkmatch/game'
+import { Game as HerdGame } from '../minigames/herd/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -245,6 +246,8 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   const isLotRun = minigame.engine === 'lotrun'
   // in-repo 彈珠配對關(src/minigames/arkmatch/,各從其類 創 7):minigame.engine:'arkmatch'。新類型⑭——配對=一起進方舟非爆破,耶和華關門。
   const isArkMatch = minigame.engine === 'arkmatch'
+  // in-repo 撞球物理關(src/minigames/herd/,趕羊入圈 約 10):minigame.engine:'herd'。新類型⑯——拖曳牧羊犬撞羊入圈=歸聚,犬進門跑回不扣桿。
+  const isHerd = minigame.engine === 'herd'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -384,9 +387,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
       game.boot()
       return
     }
-    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch) {
-      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對:同一套嵌入契約(constructor 同形),依 engine 選類
-      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : ArkMatchGame
+    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch || isHerd) {
+      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對+撞球:同一套嵌入契約(constructor 同形),依 engine 選類
+      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : isArkMatch ? ArkMatchGame : HerdGame
       const game = new Cls(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 3,

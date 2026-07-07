@@ -29,6 +29,7 @@ import StewardDemo from './components/StewardDemo.jsx'
 import LostCoinDemo from './components/LostCoinDemo.jsx'
 import LotRunDemo from './components/LotRunDemo.jsx'
 import ArkMatchDemo from './components/ArkMatchDemo.jsx'
+import HerdDemo from './components/HerdDemo.jsx'
 import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
@@ -82,6 +83,7 @@ registerSW({ immediate: true })
 //   ?demo=lostcoin          → 失錢找物（找物/找碴，路 15:8-10；油燈照暗屋細細地找，直到找著、不會輸）
 //   ?demo=lotrun            → 羅得紅綠燈（忍住誘惑向前跑，創 19；「回頭看一眼」鈕千萬別按，按了天使拉住不算輸）
 //   ?demo=arkmatch          → 各從其類・動物歸艙（彈珠配對，創 7:14-16；配對=一起進方舟非爆破、耶和華關門、不會輸）
+//   ?demo=herd              → 趕羊入圈（撞球物理，約 10:16＋詩 23；拖曳牧羊犬撞羊入圈=歸聚、犬進門跑回不扣桿、不會輸）
 //   ?demo=<卡片關 key>      → 任一卡片關單獨玩，例 ?demo=cornelius（福音奇兵）
 const demo = (() => {
   try {
@@ -120,6 +122,7 @@ function pickRoot() {
   if (demo === 'lostcoin') return <LostCoinDemo />
   if (demo === 'lotrun') return <LotRunDemo />
   if (demo === 'arkmatch') return <ArkMatchDemo />
+  if (demo === 'herd') return <HerdDemo />
   if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />
