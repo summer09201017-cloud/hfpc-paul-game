@@ -29,6 +29,9 @@ import StewardDemo from './components/StewardDemo.jsx'
 import LostCoinDemo from './components/LostCoinDemo.jsx'
 import LotRunDemo from './components/LotRunDemo.jsx'
 import ArkMatchDemo from './components/ArkMatchDemo.jsx'
+import FragmentsDemo from './components/FragmentsDemo.jsx'
+import FruitsDemo from './components/FruitsDemo.jsx'
+import GemsDemo from './components/GemsDemo.jsx'
 import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
@@ -82,6 +85,9 @@ registerSW({ immediate: true })
 //   ?demo=lostcoin          → 失錢找物（找物/找碴，路 15:8-10；油燈照暗屋細細地找，直到找著、不會輸）
 //   ?demo=lotrun            → 羅得紅綠燈（忍住誘惑向前跑，創 19；「回頭看一眼」鈕千萬別按，按了天使拉住不算輸）
 //   ?demo=arkmatch          → 各從其類・動物歸艙（彈珠配對，創 7:14-16；配對=一起進方舟非爆破、耶和華關門、不會輸）
+//   ?demo=fragments         → 五餅二魚・收拾零碎（彈珠配對換皮，約 6:11-13；收進十二個籃子、免得有糟蹋的）
+//   ?demo=fruits            → 聖靈果子・結果子（彈珠配對換皮，加 5:22-23；果子帶字、結到樹上、果子是聖靈結的）
+//   ?demo=gems              → 大祭司胸牌・寶石歸位（歸位配對，出 28:17-21；十二寶石按支派歸位、名字帶在胸前）
 //   ?demo=<卡片關 key>      → 任一卡片關單獨玩，例 ?demo=cornelius（福音奇兵）
 const demo = (() => {
   try {
@@ -120,6 +126,9 @@ function pickRoot() {
   if (demo === 'lostcoin') return <LostCoinDemo />
   if (demo === 'lotrun') return <LotRunDemo />
   if (demo === 'arkmatch') return <ArkMatchDemo />
+  if (demo === 'fragments') return <FragmentsDemo />
+  if (demo === 'fruits') return <FruitsDemo />
+  if (demo === 'gems') return <GemsDemo />
   if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />
