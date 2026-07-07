@@ -23,6 +23,8 @@ import FoxesDemo from './components/FoxesDemo.jsx'
 import SparksDemo from './components/SparksDemo.jsx'
 import ArmorDemo from './components/ArmorDemo.jsx'
 import BasketDemo from './components/BasketDemo.jsx'
+import TempleDemo from './components/TempleDemo.jsx'
+import GideonDemo from './components/GideonDemo.jsx'
 import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
@@ -70,6 +72,8 @@ registerSW({ immediate: true })
 //   ?demo=jehoshaphat-action→ 聖歌·約沙法唱詩得勝（約拿引擎 level 9，代下 20；戰爭關搬進 paul）
 //   ?demo=arkpairs          → 挪亞·一公一母進方舟（翻牌記憶配對，創 6–7）
 //   ?demo=arkbuild          → 挪亞·一步一步蓋方舟（依序放木板，創 6:14-22）
+//   ?demo=temple            → 活石蓋聖殿（落石砌合，王上 6:7＋彼前 2:5；砌合發光非爆炸、堆頂歇口氣不會輸）
+//   ?demo=gideon            → 基甸拆祭壇（打磚塊，士 6:25-27；夜裡奉命拆巴力壇、球掉出僕人撿回不扣命）
 //   ?demo=<卡片關 key>      → 任一卡片關單獨玩，例 ?demo=cornelius（福音奇兵）
 const demo = (() => {
   try {
@@ -102,6 +106,8 @@ function pickRoot() {
   if (demo === 'sparks') return <SparksDemo />
   if (demo === 'armor') return <ArmorDemo />
   if (demo === 'basket') return <BasketDemo />
+  if (demo === 'temple') return <TempleDemo />
+  if (demo === 'gideon') return <GideonDemo />
   if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />

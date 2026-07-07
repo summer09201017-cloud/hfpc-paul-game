@@ -18,6 +18,8 @@ import { Game as FoxesGame } from '../minigames/foxes/game'
 import { Game as SparksGame } from '../minigames/sparks/game'
 import { Game as ArmorGame } from '../minigames/armor/game'
 import { Game as BasketGame } from '../minigames/basket/game'
+import { Game as TempleGame } from '../minigames/temple/game'
+import { Game as GideonGame } from '../minigames/gideon/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -227,6 +229,10 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   const isArmor = minigame.engine === 'armor'
   // in-repo 漂流閃避關(src/minigames/basket/,摩西的籃子 出 2):minigame.engine:'basket'。新類型⑨縱向捲軸——只躲不打,嬰孩永遠平安。
   const isBasket = minigame.engine === 'basket'
+  // in-repo 落石砌合關(src/minigames/temple/,活石蓋聖殿 王上 6:7):minigame.engine:'temple'。新類型⑩——砌合發光非爆炸,堆頂歇口氣,永不會輸。
+  const isTemple = minigame.engine === 'temple'
+  // in-repo 打磚塊關(src/minigames/gideon/,基甸拆祭壇 士 6:25-27):minigame.engine:'gideon'。新類型⑪——奉命拆假壇(⚠ 絕不可換皮成耶利哥),球掉出僕人撿回。
+  const isGideon = minigame.engine === 'gideon'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -366,9 +372,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
       game.boot()
       return
     }
-    if (isSower || isFoxes || isSparks || isArmor || isBasket) {
-      // 守護反應三式+換裝+漂流:同一套嵌入契約(constructor 同形),依 engine 選類
-      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : BasketGame
+    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon) {
+      // 守護反應三式+換裝+漂流+砌合+打磚塊:同一套嵌入契約(constructor 同形),依 engine 選類
+      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : GideonGame
       const game = new Cls(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 3,
