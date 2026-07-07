@@ -1,0 +1,485 @@
+// 基甸拆祭壇(士 6:25-27)——系列第一個「打磚塊」關(新類型⑪,夜裡奉命拆假壇)。
+// ⚠ 文案為 AI 依和合本草擬(引文均經 cuv MCP 逐字查證:士 6:25-27、約翰一書 5:21),牧者審核通過前不進大廳卡。
+//
+// 玩法:夜裡,火把光下。左右移動木槓,彈起石球,把巴力壇的石塊一塊一塊拆下來;
+//   最後砍下壇旁的木偶,再看見「為耶和華築一座壇」——過關!
+// ★ 神學守法:①這關「拆」是對的——是耶和華當夜親口吩咐基甸拆巴力壇(士 6:25),立場全對;
+//   ⚠ 絕不可把本關換皮成耶利哥(耶利哥的牆是神使它塌陷的,不是人砸的——jericho skill 鐵則);
+//   ②石球掉出去=僕人悄悄撿回來,不扣命、永不會輸(基甸帶了十個僕人,士 6:27);
+//   ③拆毀不畫成火爆:石塊淡淡碎落、輕輕的聲音(他們夜間行事,不敢張揚);
+//   ④拆完必接「築真壇」一幕——信息是「先拆假的,才立真的」,不是破壞本身。
+// 年齡三檔:幼(球慢・槓寬・磚 3 層)/童(標準・4 層)/青(快・槓窄・5 層)。
+// 嵌入契約:new Game(canvas,{embed,winPoints,onComplete}) + boot()/destroy();零相依、零美術檔、可離線。
+// 朗讀鐵則:過關經文走 speakScripture(mp3 優先;士 6:27 同輪烤,見 scripts/tts-verses.json)。
+import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
+
+const AGES = {
+  young: { label: '🐣 幼', desc: '球慢・槓寬', speed: 240, padW: 190, rows: 3 },
+  kid: { label: '🙂 童', desc: '標準', speed: 310, padW: 150, rows: 4 },
+  teen: { label: '🔥 青', desc: '球快・槓窄', speed: 380, padW: 112, rows: 5 },
+}
+
+// 固定虛擬座標(960×540,uniform scale 置中),物理全在這個空間算
+const VW = 960
+const VH = 540
+
+const T = {
+  title: '⚒️ 基甸拆祭壇',
+  ref: '士師記 6:25-27',
+  intro1: '「當那夜，耶和華吩咐基甸說：…拆毀你父親為巴力所築的壇，砍下壇旁的木偶…」(士 6:25)',
+  how: '夜裡,火把光下。←→(或手指左右拖)移動木槓,彈起石球拆掉巴力壇的石塊,最後砍下木偶。別怕球掉下去——僕人會悄悄撿回來!',
+  pick: '夜色安靜。選一段工程:',
+  hud: (left) => `⚒️ 還剩 ${left} 塊`,
+  drop: '僕人悄悄把石球撿回來了',
+  pole1: '木偶搖晃了…',
+  pole2: '砍下壇旁的木偶!',
+  build: '在這磐石上,為耶和華─你的　神築一座壇。(士 6:26)',
+  winTitle: '🎉 照著耶和華吩咐的行了!',
+  winVerse: '基甸就從他僕人中挑了十個人，照著耶和華吩咐他的行了。',
+  winRef: '士師記 6:27',
+  teachVerse: '小子們哪，你們要自守，遠避偶像！',
+  teachRef: '約翰一書 5:21',
+  teach: '神吩咐基甸:先拆掉假神的壇,才為耶和華築真的壇。基甸雖然害怕,還是在夜裡照著吩咐做了。心裡佔了神位置的東西,也求神幫助我們一塊一塊拆下來。',
+}
+
+export class Game {
+  constructor(canvas, opts = {}) {
+    this.cv = canvas
+    this.ctx = canvas.getContext('2d')
+    this.embed = !!opts.embed
+    this.winPoints = opts.winPoints ?? 3
+    this.onComplete = opts.onComplete || (() => {})
+    this.state = 'intro' // intro → play → build → win
+    this.stopped = false
+    this._raf = 0
+    this._t = 0
+    this._btns = []
+    this._keys = {}
+    this._onKeyDown = (e) => this._key(e)
+    this._onKeyUp = (e) => { this._keys[e.key] = false }
+    this._onDown = (e) => this._down(e)
+    this._onMove = (e) => this._movePt(e)
+    this._onUp = () => { this._drag = false }
+    this._onResize = () => this._resize()
+    this.bricks = [] // {x,y,w,h,hp,pole?,fade?}
+    this.dust = [] // 碎落微塵 {x,y,vx,vy,t}
+    this.padX = VW / 2
+    this.ball = null // {x,y,vx,vy,stuck,returning}
+    this.toasts = []
+    this.buildT = 0
+    this._drag = false
+    this._audio = null
+    this._stars = Array.from({ length: 40 }, (_, i) => ({ x: (i * 137.5) % VW, y: ((i * 61) % 200), tw: (i % 7) / 7 }))
+  }
+
+  boot() {
+    initSpeech()
+    addEventListener('keydown', this._onKeyDown)
+    addEventListener('keyup', this._onKeyUp)
+    this.cv.addEventListener('pointerdown', this._onDown)
+    addEventListener('pointermove', this._onMove)
+    addEventListener('pointerup', this._onUp)
+    addEventListener('resize', this._onResize)
+    this._resize()
+    let last = performance.now()
+    const loop = (now) => {
+      if (this.stopped) return
+      const dt = Math.min(0.05, (now - last) / 1000)
+      last = now
+      this._t += dt
+      this._update(dt)
+      this._draw()
+      this._raf = requestAnimationFrame(loop)
+    }
+    this._raf = requestAnimationFrame(loop)
+  }
+
+  destroy() {
+    this.stopped = true
+    cancelAnimationFrame(this._raf)
+    removeEventListener('keydown', this._onKeyDown)
+    removeEventListener('keyup', this._onKeyUp)
+    this.cv.removeEventListener('pointerdown', this._onDown)
+    removeEventListener('pointermove', this._onMove)
+    removeEventListener('pointerup', this._onUp)
+    removeEventListener('resize', this._onResize)
+    stopSpeech()
+    try { this._audio && this._audio.close() } catch {}
+  }
+
+  _start(age) {
+    this.age = age
+    this.cfg = AGES[age]
+    this.padX = VW / 2
+    this.toasts = []
+    this.dust = []
+    this.buildT = 0
+    // 巴力壇:金字塔式石層(下寬上窄)+頂上的木偶(2 下才倒)
+    this.bricks = []
+    const bw = 74, bh = 26, gap = 6
+    const topY = 132 // 頂層石的 y;木偶在其上方,要留空別被 HUD 蓋住
+    for (let r = 0; r < this.cfg.rows; r++) {
+      const n = 8 - r
+      const y = topY + (this.cfg.rows - 1 - r) * (bh + gap)
+      const x0 = VW / 2 - (n * (bw + gap) - gap) / 2
+      for (let i = 0; i < n; i++) this.bricks.push({ x: x0 + i * (bw + gap), y, w: bw, h: bh, hp: 1 })
+    }
+    const poleY = topY - (bh + gap) - 34
+    this.bricks.push({ x: VW / 2 - 13, y: poleY, w: 26, h: 56, hp: 2, pole: true })
+    this._resetBall()
+    this.state = 'play'
+  }
+
+  _resetBall() {
+    this.ball = { x: this.padX, y: VH - 58, vx: 0, vy: 0, stuck: true, returning: false, r: 10 }
+  }
+
+  _launch() {
+    const b = this.ball
+    if (!b || !b.stuck) return
+    const a = -Math.PI / 2 + (Math.random() * 0.5 - 0.25)
+    b.vx = Math.cos(a) * this.cfg.speed
+    b.vy = Math.sin(a) * this.cfg.speed
+    b.stuck = false
+  }
+
+  _update(dt) {
+    if (this.state === 'build') {
+      this.buildT -= dt
+      if (this.buildT <= 0) this._win()
+      return
+    }
+    if (this.state !== 'play') return
+    // 木槓移動(鍵盤/拖曳)
+    const mv = (this._keys.ArrowLeft || this._keys.a ? -1 : 0) + (this._keys.ArrowRight || this._keys.d ? 1 : 0)
+    this.padX = Math.max(this.cfg.padW / 2, Math.min(VW - this.cfg.padW / 2, this.padX + mv * dt * 520))
+    const b = this.ball
+    if (b.stuck) {
+      b.x = this.padX; b.y = VH - 58
+      if (this._keys[' '] || this._keys.ArrowUp) this._launch()
+    } else if (b.returning) {
+      // 僕人撿回:球緩緩飄回木槓上
+      b.x += (this.padX - b.x) * Math.min(1, dt * 3)
+      b.y += (VH - 58 - b.y) * Math.min(1, dt * 3)
+      if (Math.abs(b.y - (VH - 58)) < 4) { b.returning = false; b.stuck = true }
+    } else {
+      b.x += b.vx * dt
+      b.y += b.vy * dt
+      // 牆
+      if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx) }
+      if (b.x > VW - b.r) { b.x = VW - b.r; b.vx = -Math.abs(b.vx) }
+      if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy) }
+      // 木槓(依打點改角度)
+      const py = VH - 46, pw = this.cfg.padW
+      if (b.vy > 0 && b.y + b.r >= py && b.y + b.r <= py + 18 && Math.abs(b.x - this.padX) <= pw / 2 + b.r) {
+        const k = (b.x - this.padX) / (pw / 2)
+        const a = -Math.PI / 2 + k * 1.05
+        const sp = Math.hypot(b.vx, b.vy)
+        b.vx = Math.cos(a) * sp; b.vy = Math.sin(a) * sp
+        b.y = py - b.r
+        this._tone(200, 0.06, 0, 'sine', 0.07)
+      }
+      // 掉出去=溫柔撿回(不扣命)
+      if (b.y > VH + 30) {
+        b.returning = true
+        this.toasts.push({ text: T.drop, t: this._t })
+        this._tone(260, 0.2, 0, 'sine', 0.06)
+      }
+      // 磚(壇石/木偶)
+      for (const k of this.bricks) {
+        if (k.fade) continue
+        if (b.x + b.r < k.x || b.x - b.r > k.x + k.w || b.y + b.r < k.y || b.y - b.r > k.y + k.h) continue
+        // 反彈軸:比較穿透深度
+        const ox = Math.min(b.x + b.r - k.x, k.x + k.w - (b.x - b.r))
+        const oy = Math.min(b.y + b.r - k.y, k.y + k.h - (b.y - b.r))
+        if (ox < oy) b.vx = b.x < k.x + k.w / 2 ? -Math.abs(b.vx) : Math.abs(b.vx)
+        else b.vy = b.y < k.y + k.h / 2 ? -Math.abs(b.vy) : Math.abs(b.vy)
+        k.hp -= 1
+        if (k.pole) {
+          this.toasts.push({ text: k.hp > 0 ? T.pole1 : T.pole2, t: this._t })
+          this._tone(k.hp > 0 ? 180 : 140, 0.16, 0, 'sine', 0.1)
+        } else this._tone(170, 0.07, 0, 'sine', 0.08)
+        if (k.hp <= 0) {
+          k.fade = 0.5
+          for (let i = 0; i < 6; i++) this.dust.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, vx: (Math.random() - 0.5) * 60, vy: 20 + Math.random() * 50, t: 0.7 })
+        }
+        break
+      }
+    }
+    for (const k of this.bricks) if (k.fade != null) k.fade -= dt
+    this.bricks = this.bricks.filter((k) => k.fade == null || k.fade > 0)
+    if (!this.bricks.some((k) => k.hp > 0 || (k.fade != null && k.fade > 0))) {
+      // 全拆完 → 築真壇一幕
+      this.state = 'build'
+      this.buildT = 2.6
+      this.toasts = []
+      this._tone(392, 0.2, 0, 'triangle', 0.1); this._tone(523, 0.3, 0.18, 'triangle', 0.1)
+    }
+    for (const d of this.dust) { d.x += d.vx * dt; d.y += d.vy * dt; d.t -= dt }
+    this.dust = this.dust.filter((d) => d.t > 0)
+    this.toasts = this.toasts.filter((t) => this._t - t.t < 2)
+  }
+
+  _win() {
+    this.state = 'win'
+    this._tone(523, 0.15); this._tone(659, 0.15, 0.14); this._tone(784, 0.3, 0.28)
+    setTimeout(() => { if (!this.stopped) speakScripture(T.winVerse, { ref: T.winRef }) }, 500)
+    setTimeout(() => { if (!this.stopped) this.onComplete({ won: true, score: 100, level: 'gideon' }) }, 900)
+  }
+
+  _key(e) {
+    this._keys[e.key] = true
+    if (this.state === 'intro') {
+      if (e.key === '1') return this._start('young')
+      if (e.key === '2' || e.key === 'Enter') return this._start('kid')
+      if (e.key === '3') return this._start('teen')
+    }
+  }
+
+  // 畫布座標 → 虛擬座標
+  _pt(e) {
+    const r = this.cv.getBoundingClientRect()
+    const px = ((e.clientX - r.left) / r.width) * this.W
+    const py = ((e.clientY - r.top) / r.height) * this.H
+    const { s, ox, oy } = this._view()
+    return { x: (px - ox) / s, y: (py - oy) / s }
+  }
+  _down(e) {
+    const { x, y } = this._pt(e)
+    if (this.state === 'intro') {
+      for (const b of this._btns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return this._start(b.key)
+      return
+    }
+    if (this.state === 'play') {
+      this._drag = true
+      this.padX = Math.max(this.cfg.padW / 2, Math.min(VW - this.cfg.padW / 2, x))
+      if (this.ball.stuck) this._launch()
+    }
+  }
+  _movePt(e) {
+    if (!this._drag || this.state !== 'play') return
+    const { x } = this._pt(e)
+    this.padX = Math.max(this.cfg.padW / 2, Math.min(VW - this.cfg.padW / 2, x))
+  }
+
+  _tone(freq, dur, delay = 0, type = 'triangle', vol = 0.14) {
+    try {
+      if (!this._audio) this._audio = new (window.AudioContext || window.webkitAudioContext)()
+      const ctx = this._audio
+      const o = ctx.createOscillator(), g = ctx.createGain()
+      o.type = type; o.frequency.value = freq
+      g.gain.setValueAtTime(0.0001, ctx.currentTime + delay)
+      g.gain.exponentialRampToValueAtTime(vol, ctx.currentTime + delay + 0.015)
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + dur)
+      o.connect(g).connect(ctx.destination)
+      o.start(ctx.currentTime + delay); o.stop(ctx.currentTime + delay + dur + 0.03)
+    } catch {}
+  }
+
+  _resize() {
+    const r = this.cv.getBoundingClientRect()
+    const s = Math.min(devicePixelRatio || 1, 2)
+    this.cv.width = Math.round(r.width * s)
+    this.cv.height = Math.round(r.height * s)
+    this.W = this.cv.width; this.H = this.cv.height
+  }
+
+  _view() {
+    const s = Math.min(this.W / VW, this.H / VH)
+    return { s, ox: (this.W - VW * s) / 2, oy: (this.H - VH * s) / 2 }
+  }
+
+  _draw() {
+    const { ctx, W, H } = this
+    if (!W) return
+    // 夜空鋪滿整個畫布
+    const sky = ctx.createLinearGradient(0, 0, 0, H)
+    sky.addColorStop(0, '#101830'); sky.addColorStop(0.7, '#1c2440'); sky.addColorStop(1, '#2a2c46')
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H)
+    const { s, ox, oy } = this._view()
+    ctx.save()
+    ctx.setTransform(s, 0, 0, s, ox, oy)
+    // 星
+    for (const st of this._stars) {
+      ctx.globalAlpha = 0.4 + 0.5 * Math.abs(Math.sin(this._t * 0.8 + st.tw * 6.28))
+      ctx.fillStyle = '#e8ecff'
+      ctx.fillRect(st.x, st.y, 2, 2)
+    }
+    ctx.globalAlpha = 1
+    // 兩側火把
+    this._torch(70, VH - 120)
+    this._torch(VW - 70, VH - 120)
+    if (this.state === 'intro') { this._drawIntro(); ctx.restore(); return }
+    if (this.state === 'build' || this.state === 'win') { this._drawBuild(); ctx.restore(); if (this.state === 'win') this._drawWinCard(); return }
+    // 巴力壇石塊+木偶
+    for (const k of this.bricks) {
+      ctx.globalAlpha = k.fade != null ? Math.max(0, k.fade / 0.5) : 1
+      if (k.pole) {
+        // 木偶(亞舍拉柱):深木色直柱+刻紋
+        ctx.fillStyle = '#5a4028'
+        rG(ctx, k.x, k.y, k.w, k.h, 5); ctx.fill()
+        ctx.strokeStyle = '#3a2814'; ctx.lineWidth = 2
+        for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(k.x + 4, k.y + (k.h / 4) * i); ctx.lineTo(k.x + k.w - 4, k.y + (k.h / 4) * i); ctx.stroke() }
+        if (k.hp === 1) { // 搖晃裂痕
+          ctx.strokeStyle = '#1a1008'
+          ctx.beginPath(); ctx.moveTo(k.x + k.w * 0.3, k.y + 6); ctx.lineTo(k.x + k.w * 0.6, k.y + k.h * 0.5); ctx.stroke()
+        }
+      } else {
+        ctx.fillStyle = '#6a6a72'
+        rG(ctx, k.x, k.y, k.w, k.h, 4); ctx.fill()
+        ctx.fillStyle = 'rgba(255,255,255,0.08)'
+        rG(ctx, k.x, k.y, k.w, k.h * 0.4, 4); ctx.fill()
+      }
+      ctx.globalAlpha = 1
+    }
+    // 碎落微塵(淡淡的,不是爆炸)
+    for (const d of this.dust) {
+      ctx.globalAlpha = Math.max(0, d.t / 0.7) * 0.6
+      ctx.fillStyle = '#9a9aa2'
+      ctx.beginPath(); ctx.arc(d.x, d.y, 3, 0, 7); ctx.fill()
+    }
+    ctx.globalAlpha = 1
+    // 木槓(基甸的隊伍)
+    const pw = this.cfg.padW, py = VH - 46
+    ctx.fillStyle = '#8a6a3e'
+    rG(ctx, this.padX - pw / 2, py, pw, 14, 7); ctx.fill()
+    ctx.fillStyle = 'rgba(255,240,200,0.25)'
+    rG(ctx, this.padX - pw / 2, py, pw, 5, 7); ctx.fill()
+    // 石球
+    const b = this.ball
+    ctx.fillStyle = '#c8c4b8'
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.fill()
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'
+    ctx.beginPath(); ctx.arc(b.x - 3, b.y - 3, b.r * 0.4, 0, 7); ctx.fill()
+    if (b.stuck) {
+      ctx.fillStyle = '#d8dcf0'
+      ctx.font = 'bold 17px "Noto Sans TC",sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText('點畫面 / 空白鍵 發球', VW / 2, VH - 90)
+    }
+    // 漂浮字
+    for (const t of this.toasts) {
+      const k = (this._t - t.t) / 2
+      ctx.globalAlpha = 1 - k
+      ctx.fillStyle = '#f0ead8'; ctx.strokeStyle = 'rgba(20,24,48,0.85)'; ctx.lineWidth = 4
+      ctx.font = 'bold 19px "Noto Sans TC",sans-serif'
+      ctx.textAlign = 'center'
+      ctx.strokeText(t.text, VW / 2, VH * 0.44 - k * 22)
+      ctx.fillText(t.text, VW / 2, VH * 0.44 - k * 22)
+      ctx.globalAlpha = 1
+    }
+    // HUD
+    const left = this.bricks.filter((k) => k.hp > 0).length
+    ctx.fillStyle = 'rgba(10,16,36,0.62)'
+    rG(ctx, VW * 0.24, 8, VW * 0.52, 30, 12); ctx.fill()
+    ctx.fillStyle = '#e8e4d0'
+    ctx.font = 'bold 16px "Noto Sans TC",sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(`${T.hud(left)} ・ ←→ 移動木槓`, VW / 2, 29)
+    ctx.restore()
+  }
+
+  _torch(x, y) {
+    const { ctx } = this
+    const glow = ctx.createRadialGradient(x, y - 26, 4, x, y - 26, 130)
+    glow.addColorStop(0, 'rgba(255,190,90,0.5)'); glow.addColorStop(1, 'rgba(255,190,90,0)')
+    ctx.fillStyle = glow
+    ctx.beginPath(); ctx.arc(x, y - 26, 130, 0, 7); ctx.fill()
+    ctx.fillStyle = '#6a4a26'
+    ctx.fillRect(x - 4, y - 20, 8, 52)
+    const f = Math.sin(this._t * 9 + x) * 3
+    ctx.fillStyle = '#ffb040'
+    ctx.beginPath(); ctx.ellipse(x, y - 30 + f * 0.4, 9, 15 + f, 0, 0, 7); ctx.fill()
+    ctx.fillStyle = '#ffe090'
+    ctx.beginPath(); ctx.ellipse(x, y - 27 + f * 0.4, 4.5, 8, 0, 0, 7); ctx.fill()
+  }
+
+  // 築真壇一幕:整整齊齊的新壇+暖光(士 6:26)
+  _drawBuild() {
+    const { ctx } = this
+    const cx = VW / 2, baseY = VH * 0.62
+    const glow = ctx.createRadialGradient(cx, baseY - 40, 10, cx, baseY - 40, 240)
+    glow.addColorStop(0, 'rgba(255,225,150,0.5)'); glow.addColorStop(1, 'rgba(255,225,150,0)')
+    ctx.fillStyle = glow
+    ctx.beginPath(); ctx.arc(cx, baseY - 40, 240, 0, 7); ctx.fill()
+    ctx.fillStyle = '#b09a72'
+    for (let r = 0; r < 3; r++) {
+      const w = 200 - r * 44
+      rG(ctx, cx - w / 2, baseY - (r + 1) * 30, w, 26, 4); ctx.fill()
+    }
+    ctx.fillStyle = '#f4ecd4'
+    ctx.font = 'bold 20px "Noto Sans TC",sans-serif'
+    ctx.textAlign = 'center'
+    wrapG(ctx, T.build, cx, baseY + 60, VW * 0.7, 30)
+  }
+
+  _drawIntro() {
+    const { ctx } = this
+    cardG(ctx, VW * 0.1, VH * 0.06, VW * 0.8, VH * 0.88)
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#2c3658'
+    ctx.font = 'bold 38px "Noto Sans TC",sans-serif'
+    ctx.fillText(T.title, VW / 2, VH * 0.17)
+    ctx.fillStyle = '#5a6488'
+    ctx.font = '17px "Noto Sans TC",sans-serif'
+    ctx.fillText(T.ref + ' ・ 夜裡行事', VW / 2, VH * 0.24)
+    ctx.fillStyle = '#2e3444'
+    wrapG(ctx, T.intro1, VW / 2, VH * 0.32, VW * 0.66, 24)
+    wrapG(ctx, T.how, VW / 2, VH * 0.5, VW * 0.66, 24)
+    ctx.fillStyle = '#5a6488'
+    ctx.font = '17px "Noto Sans TC",sans-serif'
+    ctx.fillText(T.pick, VW / 2, VH * 0.67)
+    this._btns = []
+    const bw = VW * 0.2, bh = VH * 0.13, gap = VW * 0.04
+    const x0 = VW / 2 - bw * 1.5 - gap
+    Object.entries(AGES).forEach(([key, a], i) => {
+      const x = x0 + i * (bw + gap), y = VH * 0.72
+      ctx.fillStyle = '#7a90c0'
+      rG(ctx, x, y, bw, bh, 14); ctx.fill()
+      ctx.fillStyle = '#0e1830'
+      ctx.font = 'bold 21px "Noto Sans TC",sans-serif'
+      ctx.fillText(a.label, x + bw / 2, y + bh * 0.45)
+      ctx.font = '14px "Noto Sans TC",sans-serif'
+      ctx.fillText(a.desc, x + bw / 2, y + bh * 0.8)
+      this._btns.push({ x, y, w: bw, h: bh, key })
+    })
+  }
+
+  _drawWinCard() {
+    const { ctx, W, H } = this
+    ctx.save()
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    const x = W * 0.1, y = H * 0.07, w = W * 0.8, h = H * 0.86
+    ctx.fillStyle = '#f6f8ff' // 全不透明:別讓底下「築真壇」的字透過卡片
+
+    ctx.strokeStyle = '#7a90c0'; ctx.lineWidth = 3
+    rG(ctx, x, y, w, h, 18); ctx.fill(); ctx.stroke()
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#2c3658'
+    ctx.font = `bold ${Math.max(20, H * 0.055)}px "Noto Sans TC",sans-serif`
+    ctx.fillText(T.winTitle, W / 2, H * 0.18)
+    ctx.fillStyle = '#2e3444'
+    wrapG(ctx, `「${T.winVerse}」(${T.winRef})`, W / 2, H * 0.28, W * 0.66, H * 0.045)
+    ctx.fillStyle = '#4a5a2a'
+    wrapG(ctx, `「${T.teachVerse}」(${T.teachRef})`, W / 2, H * 0.46, W * 0.66, H * 0.043)
+    ctx.fillStyle = '#2e3444'
+    wrapG(ctx, T.teach, W / 2, H * 0.58, W * 0.66, H * 0.043)
+    ctx.restore()
+  }
+}
+
+function rG(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h) }
+function cardG(ctx, x, y, w, h) {
+  ctx.fillStyle = 'rgba(240,244,255,0.95)'
+  ctx.strokeStyle = '#7a90c0'; ctx.lineWidth = 3
+  rG(ctx, x, y, w, h, 18); ctx.fill(); ctx.stroke()
+}
+function wrapG(ctx, text, cx, y, maxW, lineH) {
+  ctx.font = `${lineH * 0.72}px "Noto Sans TC",sans-serif`
+  let line = '', yy = y
+  for (const ch of String(text)) {
+    if (ctx.measureText(line + ch).width > maxW) { ctx.fillText(line, cx, yy); line = ch; yy += lineH }
+    else line += ch
+  }
+  if (line) ctx.fillText(line, cx, yy)
+}
