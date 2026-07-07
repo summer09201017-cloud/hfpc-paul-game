@@ -20,6 +20,9 @@ import { Game as ArmorGame } from '../minigames/armor/game'
 import { Game as BasketGame } from '../minigames/basket/game'
 import { Game as TempleGame } from '../minigames/temple/game'
 import { Game as GideonGame } from '../minigames/gideon/game'
+import { Game as StewardGame } from '../minigames/steward/game'
+import { Game as LostCoinGame } from '../minigames/lostcoin/game'
+import { Game as LotRunGame } from '../minigames/lotrun/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -233,6 +236,12 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   const isTemple = minigame.engine === 'temple'
   // in-repo 打磚塊關(src/minigames/gideon/,基甸拆祭壇 士 6:25-27):minigame.engine:'gideon'。新類型⑪——奉命拆假壇(⚠ 絕不可換皮成耶利哥),球掉出僕人撿回。
   const isGideon = minigame.engine === 'gideon'
+  // in-repo 經營管理②(src/minigames/steward/,好管家 太 25):minigame.engine:'steward'。星等按忠心不按金額,永不會輸。
+  const isSteward = minigame.engine === 'steward'
+  // in-repo 找物關(src/minigames/lostcoin/,失錢找物 路 15:8-10):minigame.engine:'lostcoin'。新類型⑫——直到找著,沒有時間失敗。
+  const isLostCoin = minigame.engine === 'lostcoin'
+  // in-repo 忍住誘惑關(src/minigames/lotrun/,羅得紅綠燈 創 19):minigame.engine:'lotrun'。新類型⑬——回頭=鹽柱驚險一刻但天使拉住,永不會輸。
+  const isLotRun = minigame.engine === 'lotrun'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -372,9 +381,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
       game.boot()
       return
     }
-    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon) {
-      // 守護反應三式+換裝+漂流+砌合+打磚塊:同一套嵌入契約(constructor 同形),依 engine 選類
-      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : GideonGame
+    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun) {
+      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑:同一套嵌入契約(constructor 同形),依 engine 選類
+      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : LotRunGame
       const game = new Cls(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 3,
