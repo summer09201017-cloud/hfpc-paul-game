@@ -5,10 +5,19 @@
 GitHub 帳號:summer09201017-cloud。GitHub 是唯一真相;桌面 zip 只是備援快照。
 ============================================================
 
-★★★★★ 本輪(2026-07-08,交接 agape250 機)★★★ 先讀這段(最新)★★★
+★★★★★ 本輪(2026-07-08 深夜,交接 agape250 機)★★★ 先讀這段(最新)★★★
 ================================================================================
-【現況】main = 41 卡時代之後的大整併:PR #73(temple/gideon)與 PR #74(steward/lostcoin/lotrun/arkmatch)
-  皆已過審併入、A 站驗畢、大廳卡亮(42 卡,sw v30,系列玩法 37 種)。**37 引擎/39 bat 在 main**。
+【現況】**PR #73~#77 五批全數過審併入 main、A 站 6 關全上線、大廳全部點卡**:
+  #73 temple/gideon、#74 steward/lostcoin/lotrun/arkmatch、#75 收拾零碎/聖靈果子/胸牌寶石歸位(+temple QoL)、
+  #76 趕羊入圈(撞球⑯)、#77 射門練習(憫安休閒無經文)。**paul 42 引擎/43 bat/manifest 60 句/npm test 160 綠**;
+  大廳 **46 首頁卡+憫安合輯 38 關,sw v32**,新 kind:match/fit(彈珠/歸位)、pool(撞球)、sports(運動休閒)。
+
+★★ 血淚教訓(務必記住,已寫進 MEMORY):**npm test 的 node --check 不檢查 .jsx**——
+  本輪三個 PR 在 GitHub 端合併時,MiniGameModal.jsx 的「引擎啟動 if-chain」衝突被解成 3 個疊套 if(少 2 個 `}`),
+  npm test 照樣 160 綠(因為 node --check 跳過 jsx),但 **vite build 直接 Unexpected EOF → Netlify 每次建置失敗、
+  靜默卡在舊 bundle 不部署新關**(排查了快半小時才發現不是快取、是建置壞)。
+  ⇒ **鐵則:凡合併/解衝突有動到 .jsx,一定要跑 `npm run build`(不能只信 npm test);build 綠才算數。**
+  (改進點子:把 build 或 esbuild transform 檢查加進 npm test 或 pre-push hook,補上這個盲區。)
 【待審 3 個 PR,各在自己的分支,尚未併 main】
   ⚠ **PR #75(feat/fragments-fruits-gems,文案待牧者審)**:🧺 收拾零碎(⑭,約 6:11-13)+🍇 聖靈果子(⑭,加 5:22-23+約 15:5)
     +💎 胸牌寶石歸位(新類型⑮,出 28:17-21,29)+🧱 temple QoL(⏸ 暫停/暫存 C/青檔預覽,文案零變動)。
