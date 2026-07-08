@@ -66,7 +66,8 @@ export class Game {
     this.lock = 0
     this.collected = 0 // 已拾穗數
     this.flyers = [] // 收進籃的動畫
-    this.bands = [] // 捆繩動畫 {ax,ay,bx,by,t}(斜線可讀性的關鍵)
+    this.bands = [] // 捆繩動畫 {ax,ay,bx,by,t,dur}(斜線可讀性的關鍵)
+    this.pending = null // 兩拍拾取:亮著等收的那幾排(Set "r,c")
     this.shakeBack = null
     this.toasts = []
     this.closeT = 0
@@ -129,6 +130,7 @@ export class Game {
     this.collected = 0
     this.flyers = []
     this.bands = []
+    this.pending = null
     this.toasts = []
     this.state = 'play'
     if (!this._hasMove()) this._shuffle(false)
@@ -218,18 +220,30 @@ export class Game {
     if (toast) { this.toasts.push({ text: T.shuffle, t: this._t }); this._tone(320, 0.15, 0, 'sine', 0.07) }
   }
 
-  _resolve() {
+  // 拾取分兩拍(牧者定案:慢一點,讓人看清是哪幾排被收):
+  // ①_markPending:先亮捆繩+高亮那幾排,停 0.7 秒 ②_clearPending:才真的收進籃、補位。
+  _markPending() {
     const g = this._geo()
     const { hit, runs } = this._scanRuns(this.grid)
-    if (!hit.size) return 0
-    // 捆繩:每條 run 畫一條金繩把頭尾綁起來(斜的一排也看得懂是一捆)
+    if (!hit.size) return false
+    this.pending = hit
     for (const cells of runs) {
       const a = this._cellXY(cells[0][0], cells[0][1], g)
       const b = this._cellXY(cells[cells.length - 1][0], cells[cells.length - 1][1], g)
-      this.bands.push({ ax: a.x, ay: a.y, bx: b.x, by: b.y, t: 0.45 })
+      this.bands.push({ ax: a.x, ay: a.y, bx: b.x, by: b.y, t: 1.3, dur: 1.3 })
     }
+    this._tone(392, 0.12, 0, 'triangle', 0.09)
+    return true
+  }
+
+  _clearPending() {
+    const g = this._geo()
+    const hit = this.pending
+    this.pending = null
+    if (!hit || !hit.size) return 0
     for (const key of hit) {
       const [r, c] = key.split(',').map(Number)
+      if (!this.grid[r][c].kind) continue
       const p = this._cellXY(r, c, g)
       this.flyers.push({ sx: p.x, sy: p.y, x: p.x, y: p.y, kind: this.grid[r][c].kind, t: 0 })
       this.grid[r][c].kind = null
@@ -271,11 +285,16 @@ export class Game {
     if (this.lock > 0) {
       this.lock -= dt
       if (this.lock <= 0 && this.state === 'play') {
-        const got = this._resolve()
-        if (got) {
-          this.collected += got
-          this.toasts.push({ text: this.collected % SHEAF === 0 ? T.gather : T.cascade, t: this._t })
-          this.lock = 0.45
+        if (this.pending) {
+          // 第二拍:真的收進籃(慢節奏,先前已亮 0.7 秒讓人看清)
+          const got = this._clearPending()
+          if (got) {
+            this.collected += got
+            this.toasts.push({ text: this.collected % SHEAF === 0 ? T.gather : T.cascade, t: this._t })
+          }
+          this.lock = 0.55
+        } else if (this._markPending()) {
+          this.lock = 0.7 // 第一拍:捆繩亮著,看清是哪幾排
         } else if (this._sheaves() >= this.cfg.goal) {
           this.state = 'close'
           this.closeT = 2.2
@@ -285,7 +304,7 @@ export class Game {
     }
     if (this.shakeBack) { this.shakeBack.t -= dt; if (this.shakeBack.t <= 0) this.shakeBack = null }
     for (const f of this.flyers) {
-      f.t += dt * 1.5
+      f.t += dt * 0.9 // 飛進籃也放慢,看得見收了什麼
       const k = Math.min(1, f.t)
       const ease = k * k * (3 - 2 * k)
       f.x = f.sx + (BASKET.x - f.sx) * ease
@@ -413,11 +432,16 @@ export class Game {
         ctx.strokeStyle = '#c07830'; ctx.lineWidth = 3
         rGl(ctx, g.x0 + c * g.D + 3, g.y0 + r * g.D + 3, g.D - 6, g.D - 6, 10); ctx.stroke()
       }
-      this._wheat(p.x + dx, p.y + cell.dy, g.D * 0.38, cell.kind, selHere)
+      const pendHere = this.pending && this.pending.has(r + ',' + c)
+      if (pendHere) { // 兩拍拾取第一拍:整排亮金光,看清要收哪些
+        ctx.fillStyle = 'rgba(255,214,110,0.4)'
+        rGl(ctx, g.x0 + c * g.D + 2, g.y0 + r * g.D + 2, g.D - 4, g.D - 4, 10); ctx.fill()
+      }
+      this._wheat(p.x + dx, p.y + cell.dy, g.D * 0.38, cell.kind, selHere || pendHere)
     }
     // 捆繩(拾取的一排——斜的也一眼看懂)
     for (const b of this.bands) {
-      const k = b.t / 0.45
+      const k = b.t / (b.dur || 0.45)
       ctx.globalAlpha = k
       ctx.strokeStyle = '#8a5a20'; ctx.lineWidth = 5
       ctx.beginPath(); ctx.moveTo(b.ax, b.ay); ctx.lineTo(b.bx, b.by); ctx.stroke()
