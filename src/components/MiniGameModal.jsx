@@ -24,6 +24,7 @@ import { Game as StewardGame } from '../minigames/steward/game'
 import { Game as LostCoinGame } from '../minigames/lostcoin/game'
 import { Game as LotRunGame } from '../minigames/lotrun/game'
 import { Game as ArkMatchGame } from '../minigames/arkmatch/game'
+import { Game as GoalKickGame } from '../minigames/goalkick/game'
 import { Game as HerdGame } from '../minigames/herd/game'
 import { Game as FragmentsGame } from '../minigames/fragments/game'
 import { Game as FruitsGame } from '../minigames/fruits/game'
@@ -249,6 +250,8 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   const isLotRun = minigame.engine === 'lotrun'
   // in-repo 彈珠配對關(src/minigames/arkmatch/,各從其類 創 7):minigame.engine:'arkmatch'。新類型⑭——配對=一起進方舟非爆破,耶和華關門。
   const isArkMatch = minigame.engine === 'arkmatch'
+  // in-repo 撞球物理(射門)休閒關(src/minigames/goalkick/,憫安製作,無經文):minigame.engine:'goalkick'。拖球射門+守門員撲救時機窗,踢10球看進幾球,永不會輸。
+  const isGoalKick = minigame.engine === 'goalkick'
   // in-repo 撞球物理關(src/minigames/herd/,趕羊入圈 約 10):minigame.engine:'herd'。新類型⑯——拖曳牧羊犬撞羊入圈=歸聚,犬進門跑回不扣桿。
   const isHerd = minigame.engine === 'herd'
   // in-repo 彈珠配對②(src/minigames/fragments/,收拾零碎 約 6):minigame.engine:'fragments'。收進十二籃,免得有糟蹋的。
@@ -396,6 +399,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
       game.boot()
       return
     }
+    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch || isGoalKick) {
+      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對+射門:同一套嵌入契約(constructor 同形),依 engine 選類
+      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : isArkMatch ? ArkMatchGame : GoalKickGame
     if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch || isHerd) {
       // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對+撞球:同一套嵌入契約(constructor 同形),依 engine 選類
       const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : isArkMatch ? ArkMatchGame : HerdGame

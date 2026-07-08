@@ -29,6 +29,7 @@ import StewardDemo from './components/StewardDemo.jsx'
 import LostCoinDemo from './components/LostCoinDemo.jsx'
 import LotRunDemo from './components/LotRunDemo.jsx'
 import ArkMatchDemo from './components/ArkMatchDemo.jsx'
+import GoalKickDemo from './components/GoalKickDemo.jsx'
 import HerdDemo from './components/HerdDemo.jsx'
 import FragmentsDemo from './components/FragmentsDemo.jsx'
 import FruitsDemo from './components/FruitsDemo.jsx'
@@ -86,6 +87,7 @@ registerSW({ immediate: true })
 //   ?demo=lostcoin          → 失錢找物（找物/找碴，路 15:8-10；油燈照暗屋細細地找，直到找著、不會輸）
 //   ?demo=lotrun            → 羅得紅綠燈（忍住誘惑向前跑，創 19；「回頭看一眼」鈕千萬別按，按了天使拉住不算輸）
 //   ?demo=arkmatch          → 各從其類・動物歸艙（彈珠配對，創 7:14-16；配對=一起進方舟非爆破、耶和華關門、不會輸）
+//   ?demo=goalkick          → 射門練習（憫安製作休閒關，無經文；拖球蓄力射門、守門員撲救時機窗，踢 10 球看進幾球）
 //   ?demo=herd              → 趕羊入圈（撞球物理，約 10:16＋詩 23；拖曳牧羊犬撞羊入圈=歸聚、犬進門跑回不扣桿、不會輸）
 //   ?demo=fragments         → 五餅二魚・收拾零碎（彈珠配對換皮，約 6:11-13；收進十二個籃子、免得有糟蹋的）
 //   ?demo=fruits            → 聖靈果子・結果子（彈珠配對換皮，加 5:22-23；果子帶字、結到樹上、果子是聖靈結的）
@@ -128,6 +130,7 @@ function pickRoot() {
   if (demo === 'lostcoin') return <LostCoinDemo />
   if (demo === 'lotrun') return <LotRunDemo />
   if (demo === 'arkmatch') return <ArkMatchDemo />
+  if (demo === 'goalkick') return <GoalKickDemo />
   if (demo === 'herd') return <HerdDemo />
   if (demo === 'fragments') return <FragmentsDemo />
   if (demo === 'fruits') return <FruitsDemo />
