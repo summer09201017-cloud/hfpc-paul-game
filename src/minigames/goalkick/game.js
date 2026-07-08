@@ -130,14 +130,31 @@ export class Game {
 
   _update(dt) {
     if (this.state === 'done' || this.state === 'intro') return
-    // 守門員巡邏(球門線上左右滑)
-    if (this.keeper) {
+    // 守門員巡邏(球門線上左右滑;撲接抱球時站住不走)
+    if (this.keeper && !(this.state === 'result' && this.resultKind === 'save')) {
       const g = this._goalRange()
       this.keeper.x += this.keeper.dir * this.cfg.kSpeed * dt
       if (this.keeper.x > g.x1 - this.cfg.kHalf) { this.keeper.x = g.x1 - this.cfg.kHalf; this.keeper.dir = -1 }
       if (this.keeper.x < g.x0 + this.cfg.kHalf) { this.keeper.x = g.x0 + this.cfg.kHalf; this.keeper.dir = 1 }
     }
     if (this.state === 'result') {
+      const b = this.ball
+      if (this.resultKind === 'goal') {
+        // 進球:球繼續衝進網子深處才停(嗖——網子兜住)
+        const g = this._goalRange()
+        const depth = GOALY - 44
+        if (b.y > depth) {
+          b.y += b.vy * dt * 0.35
+          b.x += b.vx * dt * 0.15
+          if (b.y < depth) b.y = depth
+        }
+        if (b.x < g.x0 + BALLR) b.x = g.x0 + BALLR
+        if (b.x > g.x1 - BALLR) b.x = g.x1 - BALLR
+      } else if (this.resultKind === 'save') {
+        // 被撲:球穩穩接在守門員手中(跟著他,他抱著站住)
+        b.x = this.keeper.x
+        b.y = GOALY - 18
+      }
       this.resultT -= dt
       if (this.resultT <= 0) {
         if (this.shotsLeft <= 0) this._done()
@@ -155,16 +172,16 @@ export class Game {
         const g = this._goalRange()
         const inGoal = b.x > g.x0 && b.x < g.x1
         const saved = inGoal && Math.abs(b.x - this.keeper.x) < this.cfg.kHalf + BALLR
-        if (inGoal && !saved) { this.goals += 1; this.result = T.goal; this._tone(523, 0.12, 0, 'triangle', 0.11); this._tone(784, 0.2, 0.1, 'triangle', 0.11) }
-        else if (saved) { this.result = T.save; this._tone(200, 0.16, 0, 'square', 0.07); b.vy = Math.abs(b.vy) * 0.4 }
-        else { this.result = T.miss; this._tone(180, 0.12, 0, 'sine', 0.06) }
+        if (inGoal && !saved) { this.resultKind = 'goal'; this.goals += 1; this.result = T.goal; this._tone(523, 0.12, 0, 'triangle', 0.11); this._tone(784, 0.2, 0.1, 'triangle', 0.11) }
+        else if (saved) { this.resultKind = 'save'; this.result = T.save; this._tone(200, 0.16, 0, 'square', 0.07) }
+        else { this.resultKind = 'miss'; this.result = T.miss; this._tone(180, 0.12, 0, 'sine', 0.06) }
         this.toasts.push({ text: this.result, t: this._t })
         this.state = 'result'
-        this.resultT = 1.1
+        this.resultT = this.resultKind === 'save' ? 1.4 : 1.1
         b.flying = false
       }
       // 保險:飛出頂端沒判到也收尾
-      if (b.y < -40) { this.result = T.miss; this.state = 'result'; this.resultT = 1.1; b.flying = false }
+      if (b.y < -40) { this.resultKind = 'miss'; this.result = T.miss; this.state = 'result'; this.resultT = 1.1; b.flying = false }
     }
     this.toasts = this.toasts.filter((t) => this._t - t.t < 1.6)
   }
@@ -270,10 +287,17 @@ export class Game {
     ctx.beginPath()
     ctx.moveTo(g.x0, GOALY); ctx.lineTo(g.x0, GOALY - 60); ctx.lineTo(g.x1, GOALY - 60); ctx.lineTo(g.x1, GOALY)
     ctx.stroke()
-    // 守門員
-    if (this.keeper) this._keeper(this.keeper.x, GOALY)
+    // 守門員(撲接時手臂環抱球)
+    const holding = this.state === 'result' && this.resultKind === 'save'
+    if (this.keeper) this._keeper(this.keeper.x, GOALY, holding)
     // 球
     this._soccer(this.ball.x, this.ball.y)
+    // 抱球時把手套疊畫在球前,看得出「接在手中」
+    if (holding && this.keeper) {
+      ctx.fillStyle = '#3050a0'
+      ctx.beginPath(); ctx.arc(this.keeper.x - BALLR * 0.75, GOALY - 15, 6, 0, 7); ctx.fill()
+      ctx.beginPath(); ctx.arc(this.keeper.x + BALLR * 0.75, GOALY - 15, 6, 0, 7); ctx.fill()
+    }
     // 牧童的腳(球後,提示從這拉)
     if (this.state === 'aim') {
       ctx.fillStyle = '#c98a5a'
@@ -325,21 +349,28 @@ export class Game {
     ctx.beginPath(); ctx.arc(x, y, BALLR, 0, 7); ctx.stroke()
   }
 
-  _keeper(x, y) {
+  _keeper(x, y, holding = false) {
     const { ctx } = this
-    // 身體(彩色球衣)+ 張開的手
+    // 身體(彩色球衣)
     ctx.fillStyle = '#e0a030'
     ctx.fillRect(x - 13, y - 34, 26, 30)
     ctx.strokeStyle = '#e0a030'; ctx.lineWidth = 8; ctx.lineCap = 'round'
-    ctx.beginPath(); ctx.moveTo(x - 13, y - 28); ctx.lineTo(x - 30, y - 40); ctx.moveTo(x + 13, y - 28); ctx.lineTo(x + 30, y - 40); ctx.stroke() // 手臂張開
+    if (holding) {
+      // 手臂環下來抱球(球在 y-18)
+      ctx.beginPath(); ctx.moveTo(x - 13, y - 28); ctx.lineTo(x - BALLR - 4, y - 18); ctx.moveTo(x + 13, y - 28); ctx.lineTo(x + BALLR + 4, y - 18); ctx.stroke()
+    } else {
+      ctx.beginPath(); ctx.moveTo(x - 13, y - 28); ctx.lineTo(x - 30, y - 40); ctx.moveTo(x + 13, y - 28); ctx.lineTo(x + 30, y - 40); ctx.stroke() // 手臂張開
+    }
     ctx.fillStyle = '#f2d8b0'
     ctx.beginPath(); ctx.arc(x, y - 42, 9, 0, 7); ctx.fill() // 頭
     ctx.fillStyle = '#3a6a3a'
     ctx.fillRect(x - 11, y - 6, 22, 8) // 短褲
-    // 手套
-    ctx.fillStyle = '#3050a0'
-    ctx.beginPath(); ctx.arc(x - 31, y - 41, 5, 0, 7); ctx.fill()
-    ctx.beginPath(); ctx.arc(x + 31, y - 41, 5, 0, 7); ctx.fill()
+    // 手套(抱球時畫在球側,由 _draw 疊畫)
+    if (!holding) {
+      ctx.fillStyle = '#3050a0'
+      ctx.beginPath(); ctx.arc(x - 31, y - 41, 5, 0, 7); ctx.fill()
+      ctx.beginPath(); ctx.arc(x + 31, y - 41, 5, 0, 7); ctx.fill()
+    }
   }
 
   _drawIntro() {

@@ -107,7 +107,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 ## Embedded mini-games (`src/minigames/`)
 
-### 引擎總覽(2026-07-08 對賬;43 個引擎一行一個,防「程式有、文件沒提」)
+### 引擎總覽(2026-07-09 對賬;44 個引擎一行一個,防「程式有、文件沒提」)
 
 > ⚠ 這張表是 2026-07-05 用 `/route-doc-check` 對賬補的——當時發現 saul-spear/nehemiah/joash/slingshot/jericho/fishing/shore **七個引擎(06-26~06-28 HFP 機所做)完全沒進過文件**。日後每加一個引擎,在這裡補一行(交接前跑 `/route-doc-check` 驗證 🔴=0)。
 
@@ -154,10 +154,11 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 | `lotrun/` | `?demo=lotrun` | 創 19:15-17;路 17:32 羅得紅綠燈 | **新類型⑬忍住誘惑・向前跑(123 木頭人反向化)**:按住=往山上跑;誘惑時刻跳出大大的「👀 回頭看一眼」鈕(千萬別按!)+忍耐倒數圈;按了=定住鹽白化驚險一刻→**天使拉住**(創 19:16 耶和華憐恤),繼續逃、永不會輸;星等=忍住幾次(0 回頭=3 星);羅得妻子結局不畫,用路 17:32 溫柔帶教導;青檔誘惑中鬆手=頭不由自主轉過去;✅ 牧者已過審(2026-07-08,PR #74 併入)、大廳卡已亮 |
 | `fragments/` | `?demo=fragments` | 約 6:11-13 五餅二魚・收拾零碎 | **彈珠配對⑭第二個活實作(arkmatch 換皮)**:餅魚零碎五種,同類 3+=「收拾起來」收進籃子(免得有糟蹋的,非消失);十二個籃子逐一裝滿,結局=約 6:13;懸空=門徒兜住;永不會輸;✅ 牧者已過審(2026-07-08,PR #75 併入) |
 | `fruits/` | `?demo=fruits` | 加 5:22-23;約 15:5 聖靈果子・結果子 | **彈珠配對⑭第三個活實作**:果子帶字(仁愛/喜樂/和平/忍耐/恩慈),同款 3+=「結出果子」結到樹上(常駐可見);★守法:果子是聖靈結的——教導句約 15:5 把功勞還給主;邊玩邊背九果子前五種;永不會輸;✅ 牧者已過審(2026-07-08,PR #75 併入) |
-| `gems/` | `?demo=gems` | 出 28:17-21,29 大祭司胸牌・寶石歸位 | **新類型⑮歸位配對**:點托盤寶石→點胸牌槽位;石名與四行排序完全照出 28:17-20、支派照生來次序;放錯=溫柔搖頭不懲罰;幼 6 塊看顏色/童 12 槽標石名/青 12 對照經文卡放;完成=名字帶在胸前(28:29)+金光;永不會輸;✅ 牧者已過審(2026-07-08,PR #75 併入) |
-| `manna/` | `?demo=manna` | 出 16:14-18;太 6:11 嗎哪收取 | **新類型⑰交換配對(消消樂/Candy 反向化)**:點兩塊相鄰嗎哪交換,3 連=「收取」**收進俄梅珥罐**(絕非糖果爆裂消滅);補位=新嗎哪**從天而降**(每早晨降嗎哪的經文直接變機制);無步數/時間限制、換不成溫柔換回、無可動手=「風把嗎哪吹勻了」重洗,永不會輸;信息=多收的沒有餘少收的沒有缺(16:18)+主禱文日用飲食(太 6:11);嗎哪五形態(珠/片/捲/團/屑)全白霜色系靠形狀分辨;年齡三檔=6×6・4款・8罐/7×7・5款・12罐/8×8・5款・16罐;⚠ 文案待牧者審核(feat/manna-templeart) |
+| `gems/` | `?demo=gems` | 出 28:17-21,29 大祭司胸牌・寶石歸位 | **新類型⑮歸位配對**:點托盤寶石→點胸牌槽位;石名與四行排序完全照出 28:17-20、支派照生來次序;放錯=溫柔搖頭不懲罰;幼 6 塊看顏色/童 12 槽標石名/青 12 對照經文卡放;完成=名字帶在胸前(28:29)+金光;永不會輸;✅ 牧者已過審(2026-07-08,PR #75 併入);07-09 補重玩性加料兩式(可疊加,⚠ 問答文案待牧者審):🧠 **記憶挑戰**(提示亮 10 秒遮起來憑記憶放+「再看一眼」不限次只記錄)+❓ **名字的意思**(放對跳該支派二選一,意思全出自和合本括號註 創 29-30;35:18,cuv 逐字核) |
+| `manna/` | `?demo=manna` | 出 16:14-18;太 6:11 嗎哪收取 | **新類型⑰交換配對(消消樂/Candy 反向化)**:點兩塊相鄰嗎哪交換,3 連=「收取」**收進俄梅珥罐**(絕非糖果爆裂消滅);補位=新嗎哪**從天而降**(每早晨降嗎哪的經文直接變機制);無步數/時間限制、換不成溫柔換回、無可動手=「風把嗎哪吹勻了」重洗,永不會輸;信息=多收的沒有餘少收的沒有缺(16:18)+主禱文日用飲食(太 6:11);嗎哪五形態(珠/片/捲/團/屑)全白霜色系靠形狀分辨;年齡三檔=6×6・4款・8罐/7×7・5款・12罐/8×8・5款・16罐;✅ 牧者已過審(2026-07-09,PR #78 併入)、大廳卡已亮(新 kind swap3) |
+| `glean/` | `?demo=glean` | 得 2:12,15-17 拾穗的路得 | **交換配對⑰第二個活實作(manna 換皮)+★斜線實驗版(全系列唯一,牧者拍板)**:橫、直、**斜**都算一排——語意釘在得 2:15-16 波阿斯吩咐**故意從捆裡抽出些留給路得**,斜的一排也算=恩典故意多給;拾取=**捆成一捆**(金繩綁起動畫,斜線可讀性關鍵)收進**伊法籃**(得 2:17 約有一伊法);麥穗五形態(直穗/彎穗/雙穗/穗頭/散粒)金黃色系;補位=僕人抽出來留在地下;永不會輸;信息=投靠耶和華翅膀下滿得賞賜(2:12,波阿斯預表基督);年齡三檔同 manna(收 8/12/16 捆);⚠ 文案待牧者審核(feat/gems-modes-glean) |
 
-- **雙擊啟動器 `play-*.bat`(repo 根,44 支;07-08 深夜加 play-manna.bat;07-08 晚加 play-herd.bat、play-fragments.bat、play-fruits.bat、play-gems.bat;07-07 晚加 play-steward.bat、play-lostcoin.bat、play-lotrun.bat、play-arkmatch.bat;07-07 加 play-temple.bat、play-gideon.bat;07-06 晚加 play-wallguard.bat、play-ezra.bat、play-sower.bat、play-foxes.bat、play-sparks.bat、play-armor.bat、play-basket.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
+- **雙擊啟動器 `play-*.bat`(repo 根,45 支;07-09 加 play-glean.bat;07-08 深夜加 play-manna.bat;07-08 晚加 play-herd.bat、play-fragments.bat、play-fruits.bat、play-gems.bat;07-07 晚加 play-steward.bat、play-lostcoin.bat、play-lotrun.bat、play-arkmatch.bat;07-07 加 play-temple.bat、play-gideon.bat;07-06 晚加 play-wallguard.bat、play-ezra.bat、play-sower.bat、play-foxes.bat、play-sparks.bat、play-armor.bat、play-basket.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
 - `cards/`/`jonah/`(部分關)只被旅程站點的 `minigame` 欄使用、沒有同名 `?demo=` 路由——正常,不是漏接。
 - 文案審核:joash/jericho/fishing/shore 等 06-26~28 那批的送審紀錄未見於 docs(當時牧者自審居多);要對外正式推廣前,建議用 `/review-queue` 盤一次、缺的補送 [[pastor-review]]。
 
