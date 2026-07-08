@@ -7,7 +7,7 @@
 // ★ 神學守法:①「建殿的時候,鎚子、斧子…響聲都沒有聽見」(王上 6:7)——全程沒有敲打音效,
 //   石塊安放只有輕輕的落定聲;②消行=砌合完工發光,絕不畫成爆炸/破碎;③堆到頂不是輸——
 //   「歇口氣,把石頭先安放一旁,再來」(場地輕輕沉降幾層,進度保留,永不會輸)。
-// 年齡三檔:幼(慢・簡單石形・預覽2)/童(標準・預覽1)/青(快・全部石形・無預覽)。
+// 年齡三檔:幼(慢・簡單石形・預覽2)/童(標準・預覽1)/青(快・全部石形・預覽1)。另有 ⏸ 暫停(P/Esc/鈕)與「暫存(C)」交換石頭(每次落定前限一次)。
 // 嵌入契約:new Game(canvas,{embed,winPoints,onComplete}) + boot()/destroy();零相依、零美術檔、可離線。
 // 朗讀鐵則:過關經文走 speakScripture(mp3 優先;王上 6:7 同輪烤,見 scripts/tts-verses.json)。
 import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
@@ -15,7 +15,7 @@ import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
 const AGES = {
   young: { label: '🐣 幼', desc: '慢・簡單石形', drop: 1.05, kinds: ['I', 'O', 'L'], goal: 3, preview: 2 },
   kid: { label: '🙂 童', desc: '標準', drop: 0.74, kinds: ['I', 'O', 'T', 'L', 'J'], goal: 5, preview: 1 },
-  teen: { label: '🔥 青', desc: '快・全部石形', drop: 0.5, kinds: ['I', 'O', 'T', 'L', 'J', 'S', 'Z'], goal: 7, preview: 0 },
+  teen: { label: '🔥 青', desc: '快・全部石形', drop: 0.5, kinds: ['I', 'O', 'T', 'L', 'J', 'S', 'Z'], goal: 7, preview: 1 },
 }
 
 // 七種「山中鑿成的石塊」(每種一個暖色石調;rot 0-3 由 _cells 旋轉)
@@ -70,6 +70,11 @@ export class Game {
     this.grid = [] // ROWS×COLS,null 或 色碼
     this.piece = null
     this.queue = []
+    this.hold = null // 暫存的石形(C 鍵/點暫存格交換;每次落定前限一次)
+    this.holdUsed = false
+    this.paused = false
+    this._pauseBtn = null
+    this._holdBox = null
     this.courses = 0 // 已砌合層數
     this.dropT = 0
     this.flash = null // {rows:[y..], t} 砌合發光中
@@ -114,11 +119,35 @@ export class Game {
     try { this._audio && this._audio.close() } catch {}
   }
 
+  // 嵌入契約:MiniGameModal 的 fill 模式會呼叫 pause()/resume();P/Esc 鍵與 ⏸ 鈕也走這兩支。
+  pause() { if (this.state !== 'intro' && this.state !== 'win') this.paused = true }
+  resume() { this.paused = false }
+
+  // 暫存/交換(每次落定前限一次:第一次=存起來換下一塊,之後=和暫存的交換)
+  _holdSwap() {
+    if (this.paused || this.state !== 'play' || !this.piece || this.holdUsed) return
+    const k = this.piece.kind
+    if (this.hold == null) {
+      this.hold = k
+      this.piece = null
+      this._spawn()
+    } else {
+      this.piece = { kind: this.hold, rot: 0, col: Math.floor(COLS / 2) - 2, row: -1, fast: false }
+      this.hold = k
+      this.dropT = this.cfg.drop
+    }
+    this.holdUsed = true
+    this._tone(560, 0.06, 0, 'sine', 0.07)
+  }
+
   _start(age) {
     this.age = age
     this.cfg = AGES[age]
     this.grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null))
     this.courses = 0
+    this.hold = null
+    this.holdUsed = false
+    this.paused = false
     this.queue = []
     this.flash = null
     this.restT = 0
@@ -183,6 +212,7 @@ export class Game {
       if (y >= 0 && y < ROWS) this.grid[y][x] = SHAPES[p.kind].c
     }
     this.piece = null
+    this.holdUsed = false // 落定後,下一塊又可以暫存一次
     this._tone(150, 0.12, 0, 'sine', 0.1) // 輕輕落定(沒有鎚斧聲)
     const full = []
     for (let y = 0; y < ROWS; y++) if (this.grid[y].every(Boolean)) full.push(y)
@@ -195,6 +225,7 @@ export class Game {
   }
 
   _update(dt) {
+    if (this.paused) return
     if (this.state === 'clear') {
       this.flash.t -= dt
       if (this.flash.t <= 0) {
@@ -247,7 +278,12 @@ export class Game {
       if (e.key === '3') return this._start('teen')
       return
     }
-    if (this.state !== 'play' || !this.piece) return
+    if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+      if (this.state !== 'win') this.paused ? this.resume() : this.pause()
+      return
+    }
+    if (e.key === 'c' || e.key === 'C') return this._holdSwap()
+    if (this.paused || this.state !== 'play' || !this.piece) return
     if (e.key === 'ArrowLeft' || e.key === 'a') { if (!this._collide(this.piece, -1, 0)) this.piece.col -= 1 }
     else if (e.key === 'ArrowRight' || e.key === 'd') { if (!this._collide(this.piece, 1, 0)) this.piece.col += 1 }
     else if (e.key === 'ArrowUp' || e.key === 'w') this._tryRotate()
@@ -263,6 +299,16 @@ export class Game {
       for (const b of this._btns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return this._start(b.key)
       return
     }
+    // ⏸ 暫停鈕;暫停中點任何地方 = 繼續
+    const pb = this._pauseBtn
+    if (pb && x >= pb.x && x <= pb.x + pb.w && y >= pb.y && y <= pb.y + pb.h) {
+      this.paused ? this.resume() : this.pause()
+      return
+    }
+    if (this.paused) { this.resume(); return }
+    // 點暫存格 = 交換
+    const hb = this._holdBox
+    if (hb && x >= hb.x && x <= hb.x + hb.w && y >= hb.y && y <= hb.y + hb.h) return this._holdSwap()
     if (this.state === 'play') this._ptr = { x, y, t: this._t, moved: false }
   }
   _movePt(e) {
@@ -361,6 +407,47 @@ export class Game {
     }
     // 左側:聖殿的牆(砌合進度)
     this._temple(ctx, g.bx * 0.5, H * 0.72, Math.min(g.bx * 0.7, H * 0.3))
+    // 左上:暫存格(C 鍵/點格交換;holdUsed 時變灰)
+    if (this.state === 'play' || this.state === 'clear' || this.state === 'rest') {
+      const hs = Math.min(g.bx * 0.66, H * 0.2)
+      const hx = g.bx * 0.5 - hs / 2, hy = g.by + H * 0.02
+      ctx.fillStyle = this.holdUsed ? 'rgba(120,100,60,0.14)' : 'rgba(120,100,60,0.22)'
+      rT(ctx, hx, hy, hs, hs, 10); ctx.fill()
+      ctx.strokeStyle = 'rgba(106,86,54,0.6)'; ctx.lineWidth = 2
+      rT(ctx, hx, hy, hs, hs, 10); ctx.stroke()
+      ctx.fillStyle = '#6a5636'
+      ctx.font = `bold ${Math.max(11, H * 0.024)}px "Noto Sans TC",sans-serif`
+      ctx.textAlign = 'center'
+      ctx.fillText('暫存(C)', hx + hs / 2, hy - 6)
+      if (this.hold) {
+        const s = SHAPES[this.hold], pc = hs / 5
+        ctx.globalAlpha = this.holdUsed ? 0.45 : 1
+        for (const [x, y] of s.m) this._stone(hx + hs / 2 - pc * 2 + x * pc, hy + hs / 2 - pc + y * pc, pc, s.c)
+        ctx.globalAlpha = 1
+      }
+      this._holdBox = { x: hx, y: hy, w: hs, h: hs }
+    } else this._holdBox = null
+    // 右上:⏸ 暫停鈕
+    if (this.state !== 'win') {
+      const pw = Math.max(40, H * 0.075)
+      const px2 = W - pw - 12, py2 = 12
+      ctx.fillStyle = 'rgba(74,58,24,0.55)'
+      rT(ctx, px2, py2, pw, pw, 10); ctx.fill()
+      ctx.fillStyle = '#fdf6e0'
+      ctx.font = `bold ${pw * 0.5}px "Noto Sans TC",sans-serif`
+      ctx.textAlign = 'center'
+      ctx.fillText(this.paused ? '▶' : '⏸', px2 + pw / 2, py2 + pw * 0.66)
+      this._pauseBtn = { x: px2, y: py2, w: pw, h: pw }
+    } else this._pauseBtn = null
+    // 暫停遮罩
+    if (this.paused) {
+      ctx.fillStyle = 'rgba(60,48,24,0.45)'
+      ctx.fillRect(0, 0, W, H)
+      ctx.fillStyle = '#fdf6e0'
+      ctx.font = `bold ${Math.max(20, H * 0.055)}px "Noto Sans TC",sans-serif`
+      ctx.textAlign = 'center'
+      ctx.fillText('⏸ 暫停中——點畫面繼續', W / 2, H * 0.5)
+    }
     // 右側:下一塊預覽
     if (this.cfg.preview > 0 && this.state === 'play') {
       const px = g.bx + g.bw + (W - g.bx - g.bw) * 0.5
@@ -390,7 +477,7 @@ export class Game {
     ctx.fillStyle = '#fdf6e0'
     ctx.font = `bold ${Math.max(12, H * 0.028)}px "Noto Sans TC",sans-serif`
     ctx.textAlign = 'center'
-    ctx.fillText(`${T.hud(this.courses, this.cfg.goal)} ・ ←→移動 ↑轉 ↓輕放`, W / 2, H * 0.052)
+    ctx.fillText(`${T.hud(this.courses, this.cfg.goal)} ・ ←→移動 ↑轉 ↓輕放 C暫存`, W / 2, H * 0.052)
 
     if (this.state === 'win') this._drawWin()
   }
