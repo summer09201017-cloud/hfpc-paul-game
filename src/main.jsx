@@ -34,6 +34,7 @@ import HerdDemo from './components/HerdDemo.jsx'
 import FragmentsDemo from './components/FragmentsDemo.jsx'
 import FruitsDemo from './components/FruitsDemo.jsx'
 import GemsDemo from './components/GemsDemo.jsx'
+import MannaDemo from './components/MannaDemo.jsx'
 import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
@@ -92,6 +93,7 @@ registerSW({ immediate: true })
 //   ?demo=fragments         → 五餅二魚・收拾零碎（彈珠配對換皮，約 6:11-13；收進十二個籃子、免得有糟蹋的）
 //   ?demo=fruits            → 聖靈果子・結果子（彈珠配對換皮，加 5:22-23；果子帶字、結到樹上、果子是聖靈結的）
 //   ?demo=gems              → 大祭司胸牌・寶石歸位（歸位配對，出 28:17-21；十二寶石按支派歸位、名字帶在胸前）
+//   ?demo=manna             → 嗎哪收取（交換配對/消消樂反向化，出 16:14-18；3 連=收進俄梅珥罐非爆裂、補位天降、不會輸）
 //   ?demo=<卡片關 key>      → 任一卡片關單獨玩，例 ?demo=cornelius（福音奇兵）
 const demo = (() => {
   try {
@@ -135,6 +137,7 @@ function pickRoot() {
   if (demo === 'fragments') return <FragmentsDemo />
   if (demo === 'fruits') return <FruitsDemo />
   if (demo === 'gems') return <GemsDemo />
+  if (demo === 'manna') return <MannaDemo />
   if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />

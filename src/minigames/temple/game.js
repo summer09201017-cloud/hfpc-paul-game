@@ -482,15 +482,42 @@ export class Game {
     if (this.state === 'win') this._drawWin()
   }
 
-  // 一塊石頭(圓角+亮邊,安安靜靜)
+  // 一塊石頭(圓角+亮邊,安安靜靜)。石紋=依「格位+石色」的定值雜湊(不逐幀變、落定後永遠同紋);
+  // ★純美感——牧者定案:同色消除不適合建殿故事,紋理絕不掛任何消除/配對規則。
   _stone(x, y, size, color, active = false) {
     const { ctx } = this
     const pad = size * 0.06
+    const iw = size - pad * 2
     ctx.fillStyle = color
-    rT(ctx, x + pad, y + pad, size - pad * 2, size - pad * 2, size * 0.16); ctx.fill()
+    rT(ctx, x + pad, y + pad, iw, iw, size * 0.16); ctx.fill()
     ctx.fillStyle = 'rgba(255,250,235,0.35)'
-    rT(ctx, x + pad, y + pad, size - pad * 2, (size - pad * 2) * 0.32, size * 0.16); ctx.fill()
-    if (active) { ctx.strokeStyle = 'rgba(120,90,40,0.55)'; ctx.lineWidth = 1.5; rT(ctx, x + pad, y + pad, size - pad * 2, size - pad * 2, size * 0.16); ctx.stroke() }
+    rT(ctx, x + pad, y + pad, iw, iw * 0.32, size * 0.16); ctx.fill()
+    if (size > 14) {
+      const cc = color.charCodeAt(5) || 97
+      const seed = ((Math.round(x / size) * 73856093) ^ (Math.round(y / size) * 19349663) ^ (cc * 83492791)) >>> 0
+      const rnd = (i) => { const v = Math.sin(seed % 100000 + i * 127.1) * 43758.5453; return v - Math.floor(v) }
+      ctx.save()
+      rT(ctx, x + pad, y + pad, iw, iw, size * 0.16); ctx.clip()
+      // 斑點(每種石色 2-4 顆,位置定值)
+      ctx.fillStyle = 'rgba(92,72,42,0.15)'
+      const dots = 2 + (cc % 3)
+      for (let i = 0; i < dots; i++) {
+        ctx.beginPath()
+        ctx.arc(x + pad + rnd(i) * iw, y + pad + iw * 0.3 + rnd(i + 3) * iw * 0.7, size * (0.028 + rnd(i + 6) * 0.035), 0, 7)
+        ctx.fill()
+      }
+      // 一道鑿紋(短弧線,王上 6:7 山中鑿成的痕跡)
+      ctx.strokeStyle = 'rgba(120,95,55,0.2)'
+      ctx.lineWidth = Math.max(1, size * 0.028)
+      const vx = x + pad + rnd(9) * iw * 0.45
+      const vy = y + pad + iw * (0.35 + rnd(10) * 0.5)
+      ctx.beginPath()
+      ctx.moveTo(vx, vy)
+      ctx.quadraticCurveTo(vx + size * 0.2, vy + (rnd(11) - 0.5) * size * 0.28, vx + size * 0.42, vy + (rnd(12) - 0.5) * size * 0.42)
+      ctx.stroke()
+      ctx.restore()
+    }
+    if (active) { ctx.strokeStyle = 'rgba(120,90,40,0.55)'; ctx.lineWidth = 1.5; rT(ctx, x + pad, y + pad, iw, iw, size * 0.16); ctx.stroke() }
   }
 
   // 左側聖殿小圖:底座+已砌合的金層,完工加頂與光
