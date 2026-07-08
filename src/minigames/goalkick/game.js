@@ -226,7 +226,15 @@ export class Game {
     this.aim.dx = dx / d; this.aim.dy = Math.min(-0.25, dy / d)
     const n = Math.hypot(this.aim.dx, this.aim.dy)
     this.aim.dx /= n; this.aim.dy /= n
-    this.aim.power = Math.min(1, d / 230)
+    // ★滿力距離按「這個方向實際拖得開的空間」縮放——球離底線只剩 ~80,
+    //   直直往下拉原本永遠到不了滿力(牧者實測回報的 bug):斜拉才滿、直射蓄不滿。
+    //   沿拖曳方向算到畫布邊界的最大距離,滿力=min(230, 可拖空間×0.9),下限 60 防太靈敏。
+    const ux = -this.aim.dx, uy = -this.aim.dy // 拖曳方向(球的反側)
+    const bx = this.ball.x, by = this.ball.y
+    const tX = ux > 0.001 ? (VW - 8 - bx) / ux : ux < -0.001 ? (8 - bx) / ux : Infinity
+    const tY = uy > 0.001 ? (VH - 8 - by) / uy : Infinity // 往上拖不會發生(dy 已鎖向上射)
+    const maxD = Math.min(tX, tY)
+    this.aim.power = Math.min(1, d / Math.min(230, Math.max(60, maxD * 0.9)))
   }
   _up() {
     if (this.state === 'aim' && this.aim) this._shoot()
