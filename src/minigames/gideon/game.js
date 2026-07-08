@@ -9,6 +9,14 @@
 //   ③拆毀不畫成火爆:石塊淡淡碎落、輕輕的聲音(他們夜間行事,不敢張揚);
 //   ④拆完必接「築真壇」一幕——信息是「先拆假的,才立真的」,不是破壞本身。
 // 年齡三檔:幼(球慢・槓寬・磚 3 層)/童(標準・4 層)/青(快・槓窄・5 層)。
+// 2026-07-09 牧者拍板加料(⚠ 道具文案待牧者審核):
+//   ①滑鼠不必按住,左右移動木槓就跟著(觸控維持拖曳);
+//   ②拆下石塊偶爾掉「應許卷軸」——道具名=士師記 6 章神對基甸的原話(不是把屬靈詞彙當抽獎品,
+//     是「神的話壯膽」:接住應許,手上就有力):
+//     📜「大能的勇士啊,耶和華與你同在!」(6:12)=多一顆石球(同在壯膽,人手加倍)
+//     📜「你靠著你這能力去」(6:14)=木槓加寬 8 秒(神所賜的能力接得住更多)
+//     📜「我與你同在,你就必擊打米甸人」(6:16)=石鑿連發 4 秒(工匠鑿石,不是開槍——孩子模仿也安全)
+//   ③沒接到的卷軸落地就淡去,不懲罰;道具只在「拆假壇」段有效——神吩咐拆的才拆。
 // 嵌入契約:new Game(canvas,{embed,winPoints,onComplete}) + boot()/destroy();零相依、零美術檔、可離線。
 // 朗讀鐵則:過關經文走 speakScripture(mp3 優先;士 6:27 同輪烤,見 scripts/tts-verses.json)。
 import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
@@ -27,10 +35,13 @@ const T = {
   title: '⚒️ 基甸拆祭壇',
   ref: '士師記 6:25-27',
   intro1: '「當那夜，耶和華吩咐基甸說：…拆毀你父親為巴力所築的壇，砍下壇旁的木偶…」(士 6:25)',
-  how: '夜裡,火把光下。←→(或手指左右拖)移動木槓,彈起石球拆掉巴力壇的石塊,最後砍下木偶。別怕球掉下去——僕人會悄悄撿回來!',
+  how: '夜裡,火把光下。滑鼠左右移動(或 ←→、手指拖)木槓,彈起石球拆掉巴力壇的石塊,最後砍下木偶。拆石塊會掉下「應許卷軸」——用木槓接住,神的話使手有力!別怕球掉下去——僕人會悄悄撿回來!',
   pick: '夜色安靜。選一段工程:',
   hud: (left) => `⚒️ 還剩 ${left} 塊`,
   drop: '僕人悄悄把石球撿回來了',
+  pow1: '「大能的勇士啊，耶和華與你同在！」(士 6:12)——多一顆石球!',
+  pow2: '「你靠著你這能力去」(士 6:14)——木槓加寬!',
+  pow3: '「我與你同在，你就必擊打米甸人」(士 6:16)——石鑿連發!',
   pole1: '木偶搖晃了…',
   pole2: '砍下壇旁的木偶!',
   build: '在這磐石上,為耶和華─你的　神築一座壇。(士 6:26)',
@@ -64,7 +75,12 @@ export class Game {
     this.bricks = [] // {x,y,w,h,hp,pole?,fade?}
     this.dust = [] // 碎落微塵 {x,y,vx,vy,t}
     this.padX = VW / 2
-    this.ball = null // {x,y,vx,vy,stuck,returning}
+    this.balls = [] // 多球:{x,y,vx,vy,stuck,returning,r}(應許 6:12 會多球)
+    this.drops = [] // 掉落的應許卷軸 {x,y,vy,kind:'presence'|'strength'|'strike',t}
+    this.chisels = [] // 飛出的石鑿 {x,y,vy}
+    this.wideT = 0 // 木槓加寬剩餘秒(士 6:14)
+    this.chiselT = 0 // 石鑿連發剩餘秒(士 6:16)
+    this.chiselCd = 0
     this.toasts = []
     this.buildT = 0
     this._drag = false
@@ -126,21 +142,66 @@ export class Game {
     }
     const poleY = topY - (bh + gap) - 34
     this.bricks.push({ x: VW / 2 - 13, y: poleY, w: 26, h: 56, hp: 2, pole: true })
+    this.drops = []
+    this.chisels = []
+    this.wideT = 0
+    this.chiselT = 0
     this._resetBall()
     this.state = 'play'
   }
 
-  _resetBall() {
-    this.ball = { x: this.padX, y: VH - 58, vx: 0, vy: 0, stuck: true, returning: false, r: 10 }
+  // 木槓有效寬度(士 6:14 應許加寬 1.5 倍)
+  _padW() { return this.cfg.padW * (this.wideT > 0 ? 1.5 : 1) }
+
+  _newBall() {
+    return { x: this.padX, y: VH - 58, vx: 0, vy: 0, stuck: true, returning: false, r: 10 }
   }
 
-  _launch() {
-    const b = this.ball
+  _resetBall() {
+    this.balls = [this._newBall()]
+  }
+
+  _launch(ball) {
+    const b = ball || this.balls.find((k) => k.stuck)
     if (!b || !b.stuck) return
     const a = -Math.PI / 2 + (Math.random() * 0.5 - 0.25)
     b.vx = Math.cos(a) * this.cfg.speed
     b.vy = Math.sin(a) * this.cfg.speed
     b.stuck = false
+  }
+
+  // 接住應許卷軸(士 6 神對基甸的原話——神的話壯膽,手上就有力)
+  _applyDrop(kind) {
+    if (kind === 'presence') { // 6:12 同在=多一顆石球
+      const nb = this._newBall()
+      nb.stuck = false
+      const a = -Math.PI / 2 + (Math.random() * 0.9 - 0.45)
+      nb.vx = Math.cos(a) * this.cfg.speed
+      nb.vy = Math.sin(a) * this.cfg.speed
+      this.balls.push(nb)
+      this.toasts.push({ text: T.pow1, t: this._t })
+      this._tone(523, 0.12, 0, 'triangle', 0.11); this._tone(659, 0.16, 0.1, 'triangle', 0.1)
+    } else if (kind === 'strength') { // 6:14 能力=木槓加寬
+      this.wideT = 8
+      this.toasts.push({ text: T.pow2, t: this._t })
+      this._tone(440, 0.12, 0, 'triangle', 0.1); this._tone(587, 0.16, 0.1, 'triangle', 0.1)
+    } else { // strike 6:16 擊打=石鑿連發(工匠鑿石,不是開槍)
+      this.chiselT = 4
+      this.chiselCd = 0
+      this.toasts.push({ text: T.pow3, t: this._t })
+      this._tone(494, 0.12, 0, 'triangle', 0.1); this._tone(740, 0.16, 0.1, 'triangle', 0.1)
+    }
+  }
+
+  // 石塊被拆時的共用結尾(球與石鑿都走這裡):碎塵+機率掉應許卷軸
+  _brickDown(k) {
+    k.fade = 0.5
+    for (let i = 0; i < 6; i++) this.dust.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, vx: (Math.random() - 0.5) * 60, vy: 20 + Math.random() * 50, t: 0.7 })
+    if (!k.pole && Math.random() < 0.22 && this.drops.length < 2) {
+      const r = Math.random()
+      const kind = r < 0.4 ? 'presence' : r < 0.75 ? 'strength' : 'strike'
+      this.drops.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, vy: 92, kind })
+    }
   }
 
   _update(dt) {
@@ -150,62 +211,104 @@ export class Game {
       return
     }
     if (this.state !== 'play') return
-    // 木槓移動(鍵盤/拖曳)
+    // 木槓移動(鍵盤/拖曳/滑鼠跟隨)
     const mv = (this._keys.ArrowLeft || this._keys.a ? -1 : 0) + (this._keys.ArrowRight || this._keys.d ? 1 : 0)
-    this.padX = Math.max(this.cfg.padW / 2, Math.min(VW - this.cfg.padW / 2, this.padX + mv * dt * 520))
-    const b = this.ball
-    if (b.stuck) {
-      b.x = this.padX; b.y = VH - 58
-      if (this._keys[' '] || this._keys.ArrowUp) this._launch()
-    } else if (b.returning) {
-      // 僕人撿回:球緩緩飄回木槓上
-      b.x += (this.padX - b.x) * Math.min(1, dt * 3)
-      b.y += (VH - 58 - b.y) * Math.min(1, dt * 3)
-      if (Math.abs(b.y - (VH - 58)) < 4) { b.returning = false; b.stuck = true }
-    } else {
-      b.x += b.vx * dt
-      b.y += b.vy * dt
-      // 牆
-      if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx) }
-      if (b.x > VW - b.r) { b.x = VW - b.r; b.vx = -Math.abs(b.vx) }
-      if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy) }
-      // 木槓(依打點改角度)
-      const py = VH - 46, pw = this.cfg.padW
-      if (b.vy > 0 && b.y + b.r >= py && b.y + b.r <= py + 18 && Math.abs(b.x - this.padX) <= pw / 2 + b.r) {
-        const k = (b.x - this.padX) / (pw / 2)
-        const a = -Math.PI / 2 + k * 1.05
-        const sp = Math.hypot(b.vx, b.vy)
-        b.vx = Math.cos(a) * sp; b.vy = Math.sin(a) * sp
-        b.y = py - b.r
-        this._tone(200, 0.06, 0, 'sine', 0.07)
+    this.padX = Math.max(this._padW() / 2, Math.min(VW - this._padW() / 2, this.padX + mv * dt * 520))
+    // 應許效果倒數
+    if (this.wideT > 0) this.wideT -= dt
+    if (this.chiselT > 0) {
+      this.chiselT -= dt
+      this.chiselCd -= dt
+      if (this.chiselCd <= 0) { // 石鑿連發(工匠鑿石)
+        this.chisels.push({ x: this.padX, y: VH - 52 })
+        this.chiselCd = 0.33
+        this._tone(320, 0.04, 0, 'square', 0.04)
       }
-      // 掉出去=溫柔撿回(不扣命)
-      if (b.y > VH + 30) {
-        b.returning = true
-        this.toasts.push({ text: T.drop, t: this._t })
-        this._tone(260, 0.2, 0, 'sine', 0.06)
+    }
+    const py = VH - 46
+    for (const b of this.balls) {
+      if (b.stuck) {
+        b.x = this.padX; b.y = VH - 58
+        if (this._keys[' '] || this._keys.ArrowUp) this._launch(b)
+      } else if (b.returning) {
+        // 僕人撿回:球緩緩飄回木槓上
+        b.x += (this.padX - b.x) * Math.min(1, dt * 3)
+        b.y += (VH - 58 - b.y) * Math.min(1, dt * 3)
+        if (Math.abs(b.y - (VH - 58)) < 4) { b.returning = false; b.stuck = true }
+      } else {
+        b.x += b.vx * dt
+        b.y += b.vy * dt
+        // 牆
+        if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx) }
+        if (b.x > VW - b.r) { b.x = VW - b.r; b.vx = -Math.abs(b.vx) }
+        if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy) }
+        // 木槓(依打點改角度;應許 6:14 生效時更寬)
+        const pw = this._padW()
+        if (b.vy > 0 && b.y + b.r >= py && b.y + b.r <= py + 18 && Math.abs(b.x - this.padX) <= pw / 2 + b.r) {
+          const k = (b.x - this.padX) / (pw / 2)
+          const a = -Math.PI / 2 + k * 1.05
+          const sp = Math.hypot(b.vx, b.vy)
+          b.vx = Math.cos(a) * sp; b.vy = Math.sin(a) * sp
+          b.y = py - b.r
+          this._tone(200, 0.06, 0, 'sine', 0.07)
+        }
+        // 掉出去:多球時悄悄收走一顆;最後一顆=僕人撿回(不扣命)
+        if (b.y > VH + 30) {
+          if (this.balls.filter((k) => !k.dead).length > 1) {
+            b.dead = true
+          } else {
+            b.returning = true
+            this.toasts.push({ text: T.drop, t: this._t })
+            this._tone(260, 0.2, 0, 'sine', 0.06)
+          }
+        }
+        // 磚(壇石/木偶)
+        for (const k of this.bricks) {
+          if (k.fade) continue
+          if (b.x + b.r < k.x || b.x - b.r > k.x + k.w || b.y + b.r < k.y || b.y - b.r > k.y + k.h) continue
+          // 反彈軸:比較穿透深度
+          const ox = Math.min(b.x + b.r - k.x, k.x + k.w - (b.x - b.r))
+          const oy = Math.min(b.y + b.r - k.y, k.y + k.h - (b.y - b.r))
+          if (ox < oy) b.vx = b.x < k.x + k.w / 2 ? -Math.abs(b.vx) : Math.abs(b.vx)
+          else b.vy = b.y < k.y + k.h / 2 ? -Math.abs(b.vy) : Math.abs(b.vy)
+          k.hp -= 1
+          if (k.pole) {
+            this.toasts.push({ text: k.hp > 0 ? T.pole1 : T.pole2, t: this._t })
+            this._tone(k.hp > 0 ? 180 : 140, 0.16, 0, 'sine', 0.1)
+          } else this._tone(170, 0.07, 0, 'sine', 0.08)
+          if (k.hp <= 0) this._brickDown(k)
+          break
+        }
       }
-      // 磚(壇石/木偶)
+    }
+    this.balls = this.balls.filter((b) => !b.dead)
+    // 石鑿飛行與碎石
+    for (const c of this.chisels) {
+      c.y -= 430 * dt
+      if (c.y < -20) { c.dead = true; continue }
       for (const k of this.bricks) {
         if (k.fade) continue
-        if (b.x + b.r < k.x || b.x - b.r > k.x + k.w || b.y + b.r < k.y || b.y - b.r > k.y + k.h) continue
-        // 反彈軸:比較穿透深度
-        const ox = Math.min(b.x + b.r - k.x, k.x + k.w - (b.x - b.r))
-        const oy = Math.min(b.y + b.r - k.y, k.y + k.h - (b.y - b.r))
-        if (ox < oy) b.vx = b.x < k.x + k.w / 2 ? -Math.abs(b.vx) : Math.abs(b.vx)
-        else b.vy = b.y < k.y + k.h / 2 ? -Math.abs(b.vy) : Math.abs(b.vy)
+        if (c.x < k.x - 4 || c.x > k.x + k.w + 4 || c.y > k.y + k.h || c.y + 18 < k.y) continue
         k.hp -= 1
+        c.dead = true
         if (k.pole) {
           this.toasts.push({ text: k.hp > 0 ? T.pole1 : T.pole2, t: this._t })
           this._tone(k.hp > 0 ? 180 : 140, 0.16, 0, 'sine', 0.1)
-        } else this._tone(170, 0.07, 0, 'sine', 0.08)
-        if (k.hp <= 0) {
-          k.fade = 0.5
-          for (let i = 0; i < 6; i++) this.dust.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, vx: (Math.random() - 0.5) * 60, vy: 20 + Math.random() * 50, t: 0.7 })
-        }
+        } else this._tone(190, 0.05, 0, 'sine', 0.07)
+        if (k.hp <= 0) this._brickDown(k)
         break
       }
     }
+    this.chisels = this.chisels.filter((c) => !c.dead)
+    // 應許卷軸下落與接取
+    for (const d of this.drops) {
+      d.y += d.vy * dt
+      if (d.y >= py - 8 && d.y <= py + 22 && Math.abs(d.x - this.padX) <= this._padW() / 2 + 16) {
+        d.dead = true
+        this._applyDrop(d.kind)
+      } else if (d.y > VH + 20) d.dead = true // 沒接到=落地淡去,不懲罰
+    }
+    this.drops = this.drops.filter((d) => !d.dead)
     for (const k of this.bricks) if (k.fade != null) k.fade -= dt
     this.bricks = this.bricks.filter((k) => k.fade == null || k.fade > 0)
     if (!this.bricks.some((k) => k.hp > 0 || (k.fade != null && k.fade > 0))) {
@@ -252,14 +355,16 @@ export class Game {
     }
     if (this.state === 'play') {
       this._drag = true
-      this.padX = Math.max(this.cfg.padW / 2, Math.min(VW - this.cfg.padW / 2, x))
-      if (this.ball.stuck) this._launch()
+      this.padX = Math.max(this._padW() / 2, Math.min(VW - this._padW() / 2, x))
+      if (this.balls.some((b) => b.stuck)) this._launch()
     }
   }
   _movePt(e) {
-    if (!this._drag || this.state !== 'play') return
+    if (this.state !== 'play') return
+    // 滑鼠不必按住也跟隨(牧者點名);觸控天然只在按住時有 pointermove,行為不變
+    if (!this._drag && e.pointerType && e.pointerType !== 'mouse') return
     const { x } = this._pt(e)
-    this.padX = Math.max(this.cfg.padW / 2, Math.min(VW - this.cfg.padW / 2, x))
+    this.padX = Math.max(this._padW() / 2, Math.min(VW - this._padW() / 2, x))
   }
 
   _tone(freq, dur, delay = 0, type = 'triangle', vol = 0.14) {
@@ -339,23 +444,60 @@ export class Game {
       ctx.beginPath(); ctx.arc(d.x, d.y, 3, 0, 7); ctx.fill()
     }
     ctx.globalAlpha = 1
-    // 木槓(基甸的隊伍)
-    const pw = this.cfg.padW, py = VH - 46
+    // 掉落的應許卷軸(接住=神的話壯膽)
+    for (const d of this.drops) {
+      const wob = Math.sin(this._t * 5 + d.x) * 3
+      ctx.fillStyle = 'rgba(255,224,144,0.25)'
+      ctx.beginPath(); ctx.arc(d.x + wob, d.y, 22, 0, 7); ctx.fill()
+      ctx.fillStyle = '#f0e2b8'
+      rG(ctx, d.x - 13 + wob, d.y - 9, 26, 18, 4); ctx.fill()
+      ctx.fillStyle = '#c8a860'
+      rG(ctx, d.x - 16 + wob, d.y - 11, 5, 22, 2); ctx.fill()
+      rG(ctx, d.x + 11 + wob, d.y - 11, 5, 22, 2); ctx.fill()
+      ctx.fillStyle = '#5a4416'
+      ctx.font = 'bold 11px "Noto Sans TC",sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText(d.kind === 'presence' ? '同在' : d.kind === 'strength' ? '能力' : '擊打', d.x + wob, d.y + 4)
+    }
+    // 石鑿(工匠的鑿子:鐵刃+木柄,不是子彈)
+    for (const c of this.chisels) {
+      ctx.fillStyle = '#8a6a3e'
+      rG(ctx, c.x - 3, c.y + 8, 6, 10, 2); ctx.fill()
+      ctx.fillStyle = '#c0c4cc'
+      ctx.beginPath(); ctx.moveTo(c.x, c.y - 6); ctx.lineTo(c.x + 4, c.y + 8); ctx.lineTo(c.x - 4, c.y + 8); ctx.closePath(); ctx.fill()
+    }
+    // 木槓(基甸的隊伍;應許 6:14 生效=更寬+微光)
+    const pw = this._padW(), py = VH - 46
+    if (this.wideT > 0) {
+      ctx.fillStyle = 'rgba(255,224,144,0.2)'
+      rG(ctx, this.padX - pw / 2 - 4, py - 4, pw + 8, 22, 9); ctx.fill()
+    }
     ctx.fillStyle = '#8a6a3e'
     rG(ctx, this.padX - pw / 2, py, pw, 14, 7); ctx.fill()
     ctx.fillStyle = 'rgba(255,240,200,0.25)'
     rG(ctx, this.padX - pw / 2, py, pw, 5, 7); ctx.fill()
-    // 石球
-    const b = this.ball
-    ctx.fillStyle = '#c8c4b8'
-    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.fill()
-    ctx.fillStyle = 'rgba(255,255,255,0.3)'
-    ctx.beginPath(); ctx.arc(b.x - 3, b.y - 3, b.r * 0.4, 0, 7); ctx.fill()
-    if (b.stuck) {
+    // 石球(可能不只一顆——士 6:12 同在應許)
+    for (const b of this.balls) {
+      ctx.fillStyle = '#c8c4b8'
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.fill()
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'
+      ctx.beginPath(); ctx.arc(b.x - 3, b.y - 3, b.r * 0.4, 0, 7); ctx.fill()
+    }
+    if (this.balls.some((b) => b.stuck)) {
       ctx.fillStyle = '#d8dcf0'
       ctx.font = 'bold 17px "Noto Sans TC",sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText('點畫面 / 空白鍵 發球', VW / 2, VH - 90)
+      ctx.fillText('點畫面 / 空白鍵 發球 ・ 滑鼠移動木槓就跟著', VW / 2, VH - 90)
+    }
+    // 應許效果狀態列(右上,小小的)
+    if (this.wideT > 0 || this.chiselT > 0) {
+      ctx.fillStyle = '#ffe9a0'
+      ctx.font = 'bold 13px "Noto Sans TC",sans-serif'
+      ctx.textAlign = 'right'
+      const parts = []
+      if (this.wideT > 0) parts.push(`🪵 加寬 ${Math.ceil(this.wideT)}s`)
+      if (this.chiselT > 0) parts.push(`⛏ 石鑿 ${Math.ceil(this.chiselT)}s`)
+      ctx.fillText(parts.join(' ・ '), VW - 16, 29)
     }
     // 漂浮字
     for (const t of this.toasts) {
