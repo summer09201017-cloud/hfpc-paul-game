@@ -24,6 +24,9 @@ import { Game as StewardGame } from '../minigames/steward/game'
 import { Game as LostCoinGame } from '../minigames/lostcoin/game'
 import { Game as LotRunGame } from '../minigames/lotrun/game'
 import { Game as ArkMatchGame } from '../minigames/arkmatch/game'
+import { Game as FragmentsGame } from '../minigames/fragments/game'
+import { Game as FruitsGame } from '../minigames/fruits/game'
+import { Game as GemsGame } from '../minigames/gems/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -245,6 +248,12 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   const isLotRun = minigame.engine === 'lotrun'
   // in-repo 彈珠配對關(src/minigames/arkmatch/,各從其類 創 7):minigame.engine:'arkmatch'。新類型⑭——配對=一起進方舟非爆破,耶和華關門。
   const isArkMatch = minigame.engine === 'arkmatch'
+  // in-repo 彈珠配對②(src/minigames/fragments/,收拾零碎 約 6):minigame.engine:'fragments'。收進十二籃,免得有糟蹋的。
+  const isFragments = minigame.engine === 'fragments'
+  // in-repo 彈珠配對③(src/minigames/fruits/,聖靈果子 加 5):minigame.engine:'fruits'。結到樹上,果子是聖靈結的。
+  const isFruits = minigame.engine === 'fruits'
+  // in-repo 歸位配對(src/minigames/gems/,胸牌寶石 出 28):minigame.engine:'gems'。新類型⑮——十二寶石按支派歸位,放錯溫柔搖頭。
+  const isGems = minigame.engine === 'gems'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -384,9 +393,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
       game.boot()
       return
     }
-    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch) {
-      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對:同一套嵌入契約(constructor 同形),依 engine 選類
-      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : ArkMatchGame
+    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch || isFragments || isFruits || isGems) {
+      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對三關+歸位:同一套嵌入契約(constructor 同形),依 engine 選類
+      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : isArkMatch ? ArkMatchGame : isFragments ? FragmentsGame : isFruits ? FruitsGame : GemsGame
       const game = new Cls(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 3,
