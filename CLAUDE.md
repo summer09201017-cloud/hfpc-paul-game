@@ -107,7 +107,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 ## Embedded mini-games (`src/minigames/`)
 
-### 引擎總覽(2026-07-08 對賬;42 個引擎一行一個,防「程式有、文件沒提」)
+### 引擎總覽(2026-07-08 對賬;43 個引擎一行一個,防「程式有、文件沒提」)
 
 > ⚠ 這張表是 2026-07-05 用 `/route-doc-check` 對賬補的——當時發現 saul-spear/nehemiah/joash/slingshot/jericho/fishing/shore **七個引擎(06-26~06-28 HFP 機所做)完全沒進過文件**。日後每加一個引擎,在這裡補一行(交接前跑 `/route-doc-check` 驗證 🔴=0)。
 
@@ -155,8 +155,9 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 | `fragments/` | `?demo=fragments` | 約 6:11-13 五餅二魚・收拾零碎 | **彈珠配對⑭第二個活實作(arkmatch 換皮)**:餅魚零碎五種,同類 3+=「收拾起來」收進籃子(免得有糟蹋的,非消失);十二個籃子逐一裝滿,結局=約 6:13;懸空=門徒兜住;永不會輸;✅ 牧者已過審(2026-07-08,PR #75 併入) |
 | `fruits/` | `?demo=fruits` | 加 5:22-23;約 15:5 聖靈果子・結果子 | **彈珠配對⑭第三個活實作**:果子帶字(仁愛/喜樂/和平/忍耐/恩慈),同款 3+=「結出果子」結到樹上(常駐可見);★守法:果子是聖靈結的——教導句約 15:5 把功勞還給主;邊玩邊背九果子前五種;永不會輸;✅ 牧者已過審(2026-07-08,PR #75 併入) |
 | `gems/` | `?demo=gems` | 出 28:17-21,29 大祭司胸牌・寶石歸位 | **新類型⑮歸位配對**:點托盤寶石→點胸牌槽位;石名與四行排序完全照出 28:17-20、支派照生來次序;放錯=溫柔搖頭不懲罰;幼 6 塊看顏色/童 12 槽標石名/青 12 對照經文卡放;完成=名字帶在胸前(28:29)+金光;永不會輸;✅ 牧者已過審(2026-07-08,PR #75 併入) |
+| `manna/` | `?demo=manna` | 出 16:14-18;太 6:11 嗎哪收取 | **新類型⑰交換配對(消消樂/Candy 反向化)**:點兩塊相鄰嗎哪交換,3 連=「收取」**收進俄梅珥罐**(絕非糖果爆裂消滅);補位=新嗎哪**從天而降**(每早晨降嗎哪的經文直接變機制);無步數/時間限制、換不成溫柔換回、無可動手=「風把嗎哪吹勻了」重洗,永不會輸;信息=多收的沒有餘少收的沒有缺(16:18)+主禱文日用飲食(太 6:11);嗎哪五形態(珠/片/捲/團/屑)全白霜色系靠形狀分辨;年齡三檔=6×6・4款・8罐/7×7・5款・12罐/8×8・5款・16罐;⚠ 文案待牧者審核(feat/manna-templeart) |
 
-- **雙擊啟動器 `play-*.bat`(repo 根,43 支;07-08 晚加 play-herd.bat、play-fragments.bat、play-fruits.bat、play-gems.bat;07-07 晚加 play-steward.bat、play-lostcoin.bat、play-lotrun.bat、play-arkmatch.bat;07-07 加 play-temple.bat、play-gideon.bat;07-06 晚加 play-wallguard.bat、play-ezra.bat、play-sower.bat、play-foxes.bat、play-sparks.bat、play-armor.bat、play-basket.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
+- **雙擊啟動器 `play-*.bat`(repo 根,44 支;07-08 深夜加 play-manna.bat;07-08 晚加 play-herd.bat、play-fragments.bat、play-fruits.bat、play-gems.bat;07-07 晚加 play-steward.bat、play-lostcoin.bat、play-lotrun.bat、play-arkmatch.bat;07-07 加 play-temple.bat、play-gideon.bat;07-06 晚加 play-wallguard.bat、play-ezra.bat、play-sower.bat、play-foxes.bat、play-sparks.bat、play-armor.bat、play-basket.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
 - `cards/`/`jonah/`(部分關)只被旅程站點的 `minigame` 欄使用、沒有同名 `?demo=` 路由——正常,不是漏接。
 - 文案審核:joash/jericho/fishing/shore 等 06-26~28 那批的送審紀錄未見於 docs(當時牧者自審居多);要對外正式推廣前,建議用 `/review-queue` 盤一次、缺的補送 [[pastor-review]]。
 
