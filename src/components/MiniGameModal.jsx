@@ -399,15 +399,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
       game.boot()
       return
     }
-    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch || isGoalKick) {
-      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對+射門:同一套嵌入契約(constructor 同形),依 engine 選類
-      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : isArkMatch ? ArkMatchGame : GoalKickGame
-    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch || isHerd) {
-      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對+撞球:同一套嵌入契約(constructor 同形),依 engine 選類
-      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : isArkMatch ? ArkMatchGame : HerdGame
-    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch || isFragments || isFruits || isGems) {
-      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對三關+歸位:同一套嵌入契約(constructor 同形),依 engine 選類
-      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : isArkMatch ? ArkMatchGame : isFragments ? FragmentsGame : isFruits ? FruitsGame : GemsGame
+    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch || isFragments || isFruits || isGems || isHerd || isGoalKick) {
+      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對三關+歸位+撞球+射門:同一套嵌入契約(constructor 同形),依 engine 選類
+      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : isArkMatch ? ArkMatchGame : isFragments ? FragmentsGame : isFruits ? FruitsGame : isGems ? GemsGame : isHerd ? HerdGame : GoalKickGame
       const game = new Cls(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 3,
