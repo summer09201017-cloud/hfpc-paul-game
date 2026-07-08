@@ -107,7 +107,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 ## Embedded mini-games (`src/minigames/`)
 
-### 引擎總覽(2026-07-07 晚對賬;40 個引擎一行一個,防「程式有、文件沒提」)
+### 引擎總覽(2026-07-08 對賬;41 個引擎一行一個,防「程式有、文件沒提」)
 
 > ⚠ 這張表是 2026-07-05 用 `/route-doc-check` 對賬補的——當時發現 saul-spear/nehemiah/joash/slingshot/jericho/fishing/shore **七個引擎(06-26~06-28 HFP 機所做)完全沒進過文件**。日後每加一個引擎,在這裡補一行(交接前跑 `/route-doc-check` 驗證 🔴=0)。
 
@@ -149,12 +149,13 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 | `steward/` | `?demo=steward` | 太 25:14-30 好管家 | **經營管理②(④家族第二個活實作)**:每季把銀袋分到「市集(做買賣)」或「地裡的坑(埋起來)」;★星等按「忠心運用比例」不按金額(比喻裡五千的和二千的得同一句稱讚,幼檔二千全運用=童檔五千全運用=3 星);做買賣永遠有收成(兩忠僕都翻倍,無虧損劇情);埋太多=主人溫柔教導(不罵「又惡又懶」),永不會輸;年齡三檔=二千 2 季/五千 3 季/五千 4 季;✅ 牧者已過審(2026-07-08,PR #74 併入)、大廳卡已亮 |
 | `lostcoin/` | `?demo=lostcoin` | 路 15:8-10 失錢找物 | **新類型⑫找物/找碴(點燈尋找)**:暗屋+油燈跟手指,在罐籃布凳間細細地找失落的一塊錢(偶爾閃光引導);青檔錢幣藏家具底下要先點「打掃」挪開;★沒有時間失敗——「直到找著」,永不會輸;找著=請鄰舍一同歡喜(路 15:9-10 天上的歡喜);年齡三檔=亮度/家具數/要不要打掃;✅ 牧者已過審(2026-07-08,PR #74 併入)、大廳卡已亮 |
 | `arkmatch/` | `?demo=arkmatch` | 創 6:20;7:8-9,14-16 各從其類・動物歸艙 | **新類型⑭彈珠配對(泡泡龍反向化)**:六角網格動物泡泡(獅/羊/豬/蛙/鳥向量圓臉),瞄準發射,同類連通 3+=「各從其類」**一起進方舟**(絕非爆破消失);懸空的=神親自招聚也歸艙;堆太低=神招聚下層(溫柔收回),永不會輸;全清=**耶和華關門**(創 7:16)+光;只發場上還有的種類(防死局);年齡三檔=動物種類(3/4/5)×排數;✅ 牧者已過審(2026-07-08,PR #74 併入)、大廳卡已亮 |
+| `herd/` | `?demo=herd` | 約 10:16;詩 23 趕羊入圈 | **新類型⑯撞球物理(撞球反向化)**:頂視草場,拖曳牧羊犬🐕蓄力發射,圓-圓彈性碰撞+桌邊反彈+摩擦漸停(子步進防穿透);把羊撞進上方羊圈閘門=「歸聚」安歇(非落袋消失);牧羊犬進閘門=汪汪跑回起點不扣桿;無桿數限制永不會輸,星等看效率;物理積木源自 slingshot/projectile+gideon 反彈;年齡三檔=羊數 3/5/7×圈門寬×草地摩擦;⚠ 文案待牧者審(feat/herd) |
 | `lotrun/` | `?demo=lotrun` | 創 19:15-17;路 17:32 羅得紅綠燈 | **新類型⑬忍住誘惑・向前跑(123 木頭人反向化)**:按住=往山上跑;誘惑時刻跳出大大的「👀 回頭看一眼」鈕(千萬別按!)+忍耐倒數圈;按了=定住鹽白化驚險一刻→**天使拉住**(創 19:16 耶和華憐恤),繼續逃、永不會輸;星等=忍住幾次(0 回頭=3 星);羅得妻子結局不畫,用路 17:32 溫柔帶教導;青檔誘惑中鬆手=頭不由自主轉過去;✅ 牧者已過審(2026-07-08,PR #74 併入)、大廳卡已亮 |
 | `fragments/` | `?demo=fragments` | 約 6:11-13 五餅二魚・收拾零碎 | **彈珠配對⑭第二個活實作(arkmatch 換皮)**:餅魚零碎五種,同類 3+=「收拾起來」收進籃子(免得有糟蹋的,非消失);十二個籃子逐一裝滿,結局=約 6:13;懸空=門徒兜住;永不會輸;⚠ 文案待牧者審(feat/fragments-fruits-gems) |
 | `fruits/` | `?demo=fruits` | 加 5:22-23;約 15:5 聖靈果子・結果子 | **彈珠配對⑭第三個活實作**:果子帶字(仁愛/喜樂/和平/忍耐/恩慈),同款 3+=「結出果子」結到樹上(常駐可見);★守法:果子是聖靈結的——教導句約 15:5 把功勞還給主;邊玩邊背九果子前五種;永不會輸;⚠ 文案待牧者審(同分支) |
 | `gems/` | `?demo=gems` | 出 28:17-21,29 大祭司胸牌・寶石歸位 | **新類型⑮歸位配對**:點托盤寶石→點胸牌槽位;石名與四行排序完全照出 28:17-20、支派照生來次序;放錯=溫柔搖頭不懲罰;幼 6 塊看顏色/童 12 槽標石名/青 12 對照經文卡放;完成=名字帶在胸前(28:29)+金光;永不會輸;⚠ 文案待牧者審(同分支) |
 
-- **雙擊啟動器 `play-*.bat`(repo 根,42 支;07-08 晚加 play-fragments.bat、play-fruits.bat、play-gems.bat;07-07 晚加 play-steward.bat、play-lostcoin.bat、play-lotrun.bat、play-arkmatch.bat;07-07 加 play-temple.bat、play-gideon.bat;07-06 晚加 play-wallguard.bat、play-ezra.bat、play-sower.bat、play-foxes.bat、play-sparks.bat、play-armor.bat、play-basket.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
+- **雙擊啟動器 `play-*.bat`(repo 根,43 支;07-08 晚加 play-herd.bat、play-fragments.bat、play-fruits.bat、play-gems.bat;07-07 晚加 play-steward.bat、play-lostcoin.bat、play-lotrun.bat、play-arkmatch.bat;07-07 加 play-temple.bat、play-gideon.bat;07-06 晚加 play-wallguard.bat、play-ezra.bat、play-sower.bat、play-foxes.bat、play-sparks.bat、play-armor.bat、play-basket.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
 - `cards/`/`jonah/`(部分關)只被旅程站點的 `minigame` 欄使用、沒有同名 `?demo=` 路由——正常,不是漏接。
 - 文案審核:joash/jericho/fishing/shore 等 06-26~28 那批的送審紀錄未見於 docs(當時牧者自審居多);要對外正式推廣前,建議用 `/review-queue` 盤一次、缺的補送 [[pastor-review]]。
 
