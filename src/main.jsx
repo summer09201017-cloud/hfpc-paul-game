@@ -41,6 +41,7 @@ import SoccerDemo from './components/SoccerDemo.jsx'
 import FootballDemo from './components/FootballDemo.jsx'
 import HoopShotDemo from './components/HoopShotDemo.jsx'
 import BasketballDemo from './components/BasketballDemo.jsx'
+import BaseballDemo from './components/BaseballDemo.jsx'
 import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
@@ -106,6 +107,7 @@ registerSW({ immediate: true })
 //   ?demo=football          → 世界盃足球賽・實況版（憫安休閒，無經文；即時操作真運球+蓄力踢球，WASD+空白鍵/觸控；🤖AI/👥雙人同機）
 //   ?demo=hoopshot          → 投籃大賽（憫安休閒，無經文；甜蜜區蓄力投籃輪流對決，🤖阿福教練/👥雙人同機）
 //   ?demo=basketball        → 世界盃籃球賽（憫安休閒，無經文；即時運球+甜蜜區投籃+搶籃板，🤖AI/👥雙人同機）
+//   ?demo=baseball          → 棒球打擊王（憫安休閒，無經文；時機揮棒,🤖打擊練習 10 球/👥投打對決攻守交換）
 //   ?demo=<卡片關 key>      → 任一卡片關單獨玩，例 ?demo=cornelius（福音奇兵）
 const demo = (() => {
   try {
@@ -156,6 +158,7 @@ function pickRoot() {
   if (demo === 'football') return <FootballDemo />
   if (demo === 'hoopshot') return <HoopShotDemo />
   if (demo === 'basketball') return <BasketballDemo />
+  if (demo === 'baseball') return <BaseballDemo />
   if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />

@@ -36,6 +36,7 @@ import { Game as SoccerGame } from '../minigames/soccer/game'
 import { Game as FootballGame } from '../minigames/football/game'
 import { Game as HoopShotGame } from '../minigames/hoopshot/game'
 import { Game as BasketballGame } from '../minigames/basketball/game'
+import { Game as BaseballGame } from '../minigames/baseball/game'
 import CardGame from '../minigames/cards/CardGame'
 import { CARD_GAMES } from '../minigames/cards/specs'
 import { sound } from '../audio/sound'
@@ -281,6 +282,8 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
   const isHoopShot = minigame.engine === 'hoopshot'
   // in-repo 實況籃球(src/minigames/basketball/,世界盃籃球賽,憫安無經文):minigame.engine:'basketball'。即時運球+投籃+籃板。
   const isBasketball = minigame.engine === 'basketball'
+  // in-repo 棒球(src/minigames/baseball/,棒球打擊王,憫安無經文):minigame.engine:'baseball'。時機揮棒+投打對決。
+  const isBaseball = minigame.engine === 'baseball'
   const level = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(minigame.level) ? minigame.level : 2 // 引擎嵌入白名單（見約拿 CLAUDE.md 嵌入契約）；7-10 = 戰爭原型 摩西/紅海/約沙法/巴蘭
   // 站點可在 minigame 裡覆寫 label / how（沒寫就用該關卡 / 卡片規格 / 引擎的預設）。
   const info = {
@@ -420,9 +423,9 @@ export default function MiniGameModal({ minigame, onComplete, fill = false }) {
       game.boot()
       return
     }
-    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch || isFragments || isFruits || isGems || isHerd || isGoalKick || isManna || isGlean || isFlock || isSoccer || isFootball || isHoopShot || isBasketball) {
-      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對三關+歸位+撞球兩關+射門+足球兩版+投籃+籃球+嗎哪+拾穗:同一套嵌入契約(constructor 同形),依 engine 選類
-      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : isArkMatch ? ArkMatchGame : isFragments ? FragmentsGame : isFruits ? FruitsGame : isGems ? GemsGame : isHerd ? HerdGame : isGoalKick ? GoalKickGame : isManna ? MannaGame : isGlean ? GleanGame : isFlock ? FlockGame : isSoccer ? SoccerGame : isFootball ? FootballGame : isHoopShot ? HoopShotGame : BasketballGame
+    if (isSower || isFoxes || isSparks || isArmor || isBasket || isTemple || isGideon || isSteward || isLostCoin || isLotRun || isArkMatch || isFragments || isFruits || isGems || isHerd || isGoalKick || isManna || isGlean || isFlock || isSoccer || isFootball || isHoopShot || isBasketball || isBaseball) {
+      // 守護反應三式+換裝+漂流+砌合+打磚塊+管家+找物+忍誘惑+彈珠配對三關+歸位+撞球兩關+射門+足球兩版+投籃+籃球+棒球+嗎哪+拾穗:同一套嵌入契約(constructor 同形),依 engine 選類
+      const Cls = isSower ? SowerGame : isFoxes ? FoxesGame : isSparks ? SparksGame : isArmor ? ArmorGame : isBasket ? BasketGame : isTemple ? TempleGame : isGideon ? GideonGame : isSteward ? StewardGame : isLostCoin ? LostCoinGame : isLotRun ? LotRunGame : isArkMatch ? ArkMatchGame : isFragments ? FragmentsGame : isFruits ? FruitsGame : isGems ? GemsGame : isHerd ? HerdGame : isGoalKick ? GoalKickGame : isManna ? MannaGame : isGlean ? GleanGame : isFlock ? FlockGame : isSoccer ? SoccerGame : isFootball ? FootballGame : isHoopShot ? HoopShotGame : isBasketball ? BasketballGame : BaseballGame
       const game = new Cls(canvasRef.current, {
         embed: true,
         winPoints: minigame.winPoints || 3,
