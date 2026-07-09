@@ -116,7 +116,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 
 ## Embedded mini-games (`src/minigames/`)
 
-### 引擎總覽(2026-07-09 對賬;47 個引擎一行一個,防「程式有、文件沒提」)
+### 引擎總覽(2026-07-09 對賬;49 個引擎一行一個,防「程式有、文件沒提」)
 
 > ⚠ 這張表是 2026-07-05 用 `/route-doc-check` 對賬補的——當時發現 saul-spear/nehemiah/joash/slingshot/jericho/fishing/shore **七個引擎(06-26~06-28 HFP 機所做)完全沒進過文件**。日後每加一個引擎,在這裡補一行(交接前跑 `/route-doc-check` 驗證 🔴=0)。
 
@@ -161,6 +161,8 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 | `herd/` | `?demo=herd` | 約 10:16;詩 23 趕羊入圈 | **新類型⑯撞球物理(撞球反向化)**:頂視草場,拖曳牧羊犬🐕蓄力發射,圓-圓彈性碰撞+桌邊反彈+摩擦漸停(子步進防穿透);把羊撞進上方羊圈閘門=「歸聚」安歇(非落袋消失);牧羊犬進閘門=汪汪跑回起點不扣桿;無桿數限制永不會輸,星等看效率;物理積木源自 slingshot/projectile+gideon 反彈;年齡三檔=羊數 3/5/7×圈門寬×草地摩擦;✅ 牧者已過審(2026-07-08,PR #76 併入) |
 | `soccer/` | `?demo=soccer` | (無經文)世界盃足球賽 | **憫安製作休閒關第二彈(回合彈射足球,Soccer Stars 型)**:頂視全場兩端球門,輪流拖曳球員圓盤蓄力彈出踢球;先進 3 球或 20 手比分高者勝;物理(圓-圓彈性碰撞+子步進)重用 herd、模擬與實玩共用 _stepState 純函數;**🤖 對戰 AI**=阿福教練(擬人化頭像+思考泡泡,牧者拍板):對每盤取樣角度×2 力道快轉模擬 1.6s 挑最佳再加誤差(幼±18°/童±8°/青±3°,烏龍=大扣分)/**👥 雙人同機**=課堂兩兩 PK(牧者拍板要加);溫柔規則:無犯規無出界、輸了=「練習賽結束」+再來一場,onComplete 永遠 won:true;年齡三檔=3v3/4v4/5v5×門寬×AI 誤差;PR #81(無經文免送審文案) |
 | `football/` | `?demo=football` | (無經文)世界盃足球賽・實況版 | **憫安休閒第三彈(即時操作,牧者點名「真的運球與踢球,不要撞球方式」)**:直接操控藍隊 10 號——WASD/方向鍵跑位、貼身自動帶球(球黏腳前)、**按住空白鍵蓄力放開踢**(觸控:按住往那跑、帶球點一下往那踢);隊友對手全即時 AI(追球/帶球推進/射門/守門員沿門線撲救+解圍)、抄截有 0.5s 保護防瞬搶;90 秒(幼 75)時間到比分高者勝、先進 5 球提前;🤖 AI 三檔速度/👥 雙人同機(P2=方向鍵+Enter);溫柔規則 won:true;與回合彈射版(soccer)是同題材兩玩法(davidharp/harptoy 前例);PR #83(無經文免送審) |
+| `hoopshot/` | `?demo=hoopshot` | (無經文)投籃大賽 | **憫安休閒第四彈(側視投籃,goalkick 姊妹作)**:輪流出手——按住蓄力,力道環有「綠色甜蜜區」,區內放開=空心入網;差一點=打框看運氣(幼 60%/童青 40% 彈進)、差很多=空氣球;出手點越換越遠,三分線外進球算 3 分;每人 8 球分高者勝;🤖 對戰阿福教練(擬人頭像+泡泡,命中率幼 0.35/童 0.5/青 0.62)/👥 雙人同機輪流;溫柔規則 won:true;年齡三檔=甜蜜區寬窄×出手點遠近;無經文免送審 |
+| `basketball/` | `?demo=basketball` | (無經文)世界盃籃球賽 | **憫安休閒第五彈(football 姊妹作,即時運球+投籃)**:WASD 跑位、貼身自動運球、按住空白鍵蓄力放開出手——★蓄力淺=傳球(平傳可被抄)/深=投籃(拋物線奔籃框,空中不可抄,甜蜜區=空心);打框彈出=籃板球大家搶;三分線外 3 分;先到 15 分或時間到(90s/幼 75s)比分高者勝;🤖 AI(命中率三檔)/👥 雙人同機(P2=方向鍵+Enter);溫柔規則 won:true;年齡三檔=2v2/3v3×AI 速度×甜蜜區;無經文免送審 |
 | `goalkick/` | `?demo=goalkick` | (無經文)射門練習 | **憫安製作休閒關(運動練習型)**:頂視球場,拖球蓄力射門(sling/herd 手感)+守門員左右滑動撲救(時機窗);踢 10 球看進幾球,踢偏/被撲不扣血、永不會輸,星等看進球數;★使用者拍板:運動題材做練習不做競技對戰、不硬掛經文,進大廳「憫安製作闖關合輯」;無 speak.js(休閒無朗讀);年齡三檔=門寬/守門員速度與大小;PR #77 併入(無經文免送審文案) |
 | `lotrun/` | `?demo=lotrun` | 創 19:15-17;路 17:32 羅得紅綠燈 | **新類型⑬忍住誘惑・向前跑(123 木頭人反向化)**:按住=往山上跑;誘惑時刻跳出大大的「👀 回頭看一眼」鈕(千萬別按!)+忍耐倒數圈;按了=定住鹽白化驚險一刻→**天使拉住**(創 19:16 耶和華憐恤),繼續逃、永不會輸;星等=忍住幾次(0 回頭=3 星);羅得妻子結局不畫,用路 17:32 溫柔帶教導;青檔誘惑中鬆手=頭不由自主轉過去;✅ 牧者已過審(2026-07-08,PR #74 併入)、大廳卡已亮 |
 | `fragments/` | `?demo=fragments` | 約 6:11-13 五餅二魚・收拾零碎 | **彈珠配對⑭第二個活實作(arkmatch 換皮)**:餅魚零碎五種,同類 3+=「收拾起來」收進籃子(免得有糟蹋的,非消失);十二個籃子逐一裝滿,結局=約 6:13;懸空=門徒兜住;永不會輸;✅ 牧者已過審(2026-07-08,PR #75 併入) |
@@ -170,7 +172,7 @@ Tile `type` is one of `start | story | event | quiz | chance | fate | challenge 
 | `manna/` | `?demo=manna` | 出 16:14-18;太 6:11 嗎哪收取 | **新類型⑰交換配對(消消樂/Candy 反向化)**:點兩塊相鄰嗎哪交換,3 連=「收取」**收進俄梅珥罐**(絕非糖果爆裂消滅);補位=新嗎哪**從天而降**(每早晨降嗎哪的經文直接變機制);無步數/時間限制、換不成溫柔換回、無可動手=「風把嗎哪吹勻了」重洗,永不會輸;信息=多收的沒有餘少收的沒有缺(16:18)+主禱文日用飲食(太 6:11);嗎哪五形態(珠/片/捲/團/屑)全白霜色系靠形狀分辨;年齡三檔=6×6・4款・8罐/7×7・5款・12罐/8×8・5款・16罐;✅ 牧者已過審(2026-07-09,PR #78 併入)、大廳卡已亮(新 kind swap3) |
 | `glean/` | `?demo=glean` | 得 2:12,15-17 拾穗的路得 | **交換配對⑰第二個活實作(manna 換皮)+★斜線實驗版(全系列唯一,牧者拍板)**:橫、直、**斜**都算一排——語意釘在得 2:15-16 波阿斯吩咐**故意從捆裡抽出些留給路得**,斜的一排也算=恩典故意多給;拾取=**兩拍慢節奏**(先捆繩+整排金光亮 0.7 秒看清,才收進**伊法籃**;得 2:17 約有一伊法);平衡:四方向連鎖會雪崩,補位軟迴避(重擲≤2 次)壓回每手 3-6 穗;麥穗五形態(直穗/彎穗/雙穗/穗頭/散粒)金黃色系;永不會輸;信息=投靠耶和華翅膀下滿得賞賜(2:12,波阿斯預表基督);年齡三檔同 manna(收 8/12/16 捆);✅ 牧者已過審(2026-07-09,PR #79 併入) |
 
-- **雙擊啟動器 `play-*.bat`(repo 根,49 支,以 `ls play-*.bat | wc -l` 實數為準;07-09 加 play-glean.bat、play-flock.bat、play-soccer.bat、play-football.bat;07-08 深夜加 play-manna.bat;07-08 晚加 play-herd.bat、play-fragments.bat、play-fruits.bat、play-gems.bat;07-07 晚加 play-steward.bat、play-lostcoin.bat、play-lotrun.bat、play-arkmatch.bat;07-07 加 play-temple.bat、play-gideon.bat;07-06 晚加 play-wallguard.bat、play-ezra.bat、play-sower.bat、play-foxes.bat、play-sparks.bat、play-armor.bat、play-basket.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
+- **雙擊啟動器 `play-*.bat`(repo 根,51 支,以 `ls play-*.bat | wc -l` 實數為準;07-09 加 play-glean.bat、play-flock.bat、play-soccer.bat、play-football.bat、play-hoopshot.bat、play-basketball.bat;07-08 深夜加 play-manna.bat;07-08 晚加 play-herd.bat、play-fragments.bat、play-fruits.bat、play-gems.bat;07-07 晚加 play-steward.bat、play-lostcoin.bat、play-lotrun.bat、play-arkmatch.bat;07-07 加 play-temple.bat、play-gideon.bat;07-06 晚加 play-wallguard.bat、play-ezra.bat、play-sower.bat、play-foxes.bat、play-sparks.bat、play-armor.bat、play-basket.bat)**:每支 = `npm run dev -- --open "/?demo=<key>"` 的一鍵版,純 ASCII+CRLF。⚠ 檔名和路由鍵不一定同形:`play-ark-build.bat` → `?demo=arkbuild`、`play-ark-pairs.bat` → `?demo=arkpairs`、`play-balaam.bat`/`play-noah.bat`/`play-peter.bat`/`play-saul.bat`/`play-jehoshaphat.bat` 開的是**卡片版**(cards 引擎的 key),不是同名資料夾。
 - `cards/`/`jonah/`(部分關)只被旅程站點的 `minigame` 欄使用、沒有同名 `?demo=` 路由——正常,不是漏接。
 - 文案審核:joash/jericho/fishing/shore 等 06-26~28 那批的送審紀錄未見於 docs(當時牧者自審居多);要對外正式推廣前,建議用 `/review-queue` 盤一次、缺的補送 [[pastor-review]]。
 
