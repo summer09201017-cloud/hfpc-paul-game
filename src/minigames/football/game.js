@@ -16,22 +16,24 @@
 const VW = 960
 const VH = 540
 const MARGIN = 46
-const PR2 = 16 // 球員半徑
+const PR2 = 16 // 球員半徑(碰撞判定仍是圓;畫的是小人)
 const BR2 = 9 // 球半徑
-const WIN_CAP = 5 // 先進 5 球提前結束
 
+// 07-10 使用者拍板:①AI 實力再降(速度慢+射門猶豫+射門變軟)②不限時、先進 N 球獲勝(N 玩家輸入)
+// aiShootDelay=AI 進射程後要「醞釀」幾秒才射(給玩家攔截時間);aiShootPow=AI 射門力道
 const AGES = {
-  young: { label: '🐣 幼', desc: '3v3・AI 慢・75 秒', n: 3, aiSpd: 92, pSpd: 175, gate: 150, time: 75 },
-  kid: { label: '🙂 童', desc: '4v4・標準・90 秒', n: 4, aiSpd: 128, pSpd: 178, gate: 120, time: 90 },
-  teen: { label: '🔥 青', desc: '5v5・AI 快・門窄', n: 5, aiSpd: 158, pSpd: 182, gate: 96, time: 90 },
+  young: { label: '🐣 幼', desc: '3v3・AI 很慢・門寬', n: 3, aiSpd: 68, pSpd: 175, gate: 150, aiShootDelay: 0.9, aiShootPow: 0.5, aiShootRange: 175 },
+  kid: { label: '🙂 童', desc: '4v4・標準', n: 4, aiSpd: 98, pSpd: 178, gate: 120, aiShootDelay: 0.55, aiShootPow: 0.65, aiShootRange: 215 },
+  teen: { label: '🔥 青', desc: '5v5・AI 快・門窄', n: 5, aiSpd: 126, pSpd: 182, gate: 96, aiShootDelay: 0.3, aiShootPow: 0.8, aiShootRange: 250 },
 }
 
 const T = {
   title: '⚽ 世界盃足球賽・實況版',
   sub: '憫安製作・真運球真踢球',
-  how: '你就是藍隊 10 號!鍵盤 WASD/方向鍵跑位,靠近球就自動帶球(球黏在腳前);**按住空白鍵蓄力、放開踢出**——面向隊友輕踢=傳球、面向球門大力=射門!**Q 鍵=切換成離球最近的隊友**(觸控=點隊友);隊友被堵住會回傳給你。時間到比分高的贏!',
+  how: '你就是藍隊 10 號!鍵盤 WASD/方向鍵跑位,靠近球就自動帶球(球黏在腳前);按住空白鍵蓄力、放開踢出——面向隊友輕踢=傳球、面向球門大力=射門!Q 鍵=切換成離球最近的隊友(觸控=點隊友);隊友被堵住會回傳給你。沒有時間限制——先進幾球獲勝由你決定!',
   how2p: '雙人同機(鍵盤):P1 藍隊=WASD+空白鍵踢、Q 切換;P2 紅隊=←→↑↓+Enter 踢、Shift 切換。',
   pickMode: '選賽制:',
+  pickGoal: '先進幾球獲勝:',
   pickAge: '選場地:',
   modeAI: '🤖 對戰 AI',
   modeAIDesc: '阿福教練帶紅隊',
@@ -61,10 +63,20 @@ export class Game {
     this._t = 0
     this._btns = []
     this._modeBtns = []
+    this._countBtns = []
     this.mode = 'ai'
+    this.goalTarget = 3 // 先進幾球獲勝(玩家開場輸入,1~10)
+    this.dryT = 0 // 太久沒進球的「溫柔保底」計時(守門員會累)
+    this.mood = { blue: 'focus', red: 'focus' } // 兩隊表情(進球開心/被進失落)
     this._keys = {}
-    this._onKeyDown = (e) => { this._keys[e.key] = true; this._key(e) }
-    this._onKeyUp = (e) => { this._keys[e.key] = false; this._keyUp(e) }
+    // ★卡鍵修正(07-10,與 basketball 同批):字母鍵一律記小寫——不然按住 W 時碰到 Shift,
+    //   keyup 收到大寫 W、keydown 記的是小寫 w,_keys.w 永遠 true → 角色卡死/亂走。
+    this._normKey = (k) => (k.length === 1 ? k.toLowerCase() : k)
+    this._onKeyDown = (e) => { this._keys[this._normKey(e.key)] = true; this._key(e) }
+    this._onKeyUp = (e) => { this._keys[this._normKey(e.key)] = false; this._keyUp(e) }
+    // 失焦=清空按鍵與蓄力,回來不卡鍵
+    this._onBlur = () => { this._keys = {}; this.holding = { 1: false, 2: false }; this.charge = { 1: 0, 2: 0 }; this.touch = null }
+    this._switchCd = { 1: 0, 2: 0 } // 切換球員冷卻(防連發狂切)
     this._onDown = (e) => this._down(e)
     this._onMove = (e) => this._movePt(e)
     this._onUp = (e) => this._up(e)
@@ -91,6 +103,7 @@ export class Game {
     addEventListener('pointermove', this._onMove)
     addEventListener('pointerup', this._onUp)
     addEventListener('resize', this._onResize)
+    addEventListener('blur', this._onBlur)
     this._resize()
     let last = performance.now()
     const loop = (now) => {
@@ -114,6 +127,7 @@ export class Game {
     removeEventListener('pointermove', this._onMove)
     removeEventListener('pointerup', this._onUp)
     removeEventListener('resize', this._onResize)
+    removeEventListener('blur', this._onBlur)
     try { this._audio && this._audio.close() } catch {}
   }
 
@@ -127,7 +141,7 @@ export class Game {
     this.cfg = AGES[age]
     this.scoreB = 0
     this.scoreR = 0
-    this.clock = this.cfg.time
+    this.dryT = 0
     this.toasts = []
     this.bubble = ''
     this._kickoff('blue')
@@ -149,6 +163,7 @@ export class Game {
       }
     }
     mk('blue'); mk('red')
+    this.mood = { blue: 'focus', red: 'focus' }
     // 人控:藍隊第一個非守門員=P1;2P 模式紅隊第一個非守門員=P2
     const blueStriker = this.players.find((p) => p.team === 'blue' && !p.keeper)
     blueStriker.human = 1
@@ -168,7 +183,7 @@ export class Game {
     if (this.state === 'goal') {
       this.goalT -= dt
       if (this.goalT <= 0) {
-        if (this.scoreB >= WIN_CAP || this.scoreR >= WIN_CAP) return this._done()
+        if (this.scoreB >= this.goalTarget || this.scoreR >= this.goalTarget) return this._done()
         this._kickoff(this.goalFor === 'blue' ? 'red' : 'blue')
         this.goalFor = null
         this.state = 'play'
@@ -176,9 +191,10 @@ export class Game {
       return
     }
     if (this.state !== 'play') return
-    // 球賽時鐘
-    this.clock -= dt
-    if (this.clock <= 0) return this._done()
+    // 不限時、先進 N 球獲勝;太久沒進球=守門員漸漸「累了」(溫柔保底防僵局)
+    this.dryT += dt
+    this._switchCd[1] = Math.max(0, this._switchCd[1] - dt)
+    this._switchCd[2] = Math.max(0, this._switchCd[2] - dt)
     const gate = this._gate()
     // —— 人控移動 ——
     for (const p of this.players) {
@@ -317,22 +333,29 @@ export class Game {
       for (const p of aiPlayers) {
         let tx = p.homeX, ty = p.homeY
         let spd = this.cfg.aiSpd
+        if (b.owner !== p) p.shotT = 0
         if (p.keeper) {
           // 守門員:沿門線追球 y;球衝進禁區且無主=衝出來解圍
+          // 溫柔保底:太久沒進球(75 秒)守門員漸漸累了、撲救變慢,比賽不會僵住
+          const tired = this.dryT > 75 ? 0.7 : 1
           const gate = this._gate()
           tx = p.homeX
           ty = Math.max(gate.y0 + 10, Math.min(gate.y1 - 10, b.y))
+          spd = this.cfg.aiSpd * tired
           const nearGoal = Math.abs(b.x - p.homeX) < 120 && !b.owner
-          if (nearGoal) { tx = b.x; ty = b.y; spd = this.cfg.aiSpd * 1.2 }
+          if (nearGoal) { tx = b.x; ty = b.y; spd = this.cfg.aiSpd * 1.2 * tired }
         } else if (b.owner === p) {
-          // 持球:帶向對方球門;夠近就射門(往門口偏上/偏下打角度)
+          // 持球:帶向對方球門;進射程後要「醞釀」一下才射(AI 弱化,給玩家攔截時間)
           tx = attackX; ty = VH / 2
           const dist = Math.abs(attackX - p.x)
-          if (dist < 250) {
-            const gate = this._gate()
-            const aimY = gate.y0 + 14 + Math.random() * (gate.y1 - gate.y0 - 28)
-            this._kick(p, attackX - p.x, aimY - p.y, 0.75 + Math.random() * 0.25)
-            continue
+          if (dist < this.cfg.aiShootRange) {
+            p.shotT = (p.shotT || 0) + dt
+            if (p.shotT >= this.cfg.aiShootDelay) {
+              const gate = this._gate()
+              const aimY = gate.y0 + 14 + Math.random() * (gate.y1 - gate.y0 - 28)
+              this._kick(p, attackX - p.x, aimY - p.y, this.cfg.aiShootPow + Math.random() * 0.2)
+              continue
+            }
           }
           // 有人堵路:先想「回傳」——優先傳給人控隊友(把主控還給玩家),沒有就傳給附近隊友;傳不了才往旁邊帶
           const blocker = this.players.find((q) => q.team !== team && !q.keeper && Math.abs(q.x - p.x) < 70 && Math.abs(q.y - p.y) < 46)
@@ -370,6 +393,8 @@ export class Game {
   _goal(who) {
     if (who === 'blue') { this.scoreB += 1; this.toasts.push({ text: T.goalBlue, t: this._t }) }
     else { this.scoreR += 1; this.toasts.push({ text: T.goalRed, t: this._t }) }
+    this.dryT = 0
+    this.mood = { blue: who === 'blue' ? 'happy' : 'sad', red: who === 'red' ? 'happy' : 'sad' }
     this.goalFor = who
     this.state = 'goal'
     this.goalT = 1.6
@@ -397,12 +422,14 @@ export class Game {
     if (this.state !== 'play') return
     if (e.key === ' ') { e.preventDefault && e.preventDefault(); if (!this.holding[1]) { this.holding[1] = true; this.charge[1] = 0.15 } }
     if (e.key === 'Enter' && this.mode === '2p') { if (!this.holding[2]) { this.holding[2] = true; this.charge[2] = 0.15 } }
-    if (e.key === 'q' || e.key === 'Q') this._switchPlayer(1)
-    if (e.key === 'Shift' && this.mode === '2p') this._switchPlayer(2)
+    // ★防狂切(07-10,與 basketball 同批):擋 keydown 自動連發+冷卻
+    if ((e.key === 'q' || e.key === 'Q') && !e.repeat) this._switchPlayer(1)
+    if (e.key === 'Shift' && this.mode === '2p' && !e.repeat) this._switchPlayer(2)
   }
 
   // 切換球員(Q=P1/Shift=P2,使用者點名):主控跳到「離球最近」的非守門員隊友;帶球或蓄力中不切
   _switchPlayer(pid) {
+    if (this._switchCd[pid] > 0) return // 冷卻中(防連發狂切)
     const cur = this.players.find((p) => p.human === pid)
     if (!cur || this.ball.owner === cur || this.holding[pid]) return
     const cands = this.players.filter((p) => p.team === cur.team && !p.keeper && p !== cur && !p.human)
@@ -414,6 +441,7 @@ export class Game {
     }, null)
     cur.human = null
     best.p.human = pid
+    this._switchCd[pid] = 0.3
     this._tone(520, 0.05, 0, 'sine', 0.06)
   }
 
@@ -447,6 +475,16 @@ export class Game {
       for (const b of this._modeBtns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
         this.mode = b.key
         this._tone(500, 0.05, 0, 'sine', 0.06)
+        return
+      }
+      for (const b of this._countBtns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+        if (b.act === 'dec') this.goalTarget = Math.max(1, this.goalTarget - 1)
+        else if (b.act === 'inc') this.goalTarget = Math.min(10, this.goalTarget + 1)
+        else { // 點數字=直接輸入
+          const v = parseInt(prompt('先進幾球獲勝?(1~10)', this.goalTarget), 10)
+          if (v >= 1) this.goalTarget = Math.min(10, v)
+        }
+        this._tone(520, 0.05, 0, 'sine', 0.06)
         return
       }
       for (const b of this._btns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return this._start(b.key)
@@ -577,43 +615,80 @@ export class Game {
       ctx.fillText(t.text, VW / 2, VH * 0.4 - k * 24)
       ctx.globalAlpha = 1
     }
-    // HUD:比分+時間
-    const mm = Math.max(0, Math.floor(this.clock))
+    // HUD:比分+目標(不限時,先進 N 球獲勝)
     ctx.fillStyle = 'rgba(16,36,10,0.66)'
     rFb(ctx, VW * 0.3, 6, VW * 0.4, 32, 12); ctx.fill()
     ctx.fillStyle = '#eef8e2'
     ctx.font = 'bold 17px "Noto Sans TC",sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText(`🔵 ${this.scoreB} : ${this.scoreR} 🔴 ・ ⏱ ${mm}s`, VW / 2, 29)
+    ctx.fillText(`🔵 ${this.scoreB} : ${this.scoreR} 🔴 ・ 先進 ${this.goalTarget} 球獲勝`, VW / 2, 29)
     ctx.restore()
     if (this.state === 'done') this._drawDone()
   }
 
-  // 一名球員(頂視小人:球衣圓+膚色頭+號碼;人控=亮圈+10 號)
+  // 一名球員——★07-10 使用者拍板:圓盤改「小人」,且人物都要有眼睛表情嘴巴(系列鐵則)。
+  // 碰撞判定仍是圓(PR2 不變、物理零改動),只換畫法:小人站著面向鏡頭,瞳孔會看球,
+  // 走動時雙腳交替;進球隊全體大笑、被進隊扁嘴;守門員戴黃帽。
   _player(p) {
     const { ctx } = this
     const c1 = p.team === 'blue' ? '#2a5ac8' : '#c83a3a'
     const c2 = p.team === 'blue' ? '#183a86' : '#7a2020'
+    const x = p.x, y = p.y
+    // 有沒有在移動(畫腳步用;比對上一幀位置)
+    const moving = Math.hypot(x - (p._lx ?? x), y - (p._ly ?? y)) > 0.25
+    p._lx = x; p._ly = y
     if (p.human) { // 人控光圈
       ctx.strokeStyle = p.human === 1 ? '#ffe070' : '#ffb0e0'; ctx.lineWidth = 3
-      ctx.beginPath(); ctx.arc(p.x, p.y, PR2 + 5, 0, 7); ctx.stroke()
+      ctx.beginPath(); ctx.arc(x, y, PR2 + 5, 0, 7); ctx.stroke()
     }
+    // 影子
+    ctx.fillStyle = 'rgba(10,30,6,0.25)'
+    ctx.beginPath(); ctx.ellipse(x, y + 13, 11, 4, 0, 0, 7); ctx.fill()
+    // 腿(走動=前後擺)
+    const swing = moving ? Math.sin(this._t * 11 + (p.homeY || 0)) * 3.5 : 0
+    ctx.strokeStyle = '#3a3f52'; ctx.lineWidth = 4.5; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(x - 4, y + 4); ctx.lineTo(x - 4 + swing, y + 13); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x + 4, y + 4); ctx.lineTo(x + 4 - swing, y + 13); ctx.stroke()
+    // 身體(球衣+短褲)
     ctx.fillStyle = c2
-    ctx.beginPath(); ctx.arc(p.x, p.y + 2, PR2, 0, 7); ctx.fill()
+    rFb(ctx, x - 8, y + 1, 16, 7, 3); ctx.fill() // 短褲
     ctx.fillStyle = c1
-    ctx.beginPath(); ctx.arc(p.x, p.y, PR2 - 2, 0, 7); ctx.fill()
-    // 面向的「腳」小點
-    ctx.fillStyle = 'rgba(255,255,255,0.85)'
-    ctx.beginPath(); ctx.arc(p.x + p.fx * (PR2 - 5), p.y + p.fy * (PR2 - 5), 4, 0, 7); ctx.fill()
-    // 頭
+    rFb(ctx, x - 9, y - 8, 18, 11, 4); ctx.fill() // 球衣
+    // 手臂
+    ctx.strokeStyle = c1; ctx.lineWidth = 4
+    ctx.beginPath(); ctx.moveTo(x - 8, y - 5); ctx.lineTo(x - 12, y + 1 - swing * 0.4); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x + 8, y - 5); ctx.lineTo(x + 12, y + 1 + swing * 0.4); ctx.stroke()
+    // 頭+髮/帽
     ctx.fillStyle = '#f2d8b0'
-    ctx.beginPath(); ctx.arc(p.x, p.y - 4, 6, 0, 7); ctx.fill()
-    if (p.keeper) { ctx.fillStyle = '#ffe070'; ctx.fillRect(p.x - 8, p.y - 13, 16, 4) } // 守門員帽
+    ctx.beginPath(); ctx.arc(x, y - 14, 7, 0, 7); ctx.fill()
+    if (p.keeper) { // 守門員黃帽
+      ctx.fillStyle = '#ffe070'
+      ctx.beginPath(); ctx.arc(x, y - 16, 7, Math.PI, 0); ctx.fill()
+      ctx.fillRect(x - 8, y - 16.5, 16, 3)
+    } else {
+      ctx.fillStyle = '#4a3220'
+      ctx.beginPath(); ctx.arc(x, y - 16, 7, Math.PI * 1.05, Math.PI * 1.95); ctx.fill()
+    }
+    // ★臉:眼睛(瞳孔看向球)+表情嘴巴
+    const bdx = this.ball.x - x, bdy = this.ball.y - y
+    const bl = Math.hypot(bdx, bdy) || 1
+    const px2 = (bdx / bl) * 1.2, py2 = (bdy / bl) * 0.9
+    const mood = this.mood[p.team]
+    ctx.fillStyle = '#fff'
+    ctx.beginPath(); ctx.ellipse(x - 2.8, y - 14.5, 2.2, mood === 'happy' ? 1.5 : 2.3, 0, 0, 7); ctx.fill()
+    ctx.beginPath(); ctx.ellipse(x + 2.8, y - 14.5, 2.2, mood === 'happy' ? 1.5 : 2.3, 0, 0, 7); ctx.fill()
+    ctx.fillStyle = '#2a2018'
+    ctx.beginPath(); ctx.arc(x - 2.8 + px2, y - 14.5 + py2, 1.1, 0, 7); ctx.fill()
+    ctx.beginPath(); ctx.arc(x + 2.8 + px2, y - 14.5 + py2, 1.1, 0, 7); ctx.fill()
+    ctx.strokeStyle = '#8a4a3a'; ctx.lineWidth = 1.4; ctx.lineCap = 'round'
+    if (mood === 'happy') { ctx.beginPath(); ctx.arc(x, y - 11, 2.6, 0.15, Math.PI - 0.15); ctx.stroke() }
+    else if (mood === 'sad') { ctx.beginPath(); ctx.arc(x, y - 8.2, 2.4, Math.PI + 0.35, Math.PI * 2 - 0.35); ctx.stroke() }
+    else { ctx.beginPath(); ctx.moveTo(x - 1.6, y - 10.2); ctx.lineTo(x + 1.6, y - 10.2); ctx.stroke() }
     if (p.human) {
       ctx.fillStyle = '#fff'
       ctx.font = 'bold 11px "Noto Sans TC",sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText(p.human === 1 ? '10' : '9', p.x, p.y + PR2 + 13)
+      ctx.fillText(p.human === 1 ? '10' : '9', x, y + PR2 + 13)
     }
   }
 
@@ -646,15 +721,15 @@ export class Game {
     wrapFb(ctx, T.how2p, VW / 2, VH * 0.47, VW * 0.7, 21)
     ctx.fillStyle = '#5a7a48'
     ctx.font = '15px "Noto Sans TC",sans-serif'
-    ctx.fillText(T.pickMode, VW / 2, VH * 0.555)
+    ctx.fillText(T.pickMode, VW / 2, VH * 0.545)
     this._modeBtns = []
     const mDefs = [
       { key: 'ai', label: T.modeAI, desc: T.modeAIDesc },
       { key: '2p', label: T.mode2P, desc: T.mode2PDesc },
     ]
-    const mw = VW * 0.26, mh = VH * 0.095, mgap = VW * 0.04
+    const mw = VW * 0.26, mh = VH * 0.088, mgap = VW * 0.04
     mDefs.forEach((m, i) => {
-      const x = VW / 2 - mw - mgap / 2 + i * (mw + mgap), y = VH * 0.58
+      const x = VW / 2 - mw - mgap / 2 + i * (mw + mgap), y = VH * 0.565
       const on = this.mode === m.key
       ctx.fillStyle = on ? '#ffe070' : 'rgba(90,140,70,0.35)'
       rFb(ctx, x, y, mw, mh, 12); ctx.fill()
@@ -666,14 +741,27 @@ export class Game {
       ctx.fillText(m.desc, x + mw / 2, y + mh * 0.78)
       this._modeBtns.push({ x, y, w: mw, h: mh, key: m.key })
     })
+    // 先進幾球獲勝(玩家自由輸入:−/+ 步進、點數字直接鍵入)
+    this._countBtns = []
     ctx.fillStyle = '#5a7a48'
     ctx.font = '15px "Noto Sans TC",sans-serif'
-    ctx.fillText(T.pickAge, VW / 2, VH * 0.73)
+    ctx.textAlign = 'right'
+    ctx.fillText(T.pickGoal, VW / 2 - VW * 0.1, VH * 0.712)
+    ctx.textAlign = 'center'
+    drawStepperFb(ctx, this._countBtns, VW / 2 - VW * 0.07, VH * 0.672, this.goalTarget)
+    ctx.fillStyle = '#5a7a48'
+    ctx.font = '12px "Noto Sans TC",sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText('(點數字可直接輸入 1~10)', VW / 2 + VW * 0.13, VH * 0.712)
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#5a7a48'
+    ctx.font = '15px "Noto Sans TC",sans-serif'
+    ctx.fillText(T.pickAge, VW / 2, VH * 0.765)
     this._btns = []
-    const bw = VW * 0.2, bh = VH * 0.12, gap = VW * 0.04
+    const bw = VW * 0.2, bh = VH * 0.11, gap = VW * 0.04
     const x0 = VW / 2 - bw * 1.5 - gap
     Object.entries(AGES).forEach(([key, a], i) => {
-      const x = x0 + i * (bw + gap), y = VH * 0.76
+      const x = x0 + i * (bw + gap), y = VH * 0.78
       ctx.fillStyle = '#6ab04c'
       rFb(ctx, x, y, bw, bh, 14); ctx.fill()
       ctx.fillStyle = '#10280a'
@@ -714,6 +802,27 @@ export class Game {
 }
 
 function rFb(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h) }
+// 「− 數字 +」步進器(數字可點=直接輸入);把三顆熱區推進 btns
+function drawStepperFb(ctx, btns, x, y, val) {
+  const bw = 40, bh = 34, nw = 66, gap = 8
+  const defs = [
+    { act: 'dec', w: bw, label: '−' },
+    { act: 'edit', w: nw, label: String(val) },
+    { act: 'inc', w: bw, label: '+' },
+  ]
+  let xx = x
+  for (const d of defs) {
+    ctx.fillStyle = d.act === 'edit' ? '#ffe070' : 'rgba(90,140,70,0.35)'
+    rFb(ctx, xx, y, d.w, bh, 9); ctx.fill()
+    if (d.act === 'edit') { ctx.strokeStyle = '#b08a2a'; ctx.lineWidth = 2; rFb(ctx, xx, y, d.w, bh, 9); ctx.stroke() }
+    ctx.fillStyle = d.act === 'edit' ? '#3a2c06' : '#2c4424'
+    ctx.font = `bold ${d.act === 'edit' ? 18 : 20}px "Noto Sans TC",sans-serif`
+    ctx.textAlign = 'center'
+    ctx.fillText(d.label, xx + d.w / 2, y + bh * 0.68)
+    btns.push({ x: xx, y, w: d.w, h: bh, act: d.act })
+    xx += d.w + gap
+  }
+}
 function cardFb(ctx, x, y, w, h) {
   ctx.fillStyle = 'rgba(246,252,240,0.96)'
   ctx.strokeStyle = '#6ab04c'; ctx.lineWidth = 3

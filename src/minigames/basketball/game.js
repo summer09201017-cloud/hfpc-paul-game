@@ -2,7 +2,7 @@
 // ⚠ 休閒關,刻意不掛聖經經文(同 goalkick/soccer/football 前例);無 cuv/tts/送審文案這一套。
 //
 // football(世界盃足球賽・實況版)的姊妹作:同一套「即時操作」骨架,換成籃球規則——
-//   你直接操控藍隊 10 號:跑位、貼身自動運球(球黏在手前)、**按住空白鍵蓄力、放開出手**。
+//   你直接操控藍隊 10 號:跑位、貼身自動運球(球黏在手前)、按住空白鍵蓄力、放開出手。
 //   ★ 出手分兩種:輕點(蓄力淺)=傳球(平傳,會被抄);蓄滿一點=投籃——球「飛上天」拋物線奔籃框
 //     (空中不會被抄),力道在甜蜜區=空心入網;差一點=打框彈出變**籃板球**,大家搶!
 //   三分線外出手進球算 3 分;先到 15 分或時間到比分高者勝。
@@ -33,7 +33,7 @@ const AGES = {
 const T = {
   title: '🏀 世界盃籃球賽',
   sub: '憫安製作・真運球真投籃',
-  how: '你就是藍隊 10 號!WASD/方向鍵跑位,靠近球自動運球;**按住空白鍵蓄力、放開出手**——蓄力淺=傳球、蓄力深=投籃(在「綠色甜蜜區」放開=空心入網)!**Q 鍵=切換成離球最近的隊友**;隊友被守住會回傳給你。三分線外進球算 3 分;打框彈出就搶籃板!',
+  how: '你就是藍隊 10 號!WASD/方向鍵跑位,靠近球自動運球;按住空白鍵蓄力、放開出手——蓄力淺=傳球、蓄力深=投籃(在「綠色甜蜜區」放開=空心入網)!Q 鍵=切換成離球最近的隊友;隊友被守住會回傳給你。三分線外進球算 3 分;打框彈出就搶籃板!',
   how2p: '雙人同機(鍵盤):P1 藍隊=WASD+空白鍵、Q 切換;P2 紅隊=←→↑↓+Enter、Shift 切換。',
   pickMode: '選賽制:',
   pickAge: '選場地:',
@@ -67,12 +67,19 @@ export class Game {
     this._modeBtns = []
     this.mode = 'ai'
     this._keys = {}
-    this._onKeyDown = (e) => { this._keys[e.key] = true; this._key(e) }
-    this._onKeyUp = (e) => { this._keys[e.key] = false; this._keyUp(e) }
+    // ★卡鍵修正(07-10 使用者回報):字母鍵一律記小寫——不然按住 W 時碰到 Shift,
+    //   keyup 收到大寫 W、keydown 記的是小寫 w,_keys.w 永遠 true → 角色卡死/亂走。
+    this._normKey = (k) => (k.length === 1 ? k.toLowerCase() : k)
+    this._onKeyDown = (e) => { this._keys[this._normKey(e.key)] = true; this._key(e) }
+    this._onKeyUp = (e) => { this._keys[this._normKey(e.key)] = false; this._keyUp(e) }
     this._onDown = (e) => this._down(e)
     this._onMove = (e) => this._movePt(e)
     this._onUp = (e) => this._up(e)
     this._onResize = () => this._resize()
+    // 失焦(切視窗/彈窗)=清空所有按鍵與蓄力,回來不卡鍵
+    this._onBlur = () => { this._keys = {}; this.holding = { 1: false, 2: false }; this.charge = { 1: 0, 2: 0 }; this.touch = null }
+    this._switchCd = { 1: 0, 2: 0 } // 切換球員冷卻(防連發狂切)
+    this.mood = { blue: 'focus', red: 'focus' } // 兩隊表情(進球開心/被進失落)
     this.players = [] // {team, human:0|1|2|null, x,y, fx,fy, homeX,homeY, kickCd}
     this.ball = null // {x,y,vx,vy, owner, protectT, air:null|{t,tf,x0,y0,tx,ty,fate,three,team}}
     this.scoreB = 0
@@ -95,6 +102,7 @@ export class Game {
     addEventListener('pointermove', this._onMove)
     addEventListener('pointerup', this._onUp)
     addEventListener('resize', this._onResize)
+    addEventListener('blur', this._onBlur)
     this._resize()
     let last = performance.now()
     const loop = (now) => {
@@ -118,6 +126,7 @@ export class Game {
     removeEventListener('pointermove', this._onMove)
     removeEventListener('pointerup', this._onUp)
     removeEventListener('resize', this._onResize)
+    removeEventListener('blur', this._onBlur)
     try { this._audio && this._audio.close() } catch {}
   }
 
@@ -148,6 +157,7 @@ export class Game {
       }
     }
     mk('blue'); mk('red')
+    this.mood = { blue: 'focus', red: 'focus' }
     const blueStar = this.players.find((p) => p.team === 'blue')
     blueStar.human = 1
     blueStar.x = VW / 2 - 60; blueStar.y = VH / 2
@@ -177,6 +187,8 @@ export class Game {
     if (this.state !== 'play') return
     this.clock -= dt
     if (this.clock <= 0) return this._done()
+    this._switchCd[1] = Math.max(0, this._switchCd[1] - dt)
+    this._switchCd[2] = Math.max(0, this._switchCd[2] - dt)
     // —— 人控移動 ——
     for (const p of this.players) {
       if (!p.human) continue
@@ -328,6 +340,7 @@ export class Game {
       if (a.team === 'blue') this.scoreB += pts
       else this.scoreR += pts
       this.toasts.push({ text: `${T.swish} +${pts}!`, t: this._t })
+      this.mood = { blue: a.team === 'blue' ? 'happy' : 'sad', red: a.team === 'red' ? 'happy' : 'sad' }
       this.goalFor = a.team
       this.state = 'goal'
       this.goalT = 1.5
@@ -421,12 +434,14 @@ export class Game {
     if (this.state !== 'play') return
     if (e.key === ' ') { e.preventDefault && e.preventDefault(); if (!this.holding[1]) { this.holding[1] = true; this.charge[1] = 0.12 } }
     if (e.key === 'Enter' && this.mode === '2p') { if (!this.holding[2]) { this.holding[2] = true; this.charge[2] = 0.12 } }
-    if (e.key === 'q' || e.key === 'Q') this._switchPlayer(1)
-    if (e.key === 'Shift' && this.mode === '2p') this._switchPlayer(2)
+    // ★防狂切(07-10 使用者回報「重複切換人」):擋 keydown 自動連發+冷卻
+    if ((e.key === 'q' || e.key === 'Q') && !e.repeat) this._switchPlayer(1)
+    if (e.key === 'Shift' && this.mode === '2p' && !e.repeat) this._switchPlayer(2)
   }
 
   // 切換球員(Q=P1/Shift=P2):主控跳到「離球最近」的隊友;帶球或蓄力中不切(先出手再切)
   _switchPlayer(pid) {
+    if (this._switchCd[pid] > 0) return // 冷卻中(防連發狂切)
     const cur = this.players.find((p) => p.human === pid)
     if (!cur || this.ball.owner === cur || this.holding[pid]) return
     const cands = this.players.filter((p) => p.team === cur.team && p !== cur && !p.human)
@@ -438,6 +453,7 @@ export class Game {
     }, null)
     cur.human = null
     best.p.human = pid
+    this._switchCd[pid] = 0.3
     this._tone(520, 0.05, 0, 'sine', 0.06)
   }
 
@@ -646,27 +662,62 @@ export class Game {
     if (this.state === 'done') this._drawDone()
   }
 
+  // 一名球員——★07-10 比照足球實況版:圓盤改「小人」,人物都要有眼睛表情嘴巴(系列鐵則)。
+  // 碰撞判定仍是圓(PR2 不變、物理零改動),只換畫法:小人站著面向鏡頭,瞳孔會看球,
+  // 走動時雙腳交替;進球隊全體大笑、被進隊扁嘴。
   _player(p) {
     const { ctx } = this
     const c1 = p.team === 'blue' ? '#2a5ac8' : '#c83a3a'
     const c2 = p.team === 'blue' ? '#183a86' : '#7a2020'
-    if (p.human) {
+    const x = p.x, y = p.y
+    const moving = Math.hypot(x - (p._lx ?? x), y - (p._ly ?? y)) > 0.25
+    p._lx = x; p._ly = y
+    if (p.human) { // 人控光圈
       ctx.strokeStyle = p.human === 1 ? '#ffe070' : '#ffb0e0'; ctx.lineWidth = 3
-      ctx.beginPath(); ctx.arc(p.x, p.y, PR2 + 5, 0, 7); ctx.stroke()
+      ctx.beginPath(); ctx.arc(x, y, PR2 + 5, 0, 7); ctx.stroke()
     }
+    // 影子
+    ctx.fillStyle = 'rgba(40,20,4,0.22)'
+    ctx.beginPath(); ctx.ellipse(x, y + 13, 11, 4, 0, 0, 7); ctx.fill()
+    // 腿(走動=前後擺)
+    const swing = moving ? Math.sin(this._t * 11 + (p.homeY || 0)) * 3.5 : 0
+    ctx.strokeStyle = '#3a3f52'; ctx.lineWidth = 4.5; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(x - 4, y + 4); ctx.lineTo(x - 4 + swing, y + 13); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x + 4, y + 4); ctx.lineTo(x + 4 - swing, y + 13); ctx.stroke()
+    // 身體(球衣+短褲)
     ctx.fillStyle = c2
-    ctx.beginPath(); ctx.arc(p.x, p.y + 2, PR2, 0, 7); ctx.fill()
+    rBk(ctx, x - 8, y + 1, 16, 7, 3); ctx.fill() // 短褲
     ctx.fillStyle = c1
-    ctx.beginPath(); ctx.arc(p.x, p.y, PR2 - 2, 0, 7); ctx.fill()
-    ctx.fillStyle = 'rgba(255,255,255,0.85)'
-    ctx.beginPath(); ctx.arc(p.x + p.fx * (PR2 - 5), p.y + p.fy * (PR2 - 5), 4, 0, 7); ctx.fill()
+    rBk(ctx, x - 9, y - 8, 18, 11, 4); ctx.fill() // 球衣
+    // 手臂
+    ctx.strokeStyle = c1; ctx.lineWidth = 4
+    ctx.beginPath(); ctx.moveTo(x - 8, y - 5); ctx.lineTo(x - 12, y + 1 - swing * 0.4); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(x + 8, y - 5); ctx.lineTo(x + 12, y + 1 + swing * 0.4); ctx.stroke()
+    // 頭+髮
     ctx.fillStyle = '#f2d8b0'
-    ctx.beginPath(); ctx.arc(p.x, p.y - 4, 6, 0, 7); ctx.fill()
+    ctx.beginPath(); ctx.arc(x, y - 14, 7, 0, 7); ctx.fill()
+    ctx.fillStyle = '#4a3220'
+    ctx.beginPath(); ctx.arc(x, y - 16, 7, Math.PI * 1.05, Math.PI * 1.95); ctx.fill()
+    // ★臉:眼睛(瞳孔看向球)+表情嘴巴
+    const bdx = this.ball.x - x, bdy = this.ball.y - y
+    const bl = Math.hypot(bdx, bdy) || 1
+    const px2 = (bdx / bl) * 1.2, py2 = (bdy / bl) * 0.9
+    const mood = this.mood[p.team]
+    ctx.fillStyle = '#fff'
+    ctx.beginPath(); ctx.ellipse(x - 2.8, y - 14.5, 2.2, mood === 'happy' ? 1.5 : 2.3, 0, 0, 7); ctx.fill()
+    ctx.beginPath(); ctx.ellipse(x + 2.8, y - 14.5, 2.2, mood === 'happy' ? 1.5 : 2.3, 0, 0, 7); ctx.fill()
+    ctx.fillStyle = '#2a2018'
+    ctx.beginPath(); ctx.arc(x - 2.8 + px2, y - 14.5 + py2, 1.1, 0, 7); ctx.fill()
+    ctx.beginPath(); ctx.arc(x + 2.8 + px2, y - 14.5 + py2, 1.1, 0, 7); ctx.fill()
+    ctx.strokeStyle = '#8a4a3a'; ctx.lineWidth = 1.4; ctx.lineCap = 'round'
+    if (mood === 'happy') { ctx.beginPath(); ctx.arc(x, y - 11, 2.6, 0.15, Math.PI - 0.15); ctx.stroke() }
+    else if (mood === 'sad') { ctx.beginPath(); ctx.arc(x, y - 8.2, 2.4, Math.PI + 0.35, Math.PI * 2 - 0.35); ctx.stroke() }
+    else { ctx.beginPath(); ctx.moveTo(x - 1.6, y - 10.2); ctx.lineTo(x + 1.6, y - 10.2); ctx.stroke() }
     if (p.human) {
       ctx.fillStyle = '#fff'
       ctx.font = 'bold 11px "Noto Sans TC",sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText(p.human === 1 ? '10' : '9', p.x, p.y + PR2 + 13)
+      ctx.fillText(p.human === 1 ? '10' : '9', x, y + PR2 + 13)
     }
   }
 
