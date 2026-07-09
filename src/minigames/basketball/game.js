@@ -24,10 +24,11 @@ const HOOP_R = 15 // 籃框半徑(頂視圓環)
 const THREE_R = 235 // 三分線(離籃框距離)
 const PASS_TH = 0.28 // 蓄力低於這個=傳球,高於=投籃
 
+// 07-10 使用者點名:人數 3→5——比照 football 的 3v3/4v4/5v5 三檔
 const AGES = {
-  young: { label: '🐣 幼', desc: '2v2・AI 慢・75 秒', n: 2, aiSpd: 88, pSpd: 175, sweet: 0.3, aiHit: 0.35, time: 75 },
-  kid: { label: '🙂 童', desc: '3v3・標準・90 秒', n: 3, aiSpd: 124, pSpd: 178, sweet: 0.18, aiHit: 0.5, time: 90 },
-  teen: { label: '🔥 青', desc: '3v3・AI 快・甜蜜區窄', n: 3, aiSpd: 155, pSpd: 182, sweet: 0.12, aiHit: 0.6, time: 90 },
+  young: { label: '🐣 幼', desc: '3v3・AI 慢・75 秒', n: 3, aiSpd: 88, pSpd: 175, sweet: 0.3, aiHit: 0.35, time: 75 },
+  kid: { label: '🙂 童', desc: '4v4・標準・90 秒', n: 4, aiSpd: 124, pSpd: 178, sweet: 0.18, aiHit: 0.5, time: 90 },
+  teen: { label: '🔥 青', desc: '5v5・AI 快・甜蜜區窄', n: 5, aiSpd: 155, pSpd: 182, sweet: 0.12, aiHit: 0.6, time: 90 },
 }
 
 const T = {
@@ -148,11 +149,14 @@ export class Game {
   _kickoff(withTeam) {
     const n = this.cfg.n
     this.players = []
+    // 5 人也排得下的陣型(離中線距離×高度;原本 100+i*140 到第 5 人會排出場外)
+    const XS = [90, 180, 270, 350, 420]
+    const YS = [0.5, 0.32, 0.68, 0.2, 0.8]
     const mk = (team) => {
       const sign = team === 'blue' ? 1 : -1
       for (let i = 0; i < n; i++) {
-        const hx = VW / 2 - sign * (100 + i * 140)
-        const hy = VH * (i % 2 ? 0.34 : 0.66)
+        const hx = VW / 2 - sign * XS[i]
+        const hy = VH * YS[i]
         this.players.push({ team, human: null, x: hx, y: hy, vx: 0, vy: 0, fx: sign, fy: 0, homeX: hx, homeY: hy, kickCd: 0 })
       }
     }

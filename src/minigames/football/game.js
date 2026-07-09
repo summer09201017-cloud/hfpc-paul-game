@@ -21,10 +21,12 @@ const BR2 = 9 // 球半徑
 
 // 07-10 使用者拍板:①AI 實力再降(速度慢+射門猶豫+射門變軟)②不限時、先進 N 球獲勝(N 玩家輸入)
 // aiShootDelay=AI 進射程後要「醞釀」幾秒才射(給玩家攔截時間);aiShootPow=AI 射門力道
+// keepSpd=守門員專屬速度(07-10 使用者回報「AI 太會防守球門都踢不進」——原本守門員用全隊 aiSpd
+// 沿門線即時貼球,永遠堵在射線上;改成獨立慢速,大力射角度球就進得去,幼檔門將幾乎站樁)
 const AGES = {
-  young: { label: '🐣 幼', desc: '3v3・AI 很慢・門寬', n: 3, aiSpd: 68, pSpd: 175, gate: 150, aiShootDelay: 0.9, aiShootPow: 0.5, aiShootRange: 175 },
-  kid: { label: '🙂 童', desc: '4v4・標準', n: 4, aiSpd: 98, pSpd: 178, gate: 120, aiShootDelay: 0.55, aiShootPow: 0.65, aiShootRange: 215 },
-  teen: { label: '🔥 青', desc: '5v5・AI 快・門窄', n: 5, aiSpd: 126, pSpd: 182, gate: 96, aiShootDelay: 0.3, aiShootPow: 0.8, aiShootRange: 250 },
+  young: { label: '🐣 幼', desc: '3v3・AI 很慢・門寬', n: 3, aiSpd: 68, keepSpd: 34, pSpd: 175, gate: 150, aiShootDelay: 0.9, aiShootPow: 0.5, aiShootRange: 175 },
+  kid: { label: '🙂 童', desc: '4v4・標準', n: 4, aiSpd: 98, keepSpd: 62, pSpd: 178, gate: 120, aiShootDelay: 0.55, aiShootPow: 0.65, aiShootRange: 215 },
+  teen: { label: '🔥 青', desc: '5v5・AI 快・門窄', n: 5, aiSpd: 126, keepSpd: 96, pSpd: 182, gate: 96, aiShootDelay: 0.3, aiShootPow: 0.8, aiShootRange: 250 },
 }
 
 const T = {
@@ -336,14 +338,15 @@ export class Game {
         if (b.owner !== p) p.shotT = 0
         if (p.keeper) {
           // 守門員:沿門線追球 y;球衝進禁區且無主=衝出來解圍
-          // 溫柔保底:太久沒進球(75 秒)守門員漸漸累了、撲救變慢,比賽不會僵住
-          const tired = this.dryT > 75 ? 0.7 : 1
+          // 07-10 再弱化:守門員用獨立慢速 keepSpd(不再用全隊 aiSpd 貼死射線);
+          // 溫柔保底提早:45 秒沒進球就開始累(×0.6),比賽不會僵住
+          const tired = this.dryT > 45 ? 0.6 : 1
           const gate = this._gate()
           tx = p.homeX
           ty = Math.max(gate.y0 + 10, Math.min(gate.y1 - 10, b.y))
-          spd = this.cfg.aiSpd * tired
-          const nearGoal = Math.abs(b.x - p.homeX) < 120 && !b.owner
-          if (nearGoal) { tx = b.x; ty = b.y; spd = this.cfg.aiSpd * 1.2 * tired }
+          spd = this.cfg.keepSpd * tired
+          const nearGoal = Math.abs(b.x - p.homeX) < 90 && !b.owner
+          if (nearGoal) { tx = b.x; ty = b.y; spd = this.cfg.keepSpd * 1.4 * tired }
         } else if (b.owner === p) {
           // 持球:帶向對方球門;進射程後要「醞釀」一下才射(AI 弱化,給玩家攔截時間)
           tx = attackX; ty = VH / 2
