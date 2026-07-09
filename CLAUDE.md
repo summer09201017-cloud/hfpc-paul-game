@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> ## ⭐ 最新現況(2026-07-09 晚,接手先讀;完整交接見 `讀我-HANDOFF.txt` 最上 ★段)
+> **50 引擎 / 52 bat / npm test 168 綠**(feat/baseball 分支上;main 為 47 引擎/165 綠)。
+> - ✅ 已併 main:PR #82(gideon 壇石加難)、#83(⚽ football 世界盃實況版)。
+> - 🟡 開著等使用者併:**#84**(🏀 hoopshot 投籃大賽 + basketball 世界盃籃球賽)、**#85**(⚾ baseball 棒球打擊王 + football/basketball 加 **Q/Shift 切換球員+隊友被堵回傳**;疊在 #84 上,先併 #84)。都無經文免送審、Playwright 驗過。
+> - 🔨 第一優先待做:**棒球打擊王大改**——主審視角(球由遠而近)、分好壞球/保送、時機窗放寬、界外球也打飛出去(`src/minigames/baseball/game.js`)。
+> - ⚠ 新運動關程式在 feat 分支:main 看不到 hoopshot/basketball/baseball 資料夾與 play bat 是正常的,`git checkout feat/baseball` 才有。
+> - 大廳(hfpc-bible-games)本輪:首頁瘦身 49→23 卡(五書卷主題合輯)+合輯卡自動關數,**sw v38**。
+> - 🔒 鐵則:凡動 .jsx 一定 `npm run build`(check-jsx 只擋語法);運動關 AI 一律「阿福教練」擬人頭像成套。
+
 > ✅ **已修(2026-06-23):地圖「拖曳整片變海藍 / 縮放整頁變白」** —— 真因不是特定顯卡,而是**所有大富翁地圖共用的 Board 渲染**:
 > ① 海是一個 `preserveAspectRatio="none"` 被拉伸成超大的 SVG `<rect fill:#acd3e0>`;② 平移用每幀改 `left/top`,強制把這張巨大 SVG **每幀重新點陣化** → 超過 GPU 紋理上限 → 整片變海藍(白是縮放時同因)。在 PC Chrome + 手機 + 任何地圖、只要拖曳就會犯(不需放大),故與顯卡無關。
 > **修法**(`MapBackground.jsx` / `Board.jsx` / `styles.css`):海改成 `.board` 的 **CSS `background:#acd3e0`**(純色背景零點陣成本、移除 SVG 大 rect);平移改用 **`transform: translate3d`**(只在合成器移動、不重繪),縮放仍走 width/height %。實機驗收:地圖正常、拖曳平移正常、不再變色。心法見 skill `gpu-safe-rendering`(本案是它的活範例)。

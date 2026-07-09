@@ -1,6 +1,32 @@
 # 🗺️ 保羅大富翁 — 進度藍圖（已完成 vs 真正待做）
 
-> ## ⭐ 對齊現況:2026-07-09(最新,接手的 AI 先讀這段)
+> ## ⭐ 對齊現況:2026-07-09 晚(最新,接手的 AI 先讀這段;agape250 → HFP 機)
+>
+> **✅ 本輪已完成:**
+> - PR #82(gideon 壇石加難)、#83(⚽ 世界盃足球實況版 `?demo=football`)已併 main + A 站上線。**paul 47 引擎/49 bat/test 165 綠**。
+> - 大廳三連改上線:足球實況版進憫安合輯(sw v36)→ **首頁瘦身 49→23 卡**(五個書卷/故事主題新合輯,sw v37)→ 合輯卡自動帶關數「(有N關)」(sw v38)。**大廳 23 卡/11 合輯 75 關**。
+> - 新做等審 PR:**#84** 🏀 投籃大賽(`?demo=hoopshot`)+世界盃籃球賽(`?demo=basketball`);**#85**(疊在 #84 上)⚾ 棒球打擊王(`?demo=baseball`)+⚽🏀 football/basketball 加 Q/Shift 切換球員與隊友回傳。都無經文免送審、Playwright 驗過、等使用者在 GitHub 併。
+>
+> **🔨 真正待做(CP × 拍板序):**
+> 1. ⏱1天 ★★★★★ **棒球打擊王大改(使用者實玩後點名)**:改主審視角(球由遠而近飛來)、分好壞球(好球帶/保送)、時機窗放寬、界外球也要打飛出去。改 `src/minigames/baseball/game.js`。
+> 2. ⏱10分 ★★★★ #84/#85 併掉後大廳三卡進休閒運動合輯(sw v39,關數徽章自動 3→6)。
+> 3. ⏱半天 ★★★★ 大衛迎約櫃(撒下 6,miriam 太鼓換皮)——涵蓋地圖缺口第一。
+> 4. ⏱半天 ★★★ 約 21 滿網之魚(herd 撞球換皮)。其後:以利亞迦密山/腓利與太監/喇合潛行/以斯帖。
+> 5. ⏱人工 ★★ 金鑰債 /key-migrate;war-games 退役(等使用者定)。
+>
+> **🆕 建議新增的跨專案 skill / slash / agent / hook / MCP(CP × 開發時間排序,給 skills 合輯 repo):**
+> | # | 型 | 名稱 | 做什麼 | ⏱ | ★ |
+> |---|---|---|---|---|---|
+> | 1 | skill | `sports-arcade-kit` | 固化「阿福教練 AI 頭像+甜蜜區蓄力+Q 切換球員+隊友回傳+溫柔規則 won:true」的即時運動關範式(soccer/football/hoopshot/basketball/baseball 五關的共同骨架) | 半天 | ★★★★★ |
+> | 2 | slash | `/new-sports-level` | 吃「關名+球種玩法」一鍵複製運動關骨架接線(比照 /new-guard-level),運動關已 6 款、值得自動化 | 半天 | ★★★★ |
+> | 3 | agent | `sports-balance-tester` | headless 自我對戰跑數十場,回報命中率/AI 強度/平均比分,校運動關難度(difficulty-balancer 的運動版) | 半天 | ★★★★ |
+> | 4 | hook | `jsx-build-guard`(pre-push) | 凡 push 動到 .jsx 就自動跑 `npm run build`(不只 check-jsx 語法掃)——固化 07-08 jsx 建置盲區血淚 | 1時 | ★★★★ |
+> | 5 | slash | `/lobby-slim` | 大廳首頁瘦身助手:掃 data.js 單關直達卡,按書卷/故事主題建議收攏成合輯(本輪 49→23 手動做的,值得工具化) | 半天 | ★★★ |
+> | 6 | MCP | `play-stats` 查詢工具 | 把 hfpc-play-stats 儀表板包成 MCP,讓 AI 直接查各關遊玩次數→數據驅動決定首頁旗艦卡(現在要 curl HTML) | 1時 | ★★★ |
+>
+> ---
+
+> ## ⭐ 對齊現況:2026-07-09 白天(已併——PR #78~#81)
 >
 > **✅ 已完成(PR #78~#81 四批全過審併入 main、A 站上線、大廳點卡到 sw v35):**
 > - #78 🍞 嗎哪收取(新類型⑰消消樂反向化,`?demo=manna`,大廳新 kind `swap3`)+🧱 temple 石紋美化(定值雜湊斑點+鑿紋)。
