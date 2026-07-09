@@ -38,6 +38,7 @@ import MannaDemo from './components/MannaDemo.jsx'
 import GleanDemo from './components/GleanDemo.jsx'
 import FlockDemo from './components/FlockDemo.jsx'
 import SoccerDemo from './components/SoccerDemo.jsx'
+import FootballDemo from './components/FootballDemo.jsx'
 import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
@@ -100,6 +101,7 @@ registerSW({ immediate: true })
 //   ?demo=glean             → 拾穗的路得（交換配對・斜線實驗版，得 2；橫直斜都算一排=恩典故意多給、捆成一捆進伊法籃、不會輸）
 //   ?demo=flock             → 雅各的斑點羊（撞球雙欄分類，創 30-31；純白進拉班欄、斑點進雅各欄、走錯欄牧人帶回、不會輸）
 //   ?demo=soccer            → 世界盃足球賽（憫安製作休閒關，無經文；回合彈射全場足球，🤖對戰 AI 阿福教練/👥雙人同機 PK）
+//   ?demo=football          → 世界盃足球賽・實況版（憫安休閒，無經文；即時操作真運球+蓄力踢球，WASD+空白鍵/觸控；🤖AI/👥雙人同機）
 //   ?demo=<卡片關 key>      → 任一卡片關單獨玩，例 ?demo=cornelius（福音奇兵）
 const demo = (() => {
   try {
@@ -147,6 +149,7 @@ function pickRoot() {
   if (demo === 'glean') return <GleanDemo />
   if (demo === 'flock') return <FlockDemo />
   if (demo === 'soccer') return <SoccerDemo />
+  if (demo === 'football') return <FootballDemo />
   if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />
