@@ -13,7 +13,7 @@
     "sync:jonah": "node scripts/sync-jonah-engine.mjs",
     "sync:paulsilas": "node scripts/sync-paulsilas-engine.mjs",
     "validate": "node scripts/validate.mjs",
-    "test": "npm run validate && npm run test:selfplay && node scripts/smoke-test.mjs",
+    "test": "npm run validate && npm run test:selfplay && node scripts/check-jsx.mjs && node scripts/smoke-test.mjs",
     "test:offline": "node scripts/smoke-test.mjs --offline",
     "test:selfplay": "node scripts/selfplay.mjs",
     "test:browser": "node scripts/browser-playtest.mjs",
