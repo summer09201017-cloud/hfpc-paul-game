@@ -33,8 +33,8 @@ const AGES = {
 const T = {
   title: '🏀 世界盃籃球賽',
   sub: '憫安製作・真運球真投籃',
-  how: '你就是藍隊 10 號!WASD/方向鍵跑位,靠近球自動運球;**按住空白鍵蓄力、放開出手**——蓄力淺=傳球、蓄力深=投籃(在「綠色甜蜜區」放開=空心入網)!三分線外進球算 3 分;打框彈出就搶籃板。放輕鬆,這是練習賽!',
-  how2p: '雙人同機(鍵盤):P1 藍隊=WASD+空白鍵;P2 紅隊=←→↑↓+Enter。',
+  how: '你就是藍隊 10 號!WASD/方向鍵跑位,靠近球自動運球;**按住空白鍵蓄力、放開出手**——蓄力淺=傳球、蓄力深=投籃(在「綠色甜蜜區」放開=空心入網)!**Q 鍵=切換成離球最近的隊友**;隊友被守住會回傳給你。三分線外進球算 3 分;打框彈出就搶籃板!',
+  how2p: '雙人同機(鍵盤):P1 藍隊=WASD+空白鍵、Q 切換;P2 紅隊=←→↑↓+Enter、Shift 切換。',
   pickMode: '選賽制:',
   pickAge: '選場地:',
   modeAI: '🤖 對戰 AI',
@@ -376,7 +376,14 @@ export class Game {
             continue
           }
           const blocker = this.players.find((q) => q.team !== team && Math.abs(q.x - p.x) < 70 && Math.abs(q.y - p.y) < 46)
-          if (blocker) ty = p.y + (p.y < VH / 2 ? 90 : -90)
+          if (blocker) {
+            // 被守住:先想「回傳」——優先傳給人控隊友(把主控還給玩家),沒有就傳給附近隊友
+            const human = this.players.find((q) => q.team === team && q.human && q !== p)
+            const mate = human && Math.hypot(human.x - p.x, human.y - p.y) < 320 ? human
+              : this.players.find((q) => q.team === team && q !== p && Math.hypot(q.x - p.x, q.y - p.y) < 260)
+            if (mate && p.kickCd <= 0) { this._pass(p, mate.x - p.x, mate.y - p.y, 0.55); continue }
+            ty = p.y + (p.y < VH / 2 ? 90 : -90)
+          }
         } else if (chaser && chaser.p === p) {
           tx = b.x; ty = b.y
         } else {
@@ -414,6 +421,24 @@ export class Game {
     if (this.state !== 'play') return
     if (e.key === ' ') { e.preventDefault && e.preventDefault(); if (!this.holding[1]) { this.holding[1] = true; this.charge[1] = 0.12 } }
     if (e.key === 'Enter' && this.mode === '2p') { if (!this.holding[2]) { this.holding[2] = true; this.charge[2] = 0.12 } }
+    if (e.key === 'q' || e.key === 'Q') this._switchPlayer(1)
+    if (e.key === 'Shift' && this.mode === '2p') this._switchPlayer(2)
+  }
+
+  // 切換球員(Q=P1/Shift=P2):主控跳到「離球最近」的隊友;帶球或蓄力中不切(先出手再切)
+  _switchPlayer(pid) {
+    const cur = this.players.find((p) => p.human === pid)
+    if (!cur || this.ball.owner === cur || this.holding[pid]) return
+    const cands = this.players.filter((p) => p.team === cur.team && p !== cur && !p.human)
+    if (!cands.length) return
+    const b = this.ball
+    const best = cands.reduce((m, p) => {
+      const d = Math.hypot(p.x - b.x, p.y - b.y)
+      return !m || d < m.d ? { p, d } : m
+    }, null)
+    cur.human = null
+    best.p.human = pid
+    this._tone(520, 0.05, 0, 'sine', 0.06)
   }
 
   _keyUp(e) {
@@ -471,6 +496,15 @@ export class Game {
         const dx = x - p.x, dy = y - p.y
         this._pass(p, dx, dy, Math.min(1, Math.hypot(dx, dy) / 320))
         p.fx = dx / (Math.hypot(dx, dy) || 1); p.fy = dy / (Math.hypot(dx, dy) || 1)
+      }
+    } else {
+      // 沒帶球時點自己隊的隊友=切換主控(觸控版的 Q 鍵)
+      const mate = this.players.find((q) => q.team === p.team && q !== p && !q.human && Math.hypot(q.x - x, q.y - y) < PR2 * 2)
+      if (mate) {
+        p.human = null
+        mate.human = 1
+        this._tone(520, 0.05, 0, 'sine', 0.06)
+        return
       }
     }
     this.touch = { x, y }
