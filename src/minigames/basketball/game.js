@@ -24,12 +24,14 @@ const HOOP_R = 15 // 籃框半徑(頂視圓環)
 const THREE_R = 235 // 三分線(離籃框距離)
 const PASS_TH = 0.28 // 蓄力低於這個=傳球,高於=投籃
 
-// 07-10 使用者點名:人數 3→5——比照 football 的 3v3/4v4/5v5 三檔
+// 07-10 使用者拍板:每隊人數改玩家輸入(2~7;n 只是沒動步進器時的預設)
 const AGES = {
-  young: { label: '🐣 幼', desc: '3v3・AI 慢・75 秒', n: 3, aiSpd: 88, pSpd: 175, sweet: 0.3, aiHit: 0.35, time: 75 },
-  kid: { label: '🙂 童', desc: '4v4・標準・90 秒', n: 4, aiSpd: 124, pSpd: 178, sweet: 0.18, aiHit: 0.5, time: 90 },
-  teen: { label: '🔥 青', desc: '5v5・AI 快・甜蜜區窄', n: 5, aiSpd: 155, pSpd: 182, sweet: 0.12, aiHit: 0.6, time: 90 },
+  young: { label: '🐣 幼', desc: 'AI 慢・75 秒', n: 3, aiSpd: 88, pSpd: 175, sweet: 0.3, aiHit: 0.35, time: 75 },
+  kid: { label: '🙂 童', desc: '標準・90 秒', n: 4, aiSpd: 124, pSpd: 178, sweet: 0.18, aiHit: 0.5, time: 90 },
+  teen: { label: '🔥 青', desc: 'AI 快・甜蜜區窄', n: 5, aiSpd: 155, pSpd: 182, sweet: 0.12, aiHit: 0.6, time: 90 },
 }
+// 場地固定,>7 人會擠成人牆——步進器上限釘在 7
+const SIZE_MIN = 2, SIZE_MAX = 7
 
 const T = {
   title: '🏀 世界盃籃球賽',
@@ -37,6 +39,7 @@ const T = {
   how: '你就是藍隊 10 號!WASD/方向鍵跑位,靠近球自動運球;按住空白鍵蓄力、放開出手——蓄力淺=傳球、蓄力深=投籃(在「綠色甜蜜區」放開=空心入網)!Q 鍵=切換成離球最近的隊友;隊友被守住會回傳給你。三分線外進球算 3 分;打框彈出就搶籃板!',
   how2p: '雙人同機(鍵盤):P1 藍隊=WASD+空白鍵、Q 切換;P2 紅隊=←→↑↓+Enter、Shift 切換。',
   pickMode: '選賽制:',
+  pickSize: '每隊幾人:',
   pickAge: '選場地:',
   modeAI: '🤖 對戰 AI',
   modeAIDesc: '阿福教練帶紅隊',
@@ -81,6 +84,8 @@ export class Game {
     this._onBlur = () => { this._keys = {}; this.holding = { 1: false, 2: false }; this.charge = { 1: 0, 2: 0 }; this.touch = null }
     this._switchCd = { 1: 0, 2: 0 } // 切換球員冷卻(防連發狂切)
     this.mood = { blue: 'focus', red: 'focus' } // 兩隊表情(進球開心/被進失落)
+    this._sizeBtns = []
+    this.teamSize = 4 // 每隊幾人(玩家開場輸入,2~7;07-10 使用者拍板)
     this.players = [] // {team, human:0|1|2|null, x,y, fx,fy, homeX,homeY, kickCd}
     this.ball = null // {x,y,vx,vy, owner, protectT, air:null|{t,tf,x0,y0,tx,ty,fate,three,team}}
     this.scoreB = 0
@@ -147,11 +152,11 @@ export class Game {
   }
 
   _kickoff(withTeam) {
-    const n = this.cfg.n
+    const n = this.teamSize
     this.players = []
-    // 5 人也排得下的陣型(離中線距離×高度;原本 100+i*140 到第 5 人會排出場外)
-    const XS = [90, 180, 270, 350, 420]
-    const YS = [0.5, 0.32, 0.68, 0.2, 0.8]
+    // 7 人也排得下的陣型(離中線距離×高度;原本 100+i*140 到第 5 人就會排出場外)
+    const XS = [90, 180, 270, 350, 420, 140, 300]
+    const YS = [0.5, 0.32, 0.68, 0.2, 0.8, 0.14, 0.86]
     const mk = (team) => {
       const sign = team === 'blue' ? 1 : -1
       for (let i = 0; i < n; i++) {
@@ -500,6 +505,16 @@ export class Game {
         this._tone(500, 0.05, 0, 'sine', 0.06)
         return
       }
+      for (const b of this._sizeBtns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+        if (b.act === 'dec') this.teamSize = Math.max(SIZE_MIN, this.teamSize - 1)
+        else if (b.act === 'inc') this.teamSize = Math.min(SIZE_MAX, this.teamSize + 1)
+        else { // 點數字=直接輸入(超出範圍溫柔夾回 2~7)
+          const v = parseInt(prompt(`每隊幾人?(${SIZE_MIN}~${SIZE_MAX})`, this.teamSize), 10)
+          if (v >= 1) this.teamSize = Math.max(SIZE_MIN, Math.min(SIZE_MAX, v))
+        }
+        this._tone(520, 0.05, 0, 'sine', 0.06)
+        return
+      }
       for (const b of this._btns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return this._start(b.key)
       return
     }
@@ -750,15 +765,15 @@ export class Game {
     wrapBk(ctx, T.how2p, VW / 2, VH * 0.5, VW * 0.7, 21)
     ctx.fillStyle = '#a06a3a'
     ctx.font = '15px "Noto Sans TC",sans-serif'
-    ctx.fillText(T.pickMode, VW / 2, VH * 0.575)
+    ctx.fillText(T.pickMode, VW / 2, VH * 0.555)
     this._modeBtns = []
     const mDefs = [
       { key: 'ai', label: T.modeAI, desc: T.modeAIDesc },
       { key: '2p', label: T.mode2P, desc: T.mode2PDesc },
     ]
-    const mw = VW * 0.26, mh = VH * 0.09, mgap = VW * 0.04
+    const mw = VW * 0.26, mh = VH * 0.085, mgap = VW * 0.04
     mDefs.forEach((m, i) => {
-      const x = VW / 2 - mw - mgap / 2 + i * (mw + mgap), y = VH * 0.6
+      const x = VW / 2 - mw - mgap / 2 + i * (mw + mgap), y = VH * 0.575
       const on = this.mode === m.key
       ctx.fillStyle = on ? '#ffe070' : 'rgba(200,140,60,0.25)'
       rBk(ctx, x, y, mw, mh, 12); ctx.fill()
@@ -770,14 +785,27 @@ export class Game {
       ctx.fillText(m.desc, x + mw / 2, y + mh * 0.78)
       this._modeBtns.push({ x, y, w: mw, h: mh, key: m.key })
     })
+    // 每隊幾人(玩家自由輸入:−/+ 步進、點數字直接鍵入;07-10 使用者拍板)
+    this._sizeBtns = []
     ctx.fillStyle = '#a06a3a'
     ctx.font = '15px "Noto Sans TC",sans-serif'
-    ctx.fillText(T.pickAge, VW / 2, VH * 0.745)
+    ctx.textAlign = 'right'
+    ctx.fillText(T.pickSize, VW / 2 - VW * 0.08, VH * 0.717)
+    ctx.textAlign = 'center'
+    drawStepperBk(ctx, this._sizeBtns, VW / 2 - VW * 0.07, VH * 0.677, this.teamSize)
+    ctx.fillStyle = '#a06a3a'
+    ctx.font = '12px "Noto Sans TC",sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText('(點數字可直接輸入 2~7)', VW / 2 + VW * 0.13, VH * 0.717)
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#a06a3a'
+    ctx.font = '15px "Noto Sans TC",sans-serif'
+    ctx.fillText(T.pickAge, VW / 2, VH * 0.762)
     this._btns = []
-    const bw = VW * 0.2, bh = VH * 0.11, gap = VW * 0.04
+    const bw = VW * 0.2, bh = VH * 0.105, gap = VW * 0.04
     const x0 = VW / 2 - bw * 1.5 - gap
     Object.entries(AGES).forEach(([key, a], i) => {
-      const x = x0 + i * (bw + gap), y = VH * 0.77
+      const x = x0 + i * (bw + gap), y = VH * 0.775
       ctx.fillStyle = '#e08030'
       rBk(ctx, x, y, bw, bh, 14); ctx.fill()
       ctx.fillStyle = '#2c1608'
@@ -818,6 +846,27 @@ export class Game {
 }
 
 function rBk(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h) }
+// 「− 數字 +」步進器(數字可點=直接輸入);把三顆熱區推進 btns
+function drawStepperBk(ctx, btns, x, y, val) {
+  const bw = 40, bh = 34, nw = 66, gap = 8
+  const defs = [
+    { act: 'dec', w: bw, label: '−' },
+    { act: 'edit', w: nw, label: String(val) },
+    { act: 'inc', w: bw, label: '+' },
+  ]
+  let xx = x
+  for (const d of defs) {
+    ctx.fillStyle = d.act === 'edit' ? '#ffe070' : 'rgba(200,140,60,0.3)'
+    rBk(ctx, xx, y, d.w, bh, 9); ctx.fill()
+    if (d.act === 'edit') { ctx.strokeStyle = '#b08a2a'; ctx.lineWidth = 2; rBk(ctx, xx, y, d.w, bh, 9); ctx.stroke() }
+    ctx.fillStyle = d.act === 'edit' ? '#3a2c06' : '#5a3c20'
+    ctx.font = `bold ${d.act === 'edit' ? 18 : 20}px "Noto Sans TC",sans-serif`
+    ctx.textAlign = 'center'
+    ctx.fillText(d.label, xx + d.w / 2, y + bh * 0.68)
+    btns.push({ x: xx, y, w: d.w, h: bh, act: d.act })
+    xx += d.w + gap
+  }
+}
 function cardBk(ctx, x, y, w, h) {
   ctx.fillStyle = 'rgba(250,246,238,0.96)'
   ctx.strokeStyle = '#e08030'; ctx.lineWidth = 3

@@ -23,19 +23,26 @@ const BR2 = 9 // 球半徑
 // aiShootDelay=AI 進射程後要「醞釀」幾秒才射(給玩家攔截時間);aiShootPow=AI 射門力道
 // keepSpd=守門員專屬速度(07-10 使用者回報「AI 太會防守球門都踢不進」——原本守門員用全隊 aiSpd
 // 沿門線即時貼球,永遠堵在射線上;改成獨立慢速,大力射角度球就進得去,幼檔門將幾乎站樁)
+// 每隊人數改玩家輸入(07-10 使用者拍板,2~7;n 只是沒動步進器時的預設)
 const AGES = {
-  young: { label: '🐣 幼', desc: '3v3・AI 很慢・門寬', n: 3, aiSpd: 68, keepSpd: 34, pSpd: 175, gate: 150, aiShootDelay: 0.9, aiShootPow: 0.5, aiShootRange: 175 },
-  kid: { label: '🙂 童', desc: '4v4・標準', n: 4, aiSpd: 98, keepSpd: 62, pSpd: 178, gate: 120, aiShootDelay: 0.55, aiShootPow: 0.65, aiShootRange: 215 },
-  teen: { label: '🔥 青', desc: '5v5・AI 快・門窄', n: 5, aiSpd: 126, keepSpd: 96, pSpd: 182, gate: 96, aiShootDelay: 0.3, aiShootPow: 0.8, aiShootRange: 250 },
+  young: { label: '🐣 幼', desc: 'AI 很慢・門寬', n: 3, aiSpd: 68, keepSpd: 34, pSpd: 175, gate: 150, aiShootDelay: 0.9, aiShootPow: 0.5, aiShootRange: 175 },
+  kid: { label: '🙂 童', desc: '標準', n: 4, aiSpd: 98, keepSpd: 62, pSpd: 178, gate: 120, aiShootDelay: 0.55, aiShootPow: 0.65, aiShootRange: 215 },
+  teen: { label: '🔥 青', desc: 'AI 快・門窄', n: 5, aiSpd: 126, keepSpd: 96, pSpd: 182, gate: 96, aiShootDelay: 0.3, aiShootPow: 0.8, aiShootRange: 250 },
 }
+// 場地固定 960×540,>7 人會擠成人牆——步進器上限釘在 7
+const SIZE_MIN = 2, SIZE_MAX = 7
+// 守門員以外的野戰球員站位(離中線距離×高度;最多 6 名野戰=7 人隊)
+const F_XS = [60, 180, 300, 120, 240, 400]
+const F_YS = [0.35, 0.65, 0.35, 0.85, 0.15, 0.6]
 
 const T = {
   title: '⚽ 世界盃足球賽・實況版',
   sub: '憫安製作・真運球真踢球',
-  how: '你就是藍隊 10 號!鍵盤 WASD/方向鍵跑位,靠近球就自動帶球(球黏在腳前);按住空白鍵蓄力、放開踢出——面向隊友輕踢=傳球、面向球門大力=射門!Q 鍵=切換成離球最近的隊友(觸控=點隊友);隊友被堵住會回傳給你。沒有時間限制——先進幾球獲勝由你決定!',
+  how: '你就是藍隊 10 號!鍵盤 WASD/方向鍵跑位,靠近球就自動帶球(球黏在腳前);按住空白鍵蓄力、放開踢出——面向隊友輕踢=傳球、面向球門大力=射門!Q 鍵=切換成離球最近的隊友(觸控=點隊友);隊友被堵住會回傳給你。沒有時間限制——每隊幾人、先進幾球獲勝都由你決定!',
   how2p: '雙人同機(鍵盤):P1 藍隊=WASD+空白鍵踢、Q 切換;P2 紅隊=←→↑↓+Enter 踢、Shift 切換。',
   pickMode: '選賽制:',
   pickGoal: '先進幾球獲勝:',
+  pickSize: '每隊幾人:',
   pickAge: '選場地:',
   modeAI: '🤖 對戰 AI',
   modeAIDesc: '阿福教練帶紅隊',
@@ -68,6 +75,8 @@ export class Game {
     this._countBtns = []
     this.mode = 'ai'
     this.goalTarget = 3 // 先進幾球獲勝(玩家開場輸入,1~10)
+    this._sizeBtns = []
+    this.teamSize = 4 // 每隊幾人(玩家開場輸入,2~7;07-10 使用者拍板)
     this.dryT = 0 // 太久沒進球的「溫柔保底」計時(守門員會累)
     this.mood = { blue: 'focus', red: 'focus' } // 兩隊表情(進球開心/被進失落)
     this._keys = {}
@@ -152,15 +161,16 @@ export class Game {
 
   // 開球陣型;人控的球員標 human(AI 模式=藍前鋒 1;2P 再加紅前鋒 2)
   _kickoff(kickTeam) {
-    const n = this.cfg.n
+    const n = this.teamSize
     this.players = []
     const mk = (team) => {
       const sign = team === 'blue' ? 1 : -1
       const gx = team === 'blue' ? MARGIN + 30 : VW - MARGIN - 30
       this.players.push({ team, keeper: true, human: null, x: gx, y: VH / 2, vx: 0, vy: 0, fx: sign, fy: 0, homeX: gx, homeY: VH / 2, kickCd: 0 })
       for (let i = 1; i < n; i++) {
-        const hx = VW / 2 - sign * (90 + (i - 1) * 130)
-        const hy = VH * (i % 2 ? 0.34 : 0.66)
+        // 7 人也排得下的站位表(原公式 90+i*130 到第 6 名野戰會生成在場外)
+        const hx = VW / 2 - sign * F_XS[i - 1]
+        const hy = VH * F_YS[i - 1]
         this.players.push({ team, keeper: false, human: null, x: hx, y: hy, vx: 0, vy: 0, fx: sign, fy: 0, homeX: hx, homeY: hy, kickCd: 0 })
       }
     }
@@ -490,6 +500,16 @@ export class Game {
         this._tone(520, 0.05, 0, 'sine', 0.06)
         return
       }
+      for (const b of this._sizeBtns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+        if (b.act === 'dec') this.teamSize = Math.max(SIZE_MIN, this.teamSize - 1)
+        else if (b.act === 'inc') this.teamSize = Math.min(SIZE_MAX, this.teamSize + 1)
+        else { // 點數字=直接輸入(超出範圍溫柔夾回 2~7)
+          const v = parseInt(prompt(`每隊幾人?(${SIZE_MIN}~${SIZE_MAX})`, this.teamSize), 10)
+          if (v >= 1) this.teamSize = Math.max(SIZE_MIN, Math.min(SIZE_MAX, v))
+        }
+        this._tone(520, 0.05, 0, 'sine', 0.06)
+        return
+      }
       for (const b of this._btns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return this._start(b.key)
       return
     }
@@ -744,19 +764,21 @@ export class Game {
       ctx.fillText(m.desc, x + mw / 2, y + mh * 0.78)
       this._modeBtns.push({ x, y, w: mw, h: mh, key: m.key })
     })
-    // 先進幾球獲勝(玩家自由輸入:−/+ 步進、點數字直接鍵入)
+    // 先進幾球+每隊幾人(同一列兩組步進器,都可點數字直接鍵入;07-10 使用者拍板人數也開放輸入)
     this._countBtns = []
+    this._sizeBtns = []
     ctx.fillStyle = '#5a7a48'
     ctx.font = '15px "Noto Sans TC",sans-serif'
     ctx.textAlign = 'right'
-    ctx.fillText(T.pickGoal, VW / 2 - VW * 0.1, VH * 0.712)
+    ctx.fillText(T.pickGoal, VW * 0.3, VH * 0.712)
     ctx.textAlign = 'center'
-    drawStepperFb(ctx, this._countBtns, VW / 2 - VW * 0.07, VH * 0.672, this.goalTarget)
+    drawStepperFb(ctx, this._countBtns, VW * 0.31, VH * 0.672, this.goalTarget)
     ctx.fillStyle = '#5a7a48'
-    ctx.font = '12px "Noto Sans TC",sans-serif'
-    ctx.textAlign = 'left'
-    ctx.fillText('(點數字可直接輸入 1~10)', VW / 2 + VW * 0.13, VH * 0.712)
+    ctx.font = '15px "Noto Sans TC",sans-serif'
+    ctx.textAlign = 'right'
+    ctx.fillText(T.pickSize, VW * 0.7, VH * 0.712)
     ctx.textAlign = 'center'
+    drawStepperFb(ctx, this._sizeBtns, VW * 0.71, VH * 0.672, this.teamSize)
     ctx.fillStyle = '#5a7a48'
     ctx.font = '15px "Noto Sans TC",sans-serif'
     ctx.fillText(T.pickAge, VW / 2, VH * 0.765)
