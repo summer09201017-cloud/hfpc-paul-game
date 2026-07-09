@@ -21,10 +21,13 @@
 // 朗讀鐵則:過關經文走 speakScripture(mp3 優先;士 6:27 同輪烤,見 scripts/tts-verses.json)。
 import { initSpeech, speakScripture, stopSpeech } from '../../speak.js'
 
+// bhp=每塊壇石要撞幾下才全碎(2026-07-09 牧者點名加難:石壇是砌實的,多敲幾下才拆得下來;
+//   裂痕隨傷勢漸進,看得見進度)。木偶維持 2 下(文案「木偶搖晃了…」對應,不動)。
+//   配套:應許卷軸掉落率 0.22→0.3、場上上限 2→3,免得節奏拖過兒童營單局長度。
 const AGES = {
-  young: { label: '🐣 幼', desc: '球慢・槓寬', speed: 240, padW: 190, rows: 3 },
-  kid: { label: '🙂 童', desc: '標準', speed: 310, padW: 150, rows: 4 },
-  teen: { label: '🔥 青', desc: '球快・槓窄', speed: 380, padW: 112, rows: 5 },
+  young: { label: '🐣 幼', desc: '球慢・槓寬・石塊 2 下', speed: 240, padW: 190, rows: 3, bhp: 2 },
+  kid: { label: '🙂 童', desc: '標準・石塊 3 下', speed: 310, padW: 150, rows: 4, bhp: 3 },
+  teen: { label: '🔥 青', desc: '球快・槓窄・石塊 4 下', speed: 380, padW: 112, rows: 5, bhp: 4 },
 }
 
 // 固定虛擬座標(960×540,uniform scale 置中),物理全在這個空間算
@@ -138,7 +141,7 @@ export class Game {
       const n = 8 - r
       const y = topY + (this.cfg.rows - 1 - r) * (bh + gap)
       const x0 = VW / 2 - (n * (bw + gap) - gap) / 2
-      for (let i = 0; i < n; i++) this.bricks.push({ x: x0 + i * (bw + gap), y, w: bw, h: bh, hp: 1 })
+      for (let i = 0; i < n; i++) this.bricks.push({ x: x0 + i * (bw + gap), y, w: bw, h: bh, hp: this.cfg.bhp, maxHp: this.cfg.bhp })
     }
     const poleY = topY - (bh + gap) - 34
     this.bricks.push({ x: VW / 2 - 13, y: poleY, w: 26, h: 56, hp: 2, pole: true })
@@ -197,7 +200,7 @@ export class Game {
   _brickDown(k) {
     k.fade = 0.5
     for (let i = 0; i < 6; i++) this.dust.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, vx: (Math.random() - 0.5) * 60, vy: 20 + Math.random() * 50, t: 0.7 })
-    if (!k.pole && Math.random() < 0.22 && this.drops.length < 2) {
+    if (!k.pole && Math.random() < 0.3 && this.drops.length < 3) {
       const r = Math.random()
       const kind = r < 0.4 ? 'presence' : r < 0.75 ? 'strength' : 'strike'
       this.drops.push({ x: k.x + k.w / 2, y: k.y + k.h / 2, vy: 92, kind })
@@ -277,6 +280,7 @@ export class Game {
             this._tone(k.hp > 0 ? 180 : 140, 0.16, 0, 'sine', 0.1)
           } else this._tone(170, 0.07, 0, 'sine', 0.08)
           if (k.hp <= 0) this._brickDown(k)
+          else if (!k.pole) for (let i = 0; i < 2; i++) this.dust.push({ x: b.x, y: k.y + k.h, vx: (Math.random() - 0.5) * 40, vy: 12 + Math.random() * 30, t: 0.45 }) // 還沒碎:敲下小碎屑
           break
         }
       }
@@ -296,6 +300,7 @@ export class Game {
           this._tone(k.hp > 0 ? 180 : 140, 0.16, 0, 'sine', 0.1)
         } else this._tone(190, 0.05, 0, 'sine', 0.07)
         if (k.hp <= 0) this._brickDown(k)
+        else if (!k.pole) for (let i = 0; i < 2; i++) this.dust.push({ x: c.x, y: k.y + k.h, vx: (Math.random() - 0.5) * 40, vy: 12 + Math.random() * 30, t: 0.45 })
         break
       }
     }
@@ -430,10 +435,28 @@ export class Game {
           ctx.beginPath(); ctx.moveTo(k.x + k.w * 0.3, k.y + 6); ctx.lineTo(k.x + k.w * 0.6, k.y + k.h * 0.5); ctx.stroke()
         }
       } else {
-        ctx.fillStyle = '#6a6a72'
+        // 傷勢越重石色越暗
+        const dmg = (k.maxHp || 1) - Math.max(0, k.hp)
+        const shade = Math.min(dmg, 3) * 8
+        ctx.fillStyle = `rgb(${106 - shade},${106 - shade},${114 - shade})`
         rG(ctx, k.x, k.y, k.w, k.h, 4); ctx.fill()
         ctx.fillStyle = 'rgba(255,255,255,0.08)'
         rG(ctx, k.x, k.y, k.w, k.h * 0.4, 4); ctx.fill()
+        // 裂痕漸進(每挨一下多一道;位置以磚座標定值,不閃爍)
+        if (dmg > 0) {
+          ctx.strokeStyle = 'rgba(24,26,38,0.7)'
+          ctx.lineWidth = 1.6
+          for (let c = 0; c < dmg; c++) {
+            const seed = (k.x * 7 + k.y * 13 + c * 41) % 100
+            const sx = k.x + 8 + ((seed * 0.83) % (k.w - 16))
+            const sy = k.y + 3 + ((seed * 0.37) % (k.h * 0.4))
+            ctx.beginPath()
+            ctx.moveTo(sx, sy)
+            ctx.lineTo(sx + ((seed % 3) - 1) * 9 - 4, sy + k.h * 0.4)
+            ctx.lineTo(sx + ((seed % 5) - 2) * 6, sy + k.h * 0.82)
+            ctx.stroke()
+          }
+        }
       }
       ctx.globalAlpha = 1
     }
