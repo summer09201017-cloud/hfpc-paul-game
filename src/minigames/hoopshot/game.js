@@ -14,7 +14,7 @@ const VH = 540
 const FLOOR = VH - 70 // 地板線
 const BR = 13 // 球半徑
 const HOOP = { x: VW - 150, y: 190, r: 30 } // 籃框(圓心+半徑)
-const SHOTS = 8 // 每人出手數
+const SHOTS_DEF = 8 // 每人出手數(預設;07-10 改玩家自由輸入 1~30)
 const GRAV = 900
 
 const AGES = {
@@ -27,8 +27,9 @@ const THREE_DIST = 450 // 離籃框水平距離超過這個=三分球
 const T = {
   title: '🏀 投籃大賽',
   sub: '憫安製作・只比投籃',
-  how: '輪流出手!**按住空白鍵(或按住畫面)蓄力、在「綠色甜蜜區」放開**=空心入網;差一點會打框彈跳、看運氣進不進。出手點會越換越遠——三分線外進球算 3 分!每人 8 球,分高的贏。放輕鬆,這是練習賽!',
+  how: '輪流出手!按住空白鍵(或按住畫面)蓄力、在「綠色甜蜜區」放開=空心入網;差一點會打框彈跳、看運氣進不進。出手點會越換越遠——三分線外進球算 3 分!每人幾球自己定,分高的贏。放輕鬆,這是練習賽!',
   pickMode: '選賽制:',
+  pickCount: '每人幾球:',
   pickAge: '選難度:',
   modeAI: '🤖 對戰阿福教練',
   modeAIDesc: '阿福也會下場投!',
@@ -58,7 +59,10 @@ export class Game {
     this._t = 0
     this._btns = []
     this._modeBtns = []
+    this._countBtns = []
     this.mode = 'ai'
+    this.shotTotal = SHOTS_DEF // 每人幾球(玩家開場輸入,1~30)
+    this._face = 'focus' // 射手表情:focus/happy/sad(系列鐵則:人物要有臉)
     this._onKeyDown = (e) => this._key(e)
     this._onKeyUp = (e) => this._keyUp(e)
     this._onDown = (e) => this._down(e)
@@ -130,6 +134,7 @@ export class Game {
     this.charging = false
     this.charge = 0
     this.ball = null
+    this._face = 'focus'
     // 阿福回合:思考 0.9~1.5 秒再出手
     if (this.mode === 'ai' && this.turn === 2) {
       this.aiT = 0.9 + Math.random() * 0.6
@@ -188,6 +193,7 @@ export class Game {
     if (good) { this._tone(523, 0.12, 0, 'triangle', 0.11); this._tone(784, 0.2, 0.1, 'triangle', 0.11) }
     else this._tone(190, 0.14, 0, 'sine', 0.06)
     if (this.mode === 'ai') this.bubble = this.turn === 2 ? (good ? '進啦!' : '哎呀…') : good ? '好球!' : '再來,穩住!'
+    this._face = good ? 'happy' : 'sad'
     this.state = 'result'
     this.resultT = 1.15
   }
@@ -233,9 +239,10 @@ export class Game {
       }
       this.resultT -= dt
       if (this.resultT <= 0) {
-        if (this.shots[1] >= SHOTS && this.shots[2] >= SHOTS) return this._done()
+        const total = this.shotTotal
+        if (this.shots[1] >= total && this.shots[2] >= total) return this._done()
         this.turn = this.turn === 1 ? 2 : 1
-        if (this.shots[this.turn] >= SHOTS) this.turn = this.turn === 1 ? 2 : 1
+        if (this.shots[this.turn] >= total) this.turn = this.turn === 1 ? 2 : 1
         this._nextSpot()
         this.state = 'charge'
       }
@@ -283,6 +290,16 @@ export class Game {
       for (const b of this._modeBtns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
         this.mode = b.key
         this._tone(500, 0.05, 0, 'sine', 0.06)
+        return
+      }
+      for (const b of this._countBtns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+        if (b.act === 'dec') this.shotTotal = Math.max(1, this.shotTotal - 1)
+        else if (b.act === 'inc') this.shotTotal = Math.min(30, this.shotTotal + 1)
+        else { // 點數字=直接輸入
+          const v = parseInt(prompt('每人要投幾球?(1~30)', this.shotTotal), 10)
+          if (v >= 1) this.shotTotal = Math.min(30, v)
+        }
+        this._tone(520, 0.05, 0, 'sine', 0.06)
         return
       }
       for (const b of this._btns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return this._start(b.key)
@@ -417,12 +434,12 @@ export class Game {
     ctx.fillStyle = '#eef2f8'
     ctx.font = 'bold 16px "Noto Sans TC",sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText(`🔵 你 ${this.score[1]} : ${this.score[2]} ${p2name} 🔴 ・ 第 ${Math.min(SHOTS, this.shots[this.turn] + 1)}/${SHOTS} 球 ${three}`, VW / 2, 28)
+    ctx.fillText(`🔵 你 ${this.score[1]} : ${this.score[2]} ${p2name} 🔴 ・ 第 ${Math.min(this.shotTotal, this.shots[this.turn] + 1)}/${this.shotTotal} 球 ${three}`, VW / 2, 28)
     ctx.restore()
     if (this.state === 'done') this._drawDone()
   }
 
-  // 側視小球員:舉手投籃姿勢
+  // 側視小球員:舉手投籃姿勢;★系列鐵則:有眼睛、眉毛、表情、嘴巴(面朝籃框=右)
   _player(x, floorY, color, armsUp) {
     const { ctx } = this
     ctx.fillStyle = color
@@ -431,6 +448,30 @@ export class Game {
     ctx.fillRect(x - 11, floorY - 30, 9, 30); ctx.fillRect(x + 2, floorY - 30, 9, 30) // 腿
     ctx.fillStyle = '#f2d8b0'
     ctx.beginPath(); ctx.arc(x, floorY - 74, 10, 0, 7); ctx.fill() // 頭
+    // 頭髮(讓出右臉)
+    ctx.fillStyle = '#4a3220'
+    ctx.beginPath(); ctx.arc(x, floorY - 76, 10, Math.PI * 0.85, Math.PI * 1.9); ctx.fill()
+    // 臉(3/4 朝籃框):眼睛看籃框方向(瞄準時看上方的框)
+    const f = this._face
+    const lookUp = armsUp || this.state === 'flying' ? -1.2 : 0
+    ctx.fillStyle = '#fff'
+    ctx.beginPath(); ctx.ellipse(x + 2, floorY - 76, 2.1, f === 'happy' ? 1.4 : 2.2, 0, 0, 7); ctx.fill()
+    ctx.beginPath(); ctx.ellipse(x + 7, floorY - 75.5, 2.1, f === 'happy' ? 1.4 : 2.2, 0, 0, 7); ctx.fill()
+    ctx.fillStyle = '#2a2018'
+    ctx.beginPath(); ctx.arc(x + 2.9, floorY - 76 + lookUp, 1.1, 0, 7); ctx.fill()
+    ctx.beginPath(); ctx.arc(x + 7.9, floorY - 75.5 + lookUp, 1.1, 0, 7); ctx.fill()
+    // 眉毛(sad=八字/其他=專注)
+    ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 1.3; ctx.lineCap = 'round'
+    ctx.beginPath()
+    if (f === 'sad') { ctx.moveTo(x, floorY - 79.5); ctx.lineTo(x + 4, floorY - 80.5); ctx.moveTo(x + 6, floorY - 80); ctx.lineTo(x + 10, floorY - 79) }
+    else { ctx.moveTo(x, floorY - 79.5); ctx.lineTo(x + 4, floorY - 79); ctx.moveTo(x + 6, floorY - 78.8); ctx.lineTo(x + 10, floorY - 78.2) }
+    ctx.stroke()
+    // 嘴巴(happy=笑/sad=扁嘴/出手中=小 o 屏息/平時=抿嘴)
+    ctx.strokeStyle = '#8a4a3a'; ctx.lineWidth = 1.5
+    if (f === 'happy') { ctx.beginPath(); ctx.arc(x + 5, floorY - 71.5, 3, 0.15, Math.PI - 0.15); ctx.stroke() }
+    else if (f === 'sad') { ctx.beginPath(); ctx.arc(x + 5, floorY - 67.5, 2.6, Math.PI + 0.35, Math.PI * 2 - 0.35); ctx.stroke() }
+    else if (armsUp) { ctx.beginPath(); ctx.arc(x + 5, floorY - 70, 1.5, 0, 7); ctx.stroke() }
+    else { ctx.beginPath(); ctx.moveTo(x + 3, floorY - 69.5); ctx.lineTo(x + 7.5, floorY - 69.5); ctx.stroke() }
     ctx.strokeStyle = color; ctx.lineWidth = 7; ctx.lineCap = 'round'
     if (armsUp) { // 舉手瞄籃
       ctx.beginPath(); ctx.moveTo(x + 8, floorY - 58); ctx.lineTo(x + 17, floorY - 80); ctx.stroke()
@@ -502,15 +543,15 @@ export class Game {
     wrapHs(ctx, T.how, VW / 2, VH * 0.28, VW * 0.7, 22)
     ctx.fillStyle = '#a06a3a'
     ctx.font = '15px "Noto Sans TC",sans-serif'
-    ctx.fillText(T.pickMode, VW / 2, VH * 0.52)
+    ctx.fillText(T.pickMode, VW / 2, VH * 0.51)
     this._modeBtns = []
     const mDefs = [
       { key: 'ai', label: T.modeAI, desc: T.modeAIDesc },
       { key: '2p', label: T.mode2P, desc: T.mode2PDesc },
     ]
-    const mw = VW * 0.26, mh = VH * 0.1, mgap = VW * 0.04
+    const mw = VW * 0.26, mh = VH * 0.09, mgap = VW * 0.04
     mDefs.forEach((m, i) => {
-      const x = VW / 2 - mw - mgap / 2 + i * (mw + mgap), y = VH * 0.55
+      const x = VW / 2 - mw - mgap / 2 + i * (mw + mgap), y = VH * 0.53
       const on = this.mode === m.key
       ctx.fillStyle = on ? '#ffe070' : 'rgba(224,128,48,0.2)'
       rHs(ctx, x, y, mw, mh, 12); ctx.fill()
@@ -522,14 +563,27 @@ export class Game {
       ctx.fillText(m.desc, x + mw / 2, y + mh * 0.78)
       this._modeBtns.push({ x, y, w: mw, h: mh, key: m.key })
     })
+    // 每人幾球(玩家自由輸入:−/+ 步進、點數字直接鍵入)
+    this._countBtns = []
     ctx.fillStyle = '#a06a3a'
     ctx.font = '15px "Noto Sans TC",sans-serif'
-    ctx.fillText(T.pickAge, VW / 2, VH * 0.72)
+    ctx.textAlign = 'right'
+    ctx.fillText(T.pickCount, VW / 2 - VW * 0.1, VH * 0.685)
+    ctx.textAlign = 'center'
+    drawStepperHs(ctx, this._countBtns, VW / 2 - VW * 0.07, VH * 0.645, this.shotTotal)
+    ctx.fillStyle = '#a06a3a'
+    ctx.font = '12px "Noto Sans TC",sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText('(點數字可直接輸入 1~30)', VW / 2 + VW * 0.13, VH * 0.685)
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#a06a3a'
+    ctx.font = '15px "Noto Sans TC",sans-serif'
+    ctx.fillText(T.pickAge, VW / 2, VH * 0.74)
     this._btns = []
-    const bw = VW * 0.2, bh = VH * 0.12, gap = VW * 0.04
+    const bw = VW * 0.2, bh = VH * 0.11, gap = VW * 0.04
     const x0 = VW / 2 - bw * 1.5 - gap
     Object.entries(AGES).forEach(([key, a], i) => {
-      const x = x0 + i * (bw + gap), y = VH * 0.75
+      const x = x0 + i * (bw + gap), y = VH * 0.755
       ctx.fillStyle = '#e08030'
       rHs(ctx, x, y, bw, bh, 14); ctx.fill()
       ctx.fillStyle = '#2c1608'
@@ -572,6 +626,27 @@ export class Game {
 }
 
 function rHs(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h) }
+// 「− 數字 +」步進器(數字可點=直接輸入);把三顆熱區推進 btns
+function drawStepperHs(ctx, btns, x, y, val) {
+  const bw = 40, bh = 34, nw = 66, gap = 8
+  const defs = [
+    { act: 'dec', w: bw, label: '−' },
+    { act: 'edit', w: nw, label: String(val) },
+    { act: 'inc', w: bw, label: '+' },
+  ]
+  let xx = x
+  for (const d of defs) {
+    ctx.fillStyle = d.act === 'edit' ? '#ffe070' : 'rgba(224,128,48,0.25)'
+    rHs(ctx, xx, y, d.w, bh, 9); ctx.fill()
+    if (d.act === 'edit') { ctx.strokeStyle = '#b08a2a'; ctx.lineWidth = 2; rHs(ctx, xx, y, d.w, bh, 9); ctx.stroke() }
+    ctx.fillStyle = d.act === 'edit' ? '#3a2c06' : '#5a3c20'
+    ctx.font = `bold ${d.act === 'edit' ? 18 : 20}px "Noto Sans TC",sans-serif`
+    ctx.textAlign = 'center'
+    ctx.fillText(d.label, xx + d.w / 2, y + bh * 0.68)
+    btns.push({ x: xx, y, w: d.w, h: bh, act: d.act })
+    xx += d.w + gap
+  }
+}
 function wrapHs(ctx, text, cx, y, maxW, lineH) {
   ctx.font = `${lineH * 0.72}px "Noto Sans TC",sans-serif`
   let line = '', yy = y
