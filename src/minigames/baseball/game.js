@@ -519,7 +519,12 @@ export class Game {
         return
       }
       for (const b of this._countBtns) if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
-        this.pitchTotal = b.n
+        if (b.act === 'dec') this.pitchTotal = Math.max(1, this.pitchTotal - 1)
+        else if (b.act === 'inc') this.pitchTotal = Math.min(30, this.pitchTotal + 1)
+        else { // 點數字=直接輸入(1-30)
+          const v = parseInt(prompt('要比幾球?(1~30)', this.pitchTotal), 10)
+          if (v >= 1) this.pitchTotal = Math.min(30, v)
+        }
         this._tone(520, 0.05, 0, 'sine', 0.06)
         return
       }
@@ -924,27 +929,20 @@ export class Game {
       ctx.fillText(m.desc, x + mw / 2, y + mh * 0.78)
       this._modeBtns.push({ x, y, w: mw, h: mh, key: m.key })
     })
-    // 比幾球(投球挑戰/對決才顯示;打擊練習固定 10 球)
+    // 比幾球(投球挑戰/對決才顯示;打擊練習固定 10 球)——玩家自由輸入:−/+ 步進,點數字直接鍵入
     this._countBtns = []
     if (this.mode !== 'ai') {
       ctx.fillStyle = '#5a8a4a'
       ctx.font = '14px "Noto Sans TC",sans-serif'
       ctx.textAlign = 'right'
-      ctx.fillText(T.pickCount, VW / 2 - VW * 0.14, VH * 0.695)
+      ctx.fillText(T.pickCount, VW / 2 - VW * 0.13, VH * 0.695)
       ctx.textAlign = 'center'
-      const cw = VW * 0.06, ch = VH * 0.055, cgap = VW * 0.015
-      const cx0 = VW / 2 - VW * 0.13
-      ;[3, 6, 9, 12].forEach((n, i) => {
-        const x = cx0 + i * (cw + cgap), y = VH * 0.66
-        const on = this.pitchTotal === n
-        ctx.fillStyle = on ? '#ffe070' : 'rgba(90,140,70,0.3)'
-        rBb(ctx, x, y, cw, ch, 9); ctx.fill()
-        if (on) { ctx.strokeStyle = '#b08a2a'; ctx.lineWidth = 2; rBb(ctx, x, y, cw, ch, 9); ctx.stroke() }
-        ctx.fillStyle = on ? '#3a2c06' : '#2c4424'
-        ctx.font = 'bold 16px "Noto Sans TC",sans-serif'
-        ctx.fillText(`${n}`, x + cw / 2, y + ch * 0.66)
-        this._countBtns.push({ x, y, w: cw, h: ch, n })
-      })
+      drawStepper(ctx, this._countBtns, VW / 2 - VW * 0.1, VH * 0.655, this.pitchTotal)
+      ctx.fillStyle = '#5a8a4a'
+      ctx.font = '12px "Noto Sans TC",sans-serif'
+      ctx.textAlign = 'left'
+      ctx.fillText('(點數字可直接輸入 1~30)', VW / 2 + VW * 0.1, VH * 0.695)
+      ctx.textAlign = 'center'
     }
     ctx.fillStyle = '#5a8a4a'
     ctx.font = '14px "Noto Sans TC",sans-serif'
@@ -996,6 +994,27 @@ export class Game {
 }
 
 function rBb(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h) }
+// 「− 數字 +」步進器(數字可點=直接輸入);把三顆熱區推進 btns
+function drawStepper(ctx, btns, x, y, val) {
+  const bw = 40, bh = 34, nw = 66, gap = 8
+  const defs = [
+    { act: 'dec', w: bw, label: '−' },
+    { act: 'edit', w: nw, label: String(val) },
+    { act: 'inc', w: bw, label: '+' },
+  ]
+  let xx = x
+  for (const d of defs) {
+    ctx.fillStyle = d.act === 'edit' ? '#ffe070' : 'rgba(90,140,70,0.35)'
+    rBb(ctx, xx, y, d.w, bh, 9); ctx.fill()
+    if (d.act === 'edit') { ctx.strokeStyle = '#b08a2a'; ctx.lineWidth = 2; rBb(ctx, xx, y, d.w, bh, 9); ctx.stroke() }
+    ctx.fillStyle = d.act === 'edit' ? '#3a2c06' : '#2c4424'
+    ctx.font = `bold ${d.act === 'edit' ? 18 : 20}px "Noto Sans TC",sans-serif`
+    ctx.textAlign = 'center'
+    ctx.fillText(d.label, xx + d.w / 2, y + bh * 0.68)
+    btns.push({ x: xx, y, w: d.w, h: bh, act: d.act })
+    xx += d.w + gap
+  }
+}
 function wrapBb(ctx, text, cx, y, maxW, lineH) {
   ctx.font = `${lineH * 0.72}px "Noto Sans TC",sans-serif`
   let line = '', yy = y
