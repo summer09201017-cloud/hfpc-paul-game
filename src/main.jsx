@@ -42,6 +42,7 @@ import FootballDemo from './components/FootballDemo.jsx'
 import HoopShotDemo from './components/HoopShotDemo.jsx'
 import BasketballDemo from './components/BasketballDemo.jsx'
 import BaseballDemo from './components/BaseballDemo.jsx'
+import BilliardsDemo from './components/BilliardsDemo.jsx'
 import HarpToyDemo from './components/HarpToyDemo.jsx'
 import ShoreDemo from './components/ShoreDemo.jsx'
 import ElijahDemo from './components/ElijahDemo.jsx'
@@ -159,6 +160,7 @@ function pickRoot() {
   if (demo === 'hoopshot') return <HoopShotDemo />
   if (demo === 'basketball') return <BasketballDemo />
   if (demo === 'baseball') return <BaseballDemo />
+  if (demo === 'billiards') return <BilliardsDemo />
   if (demo === 'petersea') return <PeterSeaDemo />
   if (demo === 'harptoy') return <HarpToyDemo />
   if (demo === 'shore') return <ShoreDemo />
