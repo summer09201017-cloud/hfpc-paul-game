@@ -37,29 +37,40 @@ const BALL_R1 = 17 // 到本壘時球半徑(大一點,主審視角的「衝過�
 // dist=出棒結果機率(homer/hit/foul,其餘=揮空)——年齡檔越高阿福越會打,投手越難壓制。
 const AGES = {
   young: { label: '🐣 幼', desc: '全慢速球・時機窗超寬', kinds: ['slow'], win: { perfect: 0.16, good: 0.34 }, ballRate: 0.2, aiBat: { chase: 0.35, swingStrike: 0.85, dist: { homer: 0.1, hit: 0.28, foul: 0.32 } } },
-  kid: { label: '🙂 童', desc: '快慢混・標準', kinds: ['fast', 'slow'], win: { perfect: 0.11, good: 0.24 }, ballRate: 0.3, aiBat: { chase: 0.22, swingStrike: 0.92, dist: { homer: 0.16, hit: 0.34, foul: 0.3 } } },
-  teen: { label: '🔥 青', desc: '含變化球・時機窗窄', kinds: ['fast', 'slow', 'curve'], win: { perfect: 0.085, good: 0.19 }, ballRate: 0.35, aiBat: { chase: 0.12, swingStrike: 0.96, dist: { homer: 0.24, hit: 0.38, foul: 0.26 } } },
+  kid: { label: '🙂 童', desc: '快慢+曲球・標準', kinds: ['fast', 'slow', 'curve'], win: { perfect: 0.11, good: 0.24 }, ballRate: 0.3, aiBat: { chase: 0.22, swingStrike: 0.92, dist: { homer: 0.16, hit: 0.34, foul: 0.3 } } },
+  teen: { label: '🔥 青', desc: '五種球路・時機窗窄', kinds: ['fast', 'slow', 'curve', 'slider', 'sinker'], win: { perfect: 0.085, good: 0.19 }, ballRate: 0.35, aiBat: { chase: 0.12, swingStrike: 0.96, dist: { homer: 0.24, hit: 0.38, foul: 0.26 } } },
 }
-// dur=飛行秒數(由遠而近,取代舊的 px/s)
+// dur=飛行秒數(由遠而近);brkX/brkY=軌跡彎曲幅度、late=晚破(快到本壘才折)——
+// 彎的是「途中的路徑」,終點仍是選定落點(好壞球判定不變,難在讀球)。07-10 使用者點名加曲球/滑球。
 const PITCH_KINDS = {
-  fast: { label: '🔥 快速球', dur: 0.9 },
-  slow: { label: '🐢 慢速球', dur: 1.5 },
-  curve: { label: '🌀 變化球', dur: 1.15 },
+  fast: { label: '🔥 快速球', dur: 0.9, brkX: 0, brkY: 0, late: false },
+  slow: { label: '🐢 慢速球', dur: 1.5, brkX: 0, brkY: 0, late: false },
+  curve: { label: '🌜 曲球', dur: 1.25, brkX: 34, brkY: 20, late: false },
+  slider: { label: '⚡ 滑球', dur: 1.0, brkX: 42, brkY: 0, late: true },
+  sinker: { label: '⤵️ 伸卡球', dur: 1.05, brkX: 0, brkY: 36, late: true },
 }
-// 對決投手的五檔高低(含引誘用的壞球位;ty=落點高度)
-const LOCS = [
-  { k: 'bhigh', label: '⬆⬆ 高壞球(引誘)', ty: 282 },
-  { k: 'high', label: '⬆ 偏高', ty: 332 },
-  { k: 'mid', label: '➡ 紅中', ty: 368 },
-  { k: 'low', label: '⬇ 偏低', ty: 404 },
-  { k: 'blow', label: '⬇⬇ 低壞球(引誘)', ty: 452 },
+// ★好球帶=九宮格(07-10 使用者點名):投手用 W/S(列)×A/D(欄)選格,內 3×3=九個好球格、
+//   外圈(列/欄 0 或 4)=引誘壞球位——5×5 網格,中央九格落在好球帶三等分的格心。
+const GRID_R = [
+  { label: '⬆⬆ 高壞球(引誘)', ty: 282 },
+  { label: '上格', ty: ZONE.y + ZONE.h / 6 },
+  { label: '中格', ty: ZONE.y + ZONE.h / 2 },
+  { label: '下格', ty: ZONE.y + (ZONE.h * 5) / 6 },
+  { label: '⬇⬇ 低壞球(引誘)', ty: 452 },
+]
+const GRID_C = [
+  { label: '⬅⬅ 左壞球(引誘)', tx: ZONE.x - 36 },
+  { label: '左格', tx: ZONE.x + ZONE.w / 6 },
+  { label: '中格', tx: ZONE.x + ZONE.w / 2 },
+  { label: '右格', tx: ZONE.x + (ZONE.w * 5) / 6 },
+  { label: '➡➡ 右壞球(引誘)', tx: ZONE.x + ZONE.w + 36 },
 ]
 
 const T = {
   title: '⚾ 棒球打擊王',
   sub: '憫安製作・主審視角!看清好壞球',
   how: '你站在本壘板後,球會「由遠而近」朝你飛來!球進虛線好球帶才是好球——壞球別揮,四壞=🚶 保送上壘得 1 分;球飛到最大(快到本壘)時揮棒(空白鍵/Enter/點畫面):完美=🎆 全壘打、不錯=安打、差一點=界外。三好球只是換個打席,沒有出局——每一球都是新的機會!',
-  how2p: '🎯 投球挑戰:你當投手(W/S 高低、A/D 球種、空白鍵/點畫面投球),阿福打擊——用好壞球和球種騙過他!👥 投打對決:P1 投手、P2 打者(Enter 揮棒),攻守交換比打擊分。這兩種模式可以自己選要比幾球!',
+  how2p: '🎯 投球挑戰:你當投手(W/S 高低、A/D 左右、Q/E 換球種、空白鍵/點畫面投球),阿福打擊——用九宮格落點和五種球路騙過他!👥 投打對決:P1 投手、P2 打者(Enter 揮棒),攻守交換比打擊分。這兩種模式可以自己選要比幾球!',
   pickMode: '選模式:',
   pickCount: '比幾球(每人):',
   pickAge: '選難度:',
@@ -77,8 +88,8 @@ const T = {
   ballTake: '👌 壞球,看得好!',
   walk: '🚶 四壞保送!上壘',
   strikeout: '😌 三好球,換個打席',
-  pitcherHint: 'P1 投手:W/S 高低 ・ A/D 球種 ・ 空白鍵投球',
-  pitcherHintSolo: '你是投手:W/S 高低 ・ A/D 球種 ・ 空白鍵/點畫面投球',
+  pitcherHint: 'P1 投手:W/S 高低 ・ A/D 左右 ・ Q/E 球種 ・ 空白鍵投球',
+  pitcherHintSolo: '你是投手:W/S 高低 ・ A/D 左右 ・ Q/E 球種 ・ 空白鍵/點畫面投',
   batterHint: '球飛到最大時揮棒!壞球別揮!',
   swapMsg: '⇄ 攻守交換!',
   endWin: (s) => `🏆 打擊王!${s} 分!`,
@@ -114,13 +125,13 @@ export class Game {
     this._onKeyDown = (e) => this._key(e)
     this._onDown = (e) => this._down(e)
     this._onResize = () => this._resize()
-    this.ball = null // {t,dur,kind,tx,ty,curveAmp,isStrike,swung}
+    this.ball = null // {t,dur,kind,tx,ty,brkX,brkY,late,isStrike,swung}
     this.pitchCount = 0
     this.score = { 1: 0, 2: 0 } // 對決=兩人打擊分;練習只用 [1]
     this.half = 1 // 對決:1=P1投/P2打,2=交換
     this.balls = 0 // 本打席壞球數(B)
     this.strikes = 0 // 本打席好球數(S)
-    this.pitchSel = { locIdx: 2, kind: 'fast' } // 對決投手選球
+    this.pitchSel = { row: 2, col: 2, kind: 'fast' } // 投手選球(高低/左右/球種)
     this.aiT = 0
     this.swing = 0 // 揮棒動畫計時
     this.hitFly = null // 打出去的球(fair:{t,dur,x1,y1,peak,dist} / foul:{x,y,vx,vy})
@@ -182,7 +193,7 @@ export class Game {
     this.aiPlan = null
     this._batFace = 'focus'
     this._pitFace = 'calm'
-    this.pitchSel = { locIdx: 2, kind: this.cfg.kinds[0] }
+    this.pitchSel = { row: 2, col: 2, kind: this.cfg.kinds[0] }
     if (this.mode === 'ai') {
       this.aiT = 1.0 + Math.random() * 0.9 // 阿福醞釀
       this.bubble = ['接好囉!', '看清楚是不是好球!', '看仔細!'][Math.floor(Math.random() * 3)]
@@ -200,12 +211,16 @@ export class Game {
 
   // 投球:kind=球種,落點(tx,ty)——框內=好球、框外=壞球
   _pitch(kind, tx, ty) {
+    const spec = PITCH_KINDS[kind]
     this.ball = {
       t: 0,
-      dur: PITCH_KINDS[kind].dur,
+      dur: spec.dur,
       kind,
       tx, ty,
-      curveAmp: kind === 'curve' ? (Math.random() < 0.5 ? -34 : 34) : 0,
+      // 軌跡彎曲:左右隨機一邊,幅度照球種;late=快到本壘才折(滑球/伸卡難讀)
+      brkX: spec.brkX ? (Math.random() < 0.5 ? -spec.brkX : spec.brkX) : 0,
+      brkY: spec.brkY || 0,
+      late: spec.late,
       isStrike: this._inZone(tx, ty),
       swung: false,
       judged: false,
@@ -254,12 +269,14 @@ export class Game {
   }
 
   // 球此刻的畫面位置與大小(prog 可 >1:過本壘往鏡頭外飛)
+  // 彎曲剖面:一般=sin(πp)中段最彎;late=sin(π·p^2.2)快到本壘才折——終點都回到選定落點
   _ballPos(b) {
     const p = Math.min(1.35, b.t / b.dur)
-    const x = REL.x + (b.tx - REL.x) * p + Math.sin(Math.min(1, p) * Math.PI) * b.curveAmp
-    let arc = 0
-    if (b.kind === 'slow') arc = -Math.sin(Math.min(1, p) * Math.PI) * 26
-    else if (b.kind === 'curve') arc = -Math.sin(Math.min(1, p) * Math.PI) * 12
+    const pp = Math.min(1, p)
+    const prof = Math.sin(Math.PI * (b.late ? Math.pow(pp, 2.2) : pp))
+    const x = REL.x + (b.tx - REL.x) * p + prof * (b.brkX || 0)
+    let arc = prof * (b.brkY || 0)
+    if (b.kind === 'slow') arc -= Math.sin(pp * Math.PI) * 26
     const y = REL.y + (b.ty - REL.y) * p + arc
     const r = BALL_R0 + (BALL_R1 - BALL_R0) * p
     return { x, y, r, p }
@@ -484,12 +501,15 @@ export class Game {
     if (e.key === 'Enter' && this.mode !== 'pitch') this._swing() // 投球挑戰揮棒的是阿福
     // 投手選球(投球挑戰/對決的 ready 階段)
     if ((this.mode === '2p' || this.mode === 'pitch') && this.state === 'ready') {
-      if (e.key === 'w' || e.key === 'W') { this.pitchSel.locIdx = Math.max(0, this.pitchSel.locIdx - 1); this._tone(460, 0.04, 0, 'sine', 0.05) }
-      if (e.key === 's' || e.key === 'S') { this.pitchSel.locIdx = Math.min(LOCS.length - 1, this.pitchSel.locIdx + 1); this._tone(430, 0.04, 0, 'sine', 0.05) }
-      if (e.key === 'a' || e.key === 'A' || e.key === 'd' || e.key === 'D') {
+      if (e.key === 'w' || e.key === 'W') { this.pitchSel.row = Math.max(0, this.pitchSel.row - 1); this._tone(460, 0.04, 0, 'sine', 0.05) }
+      if (e.key === 's' || e.key === 'S') { this.pitchSel.row = Math.min(GRID_R.length - 1, this.pitchSel.row + 1); this._tone(430, 0.04, 0, 'sine', 0.05) }
+      // A/D=左右(07-10 使用者點名);球種改 Q/E 循環
+      if (e.key === 'a' || e.key === 'A') { this.pitchSel.col = Math.max(0, this.pitchSel.col - 1); this._tone(450, 0.04, 0, 'sine', 0.05) }
+      if (e.key === 'd' || e.key === 'D') { this.pitchSel.col = Math.min(GRID_C.length - 1, this.pitchSel.col + 1); this._tone(440, 0.04, 0, 'sine', 0.05) }
+      if (e.key === 'q' || e.key === 'Q' || e.key === 'e' || e.key === 'E') {
         const ks = this.cfg.kinds
         const i = ks.indexOf(this.pitchSel.kind)
-        this.pitchSel.kind = ks[(i + (e.key === 'a' || e.key === 'A' ? ks.length - 1 : 1)) % ks.length]
+        this.pitchSel.kind = ks[(i + (e.key === 'q' || e.key === 'Q' ? ks.length - 1 : 1)) % ks.length]
         this._tone(460, 0.04, 0, 'sine', 0.05)
       }
     }
@@ -497,9 +517,9 @@ export class Game {
 
   // 人類投手出手(投球挑戰=你;對決=P1):照面板選的高低與球種,加一點左右晃
   _humanPitch() {
-    const loc = LOCS[this.pitchSel.locIdx]
-    const tx = ZONE.x + ZONE.w / 2 + (Math.random() * 2 - 1) * 34
-    this._pitch(this.pitchSel.kind, tx, loc.ty + (Math.random() * 2 - 1) * 8)
+    const loc = GRID_R[this.pitchSel.row]
+    const locX = GRID_C[this.pitchSel.col]
+    this._pitch(this.pitchSel.kind, locX.tx + (Math.random() * 2 - 1) * 8, loc.ty + (Math.random() * 2 - 1) * 8)
   }
 
   _pt(e) {
@@ -601,17 +621,25 @@ export class Game {
     }
     // 打飛的球
     if (this.hitFly) this._drawHitFly()
-    // 投手選球面板(投球挑戰/對決的 ready 時)
+    // 投手選球面板(投球挑戰/對決的 ready 時):高低+左右+球種
     if ((this.mode === '2p' || this.mode === 'pitch') && this.state === 'ready') {
       ctx.fillStyle = 'rgba(20,24,48,0.78)'
-      rBb(ctx, 24, 60, 340, 96, 12); ctx.fill()
+      rBb(ctx, 24, 60, 372, 122, 12); ctx.fill()
       ctx.fillStyle = '#eef2f8'
       ctx.font = 'bold 14px "Noto Sans TC",sans-serif'
       ctx.textAlign = 'left'
       ctx.fillText(this.mode === 'pitch' ? T.pitcherHintSolo : T.pitcherHint, 38, 84)
       ctx.font = '15px "Noto Sans TC",sans-serif'
-      ctx.fillText(`高低:${LOCS[this.pitchSel.locIdx].label}`, 38, 110)
-      ctx.fillText(`球種:${PITCH_KINDS[this.pitchSel.kind].label}`, 38, 136)
+      ctx.fillText(`高低:${GRID_R[this.pitchSel.row].label}`, 38, 110)
+      ctx.fillText(`左右:${GRID_C[this.pitchSel.col].label}`, 38, 134)
+      ctx.fillText(`球種:${PITCH_KINDS[this.pitchSel.kind].label}`, 38, 158)
+      // 落點預覽準星:只在投球挑戰畫(對決畫了會洩底給 P2 打者,靠面板文字就好)
+      if (this.mode === 'pitch') {
+        const px = GRID_C[this.pitchSel.col].tx, py = GRID_R[this.pitchSel.row].ty
+        ctx.strokeStyle = 'rgba(255,224,112,0.9)'; ctx.lineWidth = 2
+        ctx.beginPath(); ctx.arc(px, py, 9, 0, 7); ctx.stroke()
+        ctx.beginPath(); ctx.moveTo(px - 13, py); ctx.lineTo(px + 13, py); ctx.moveTo(px, py - 13); ctx.lineTo(px, py + 13); ctx.stroke()
+      }
     }
     // B/S 燈號(壞球/好球數)
     this._drawCount()
@@ -689,14 +717,30 @@ export class Game {
     ctx.closePath(); ctx.fill()
   }
 
-  // 好球帶虛線框+文字
+  // 好球帶=九宮格虛線框(07-10 使用者點名)+文字;投球挑戰的 ready 時亮選中的格
   _drawZone() {
     const { ctx } = this
     const active = this.state === 'pitching' && this.ball && !this.ball.swung
+    // 選中的格(投球挑戰;選外圈壞球位就沒有格好亮,靠準星)
+    if (this.mode === 'pitch' && this.state === 'ready') {
+      const { row, col } = this.pitchSel
+      if (row >= 1 && row <= 3 && col >= 1 && col <= 3) {
+        ctx.fillStyle = 'rgba(255,224,112,0.22)'
+        ctx.fillRect(ZONE.x + ((col - 1) * ZONE.w) / 3, ZONE.y + ((row - 1) * ZONE.h) / 3, ZONE.w / 3, ZONE.h / 3)
+      }
+    }
     ctx.strokeStyle = active ? 'rgba(255,224,112,0.85)' : 'rgba(255,255,255,0.35)'
     ctx.lineWidth = active ? 3.5 : 2.5
     ctx.setLineDash([7, 7])
     ctx.strokeRect(ZONE.x, ZONE.y, ZONE.w, ZONE.h)
+    // 內格線(細一點):切成 3×3 九宮格
+    ctx.lineWidth = active ? 1.8 : 1.2
+    ctx.setLineDash([5, 6])
+    for (let i = 1; i <= 2; i++) {
+      const gx = ZONE.x + (ZONE.w * i) / 3, gy = ZONE.y + (ZONE.h * i) / 3
+      ctx.beginPath(); ctx.moveTo(gx, ZONE.y); ctx.lineTo(gx, ZONE.y + ZONE.h); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(ZONE.x, gy); ctx.lineTo(ZONE.x + ZONE.w, gy); ctx.stroke()
+    }
     ctx.setLineDash([])
     if (this.state === 'ready' || active) {
       ctx.fillStyle = active ? 'rgba(255,224,112,0.85)' : 'rgba(255,255,255,0.5)'
