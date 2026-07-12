@@ -1,11 +1,48 @@
 ============================================================
 讀我 — HANDOFF（保羅大富翁 hfpc-paul-game）
-交接日期：2026-07-05(晚,agape250 → HFP 機)
+交接日期：2026-07-12(晚,agape250 → HFP 機)
 給:HFP 那台 PC 的 AI / 接手的人
 GitHub 帳號:summer09201017-cloud。GitHub 是唯一真相;桌面 zip 只是備援快照。
 ============================================================
 
-★★★★★ 本輪(2026-07-11~12,HFP 機 → agape250 機)★★★ 先讀這段(最新)★★★
+★★★★★ 本輪(2026-07-12 晚,agape250 機 → HFP 機)★★★ 先讀這段(最新)★★★
+================================================================================
+【一句話】觀眾掃蕩收工:「觀眾臉+觀眾聲」**10/10 款全部完成、上線、push**(paul 本身零變動);
+  使用者拍板兩個新方向:①**關節人物新鐵則(第一優先,未動工)** ②射箭 archery3d 起骨架。
+  另:使用者拍板「**跟他溝通一律繁體中文**」(已入記憶,對 AI 的鐵則)。
+
+【✅ 觀眾臉+觀眾聲 10/10 完成(每款皆 build 綠→netlify deploy→線上 update×60 不炸→觀眾特寫截圖→push)】
+  soccer3d 6c7a919/baseball3d 31987c4/fencing3d 5c5c59a/bowling3d 4dc5538/minigolf3d 4a45c07/
+  dodgeball3d eaa5baf/kungfu3d d5d09f4(deyi 站)/boxing3d 03b11aa(deyi 站)/kungfutrain3d f965d8b/
+  billiards3d 07658e4(這款連 audio.js 觀眾聲整段都是新抄的)。racket3d HANDOFF 已對賬(9c9ebb8)。
+  ※ **唯一殘項:籃球CO(HFP 機桌面,無 remote)——請在 HFP 機補觀眾臉+聲**,範式照 crowd-kit skill。
+
+【📌 下一棒(使用者 2026-07-12 拍板,第一優先)關節人物新鐵則】
+  使用者點名:全系列 3D 人物「像樂高人,沒手肘沒膝蓋,不像真人」——要升級**雙節肢體**
+  (上臂 pivot 肩+前臂 lowerPivot 肘;大腿 pivot 髖+小腿 lowerPivot 膝)。
+  **籃球CO 的 createLimb 已有 lowerPivot,是活範例**(visuals.leftArm.lowerPivot.rotation.x)。
+  流程照 /sweep-3d 鐵則:**先在 boxing3d 做對**(出拳=肘先收再伸直、踏步=膝交替彎)→截圖給使用者驗收
+  →掃全系列 11 款→沉澱進 3d-game-kit / canvas-vector-characters skill。
+
+【🏹 新專案:archery3d(3D 射箭,夏奧)——骨架已起,住 GitHub summer09201017-cloud/archery3d(若推送成功;
+  否則在 agape250 機 Desktop\archery3d)】
+  現況:src/game.js 已重寫成射箭引擎(蓄力拉弓→準星晃動(屏息越久越晃)→順逆風補償→拋物線→靶環計分,
+  判定=畫面;五難度+3 模式);**main.js/index.html/voicePhrases 還是籃球CO 骨架,尚未接線**——接手先做 UI 接線。
+  背景:下一波 3D 運動(使用者拍板)=**鉛球/鐵餅/標槍/舉重/高爾夫**——全部重用射箭的「蓄力+拋物線」核心,
+  所以 archery3d 是這一批的地基。詳見該 repo 讀我-HANDOFF.txt。
+
+【🔧 agape250 機環境變動(這台下次坐下要知道)】
+  - `netlify deploy` 權限已在 ~/.claude/settings.json permissions.allow 開通(使用者授權);gh CLI 未裝但 git push 可用。
+  - 10 個 3D repo 都淺 clone 在 Desktop\<名稱>;可重用線上冒煙工具 smoke3d.mjs 已沉澱進 skills 合輯
+    (canvas-playwright-verify skill assets+/smoke3d 指令)。
+  - skills 合輯已同步(117 skills/54 commands/14 agents;歸類 4 未分類+計數對齊,c2e5be9)。
+
+【其他現況】3D 待辦:排球(racket3d 第四運動)、壘球(baseball3d fork,快壘/慢壘雙模式構想)、
+  跆拳道(kungfu3d fork,電子護具按部位計分構想)、冰壺/冰球(billiards+bowling 物理重用構想)。
+  聖經關卡 CP 序不變(大衛迎約櫃→以利亞迦密山→…)。paul 47 引擎/大廳 24 卡 94 關 sw v51、無開著 PR。
+================================================================================
+
+★★★★★ 上一輪(2026-07-11~12,HFP 機 → agape250 機)★★★
 ================================================================================
 【一句話】這兩天全在 3D 運動系列(paul 本身零變動):🏓 桌球上線(racket3d 第三運動,
   大廳 PR #22 已併,94 關 sw v51)+全系列 11 款五視角+racket3d 手感七輪迭代
