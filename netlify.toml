@@ -8,3 +8,10 @@
 
 [build.environment]
   NODE_VERSION = "20"
+
+# 0817 搬遷 Cloudflare Pages:舊網址(含已安裝的舊 PWA)全部 301 到新家,留置一個月後關站
+[[redirects]]
+  from = "/*"
+  to = "https://hfpc-paul-game.pages.dev/:splat"
+  status = 301
+  force = true
