@@ -7,6 +7,19 @@ export default defineConfig({
   // 用相對路徑，方便部署到任何子目錄（GitHub Pages、教會自架等）。
   base: './',
   plugins: [
+    /* 🏷️ 版號徽章(0820 全艦隊批次)workbox 家族做法:建置時間烙進 index.html 佔位符,
+       被 workbox 預快取 ⇒ 頁面顯示的就是這台裝置執行中的那次建置(不會說謊)。
+       ⚠ 用 split/join 不用 replace(0820 ledger 實測 html.replace 在這條管線裡沒生效)。 */
+    {
+      name: 'stamp-build-version',
+      transformIndexHtml: {
+        order: 'post',
+        handler(html) {
+          const stamp = new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC'
+          return html.split('%%BUILD%%').join(stamp)
+        },
+      },
+    },
     react(),
     VitePWA({
       registerType: 'autoUpdate',
