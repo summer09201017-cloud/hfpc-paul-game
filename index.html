@@ -86,5 +86,19 @@
 <!-- 🏷️ 版號徽章(0820):%%BUILD%% 由 vite 建置時烙入(vite.config.js stamp 插件),
      被 workbox 預快取 ⇒ 顯示的就是這台裝置執行中的建置。pointer-events:none 不擋任何操作。 -->
 <div id="appVerBadge" style="position:fixed;right:6px;bottom:4px;font-size:11px;line-height:1;opacity:.55;z-index:2147483000;pointer-events:none;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);font-family:system-ui,sans-serif">🏷️ 版本 建置 %%BUILD%%(這台裝置實際執行中的版本)</div>
+    <script>
+      /* 🏷️ appVerBadgeFade（0828）：版號徽章是 position:fixed 在右下角，實測會蓋住大廳卡片、
+         遊戲的「難度 / 開始比賽」按鈕——pointer-events:none 只讓「點擊」穿過去，字還是被蓋著。
+         做法：10 秒後淡出。要看版本就重新整理，平常不擋畫面。 */
+      ;(function () {
+        var b = document.getElementById('appVerBadge')
+        if (!b) return
+        b.style.transition = 'opacity .8s'
+        setTimeout(function () {
+          b.style.opacity = '0'
+          setTimeout(function () { b.style.display = 'none' }, 900)
+        }, 10000)
+      })()
+    </script>
 </body>
 </html>
